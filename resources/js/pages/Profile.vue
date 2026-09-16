@@ -10,7 +10,7 @@
         </div>
 
         <FormField v-model="profileForm.name" label="Name" placeholder="Name" :error="profileForm.errors.name" />
-        <FormField v-model="email" label="Email" type="email" readonly />
+        <FormField v-model="profileForm.email" label="Email" type="email" placeholder="Email" :error="profileForm.errors.email" />
         <FormField v-model="profileForm.phone" label="Phone" placeholder="Phone" :error="profileForm.errors.phone" />
         <FormField
           v-model="profileForm.address"
@@ -65,7 +65,6 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import { useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
 import PageHeader from "../components/ui/PageHeader.vue";
@@ -75,10 +74,10 @@ defineOptions({ layout: AdminLayout });
 
 // The signed-in user is shared globally as `auth.user`; seed the form from it.
 const user = usePage().props.auth?.user ?? {};
-const email = ref(user.email ?? "");
 
 const profileForm = useForm({
   name: user.name ?? "",
+  email: user.email ?? "",
   phone: user.phone ?? "",
   address: user.address ?? "",
 });

@@ -100,4 +100,36 @@ class AuthTest extends TestCase
             ->assertStatus(200)
             ->assertJson(['status' => 'success']);
     }
+
+    public function test_authenticated_user_can_update_profile_email(): void
+    {
+        $user = User::factory()->create(['email' => 'old@example.com']);
+
+        $this->actingAs($user)
+            ->put('/profile', [
+                'name' => $user->name,
+                'email' => 'new@example.com',
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'email' => 'new@example.com',
+        ]);
+    }
+
+    public function test_profile_email_must_be_unique(): void
+    {
+        $user = User::factory()->create(['email' => 'user@example.com']);
+        User::factory()->create(['email' => 'taken@example.com']);
+
+        $this->actingAs($user)
+            ->from('/profile')
+            ->put('/profile', [
+                'name' => $user->name,
+                'email' => 'taken@example.com',
+            ])
+            ->assertRedirect('/profile')
+            ->assertSessionHasErrors('email');
+    }
 }

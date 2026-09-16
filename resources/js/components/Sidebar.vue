@@ -161,7 +161,7 @@ const groups = [
     ],
   },
   {
-    title: "QR & Kiosk",
+    title: "QR",
     items: [
       { to: "/qr-codes",     label: "QR Codes",     icon: icon.qrcode, permission: "qr.view" },
     ],
