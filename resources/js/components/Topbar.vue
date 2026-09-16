@@ -112,7 +112,6 @@ const titles = {
   "/finance/expenses": "Expenses",
   "/finance/petty-cash": "Petty Cash",
   "/qr-codes": "QR Codes",
-  "/kiosk-config": "Kiosk Config",
   "/profile": "Profile",
   "/settings": "Settings",
   "/change-password": "Change Password",

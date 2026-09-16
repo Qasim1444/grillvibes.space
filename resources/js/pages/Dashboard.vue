@@ -93,6 +93,29 @@
         </div>
       </div>
 
+      <!-- Customer feedback -->
+      <div class="ui-card">
+        <div class="ui-card-header">
+          Customer Feedback
+          <Link href="/feedback">View all</Link>
+        </div>
+        <div class="fb__summary">
+          <span class="fb__avg">{{ feedbackStats.avg_rating ?? "—" }}</span>
+          <span class="fb__stars">{{ stars(feedbackStats.avg_rating) }}</span>
+          <span class="fb__count">{{ feedbackStats.total }} review(s)</span>
+        </div>
+        <div class="fb__list">
+          <p v-if="!feedback.length" class="data-table__empty" style="padding: 20px 0">No feedback yet.</p>
+          <div v-for="f in feedback" :key="f.id" class="fb__row">
+            <div class="fb__top">
+              <span class="fb__name">{{ f.customer?.name || "Guest" }}</span>
+              <span class="fb__stars">{{ stars(f.rating) }}</span>
+            </div>
+            <p v-if="f.comment" class="fb__comment">“{{ f.comment }}”</p>
+          </div>
+        </div>
+      </div>
+
       <!-- Top categories -->
       <div class="ui-card">
         <div class="ui-card-header">Top Categories</div>
@@ -399,6 +422,8 @@ const props = defineProps({
   counts: { type: Object, default: () => ({}) },
   recentOrders: { type: Array, default: () => [] },
   topCategories: { type: Array, default: () => [] },
+  feedback: { type: Array, default: () => [] },
+  feedbackStats: { type: Object, default: () => ({ avg_rating: null, total: 0 }) },
   range: { type: Object, default: () => ({ start_date: "", end_date: "" }) },
   reports: { type: Object, default: () => ({}) },
 });
@@ -410,7 +435,7 @@ const reportsLoading = ref(false);
 const BAR_COLORS = ["var(--brand)", "var(--success)", "var(--info)", "var(--warning)", "var(--danger)"];
 const barColor = (i) => BAR_COLORS[i % BAR_COLORS.length];
 
-const money = (v) => (v == null || v === "" ? "—" : `$${Number(v).toFixed(2)}`);
+const money = (v) => (v == null || v === "" ? "—" : `Rs ${Number(v).toFixed(2)}`);
 
 const TYPE_LABELS = { delivery: "Delivery", dining: "Dining", "on-way": "On the way" };
 const typeLabel = (t) => TYPE_LABELS[t] || t || "—";
@@ -434,6 +459,9 @@ const counts = computed(() => ({
 }));
 const recentOrders = computed(() => props.recentOrders ?? []);
 const topCategories = computed(() => props.topCategories ?? []);
+const feedback = computed(() => props.feedback ?? []);
+const feedbackStats = computed(() => props.feedbackStats ?? { avg_rating: null, total: 0 });
+const stars = (r) => "★".repeat(Math.max(0, Math.min(5, Number(r) || 0))) + "☆".repeat(5 - Math.max(0, Math.min(5, Number(r) || 0)));
 
 // ── Report blocks (all computed from the server-rendered props) ──────────────
 const summary = computed(() => ({
@@ -741,6 +769,21 @@ const exportData = () => {
   min-width: 42px;
   text-align: right;
 }
+
+/* ── Feedback card ─────────────────────────────────────────────── */
+.fb__summary {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.fb__avg   { font-size: 1.6rem; font-weight: 800; }
+.fb__stars { color: #f59e0b; letter-spacing: 1px; }
+.fb__count { font-size: 0.78rem; color: var(--text-muted); }
+.fb__list  { padding: 4px 0; }
+.fb__row   { padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.fb__row:last-child { border-bottom: none; }
+.fb__top     { display: flex; justify-content: space-between; gap: 10px; }
+.fb__name    { font-weight: 600; font-size: 0.875rem; }
+.fb__comment { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
 
 @media (max-width: 1100px) {
   .stat-grid {

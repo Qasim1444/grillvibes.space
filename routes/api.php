@@ -111,9 +111,6 @@ Route::prefix('guest')->name('guest.')->group(function () {
     // QR scan → creates session + returns menu
     Route::get('/qr/{slug}',    [GuestMenuController::class, 'scanQr'])->name('qr.scan');
 
-    // Kiosk bootstrap → creates session + returns menu
-    Route::get('/kiosk/{placeId}', [GuestMenuController::class, 'kioskStart'])->name('kiosk.start');
-
     // Browse menu (no session required)
     Route::get('/menu',         [GuestMenuController::class, 'menu'])->name('menu');
 

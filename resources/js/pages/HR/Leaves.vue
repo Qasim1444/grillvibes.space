@@ -2,6 +2,9 @@
   <div class="page">
     <PageHeader title="Leaves" subtitle="Leave requests and approvals. Approved unpaid leave is deducted by payroll.">
       <template #actions>
+        <button v-if="can('hr.leaves.create')" class="ui-btn ui-btn--ghost" @click="showTypeModal = true">
+          ⚙ Leave Types
+        </button>
         <button v-if="can('hr.leaves.create')" class="ui-btn ui-btn--primary" @click="openModal">
           + Add Leave
         </button>
@@ -112,6 +115,44 @@
         <button class="ui-btn ui-btn--primary" :disabled="form.processing" @click="save">Save</button>
       </template>
     </Modal>
+
+    <!-- Leave Types manager -->
+    <Modal v-model="showTypeModal" title="Manage Leave Types" width="520px">
+      <div class="lt__add">
+        <FormField v-model="typeForm.name" label="Name *" placeholder="e.g. Annual Leave" :error="typeForm.errors.name" />
+        <div class="lv__grid">
+          <FormField v-model.number="typeForm.days_per_year" label="Days / year" type="number" min="0" :error="typeForm.errors.days_per_year" />
+          <FormField v-model="typeForm.is_paid" label="Paid?" type="select">
+            <option :value="true">Paid</option>
+            <option :value="false">Unpaid</option>
+          </FormField>
+        </div>
+        <div class="lt__add-actions">
+          <button v-if="typeForm.id" class="ui-btn ui-btn--ghost ui-btn--sm" @click="resetTypeForm">Cancel edit</button>
+          <button class="ui-btn ui-btn--primary ui-btn--sm" :disabled="typeForm.processing" @click="saveType">
+            {{ typeForm.id ? 'Update Type' : '+ Add Type' }}
+          </button>
+        </div>
+      </div>
+      <div class="lt__list">
+        <div v-for="t in props.leaveTypes" :key="t.id" class="lt__row">
+          <div class="lt__info">
+            <strong>{{ t.name }}</strong>
+            <span class="lt__meta">
+              {{ t.is_paid ? 'Paid' : 'Unpaid' }}{{ t.days_per_year ? ` · ${t.days_per_year} days/yr` : '' }}
+            </span>
+          </div>
+          <div class="lt__actions">
+            <button class="ui-btn ui-btn--ghost ui-btn--sm" @click="editType(t)">Edit</button>
+            <button v-if="can('hr.leaves.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="deleteType(t)">Delete</button>
+          </div>
+        </div>
+        <p v-if="!props.leaveTypes.length" class="data-table__empty" style="padding: 16px 0">No leave types yet.</p>
+      </div>
+      <template #footer>
+        <button class="ui-btn ui-btn--primary" @click="showTypeModal = false">Done</button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -217,6 +258,32 @@ const deleteRow = (id) => {
   router.delete(`/hr/leaves/${id}`, { preserveScroll: true });
 };
 
+// ── Leave type management ─────────────────────────────────────────────────
+const showTypeModal = ref(false);
+const typeBlank = { id: null, name: "", days_per_year: null, is_paid: true };
+const typeForm = useForm({ ...typeBlank });
+
+const resetTypeForm = () => {
+  Object.assign(typeForm, typeBlank);
+  typeForm.clearErrors();
+};
+
+const editType = (t) => {
+  Object.assign(typeForm, { id: t.id, name: t.name, days_per_year: t.days_per_year, is_paid: !!t.is_paid });
+  typeForm.clearErrors();
+};
+
+const saveType = () => {
+  const opts = { preserveScroll: true, onSuccess: () => resetTypeForm() };
+  if (typeForm.id) typeForm.put(`/hr/leaves/types/${typeForm.id}`, opts);
+  else typeForm.post("/hr/leaves/types", opts);
+};
+
+const deleteType = (t) => {
+  if (!confirm(`Delete leave type "${t.name}"?`)) return;
+  router.delete(`/hr/leaves/types/${t.id}`, { preserveScroll: true });
+};
+
 const label = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : "—");
 const badgeClass = (s) =>
   ({ approved: "ui-badge--success", rejected: "ui-badge--muted", pending: "ui-badge--warning" }[s] ??
@@ -263,6 +330,17 @@ const badgeClass = (s) =>
   color: var(--text-soft);
   margin: -6px 0 12px;
 }
+
+/* Leave type manager */
+.lt__add        { padding-bottom: 14px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.lt__add-actions{ display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+.lt__list       { max-height: 300px; overflow-y: auto; }
+.lt__row        { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+                  padding: 9px 2px; border-bottom: 1px solid var(--border); }
+.lt__row:last-child { border-bottom: none; }
+.lt__info   { display: flex; flex-direction: column; }
+.lt__meta   { font-size: 0.75rem; color: var(--text-muted); }
+.lt__actions{ display: flex; gap: 6px; }
 
 @media (max-width: 860px) {
   .stat-grid {

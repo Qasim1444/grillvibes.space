@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\API\Admin\ReportController;
 use App\Http\Controllers\API\OrderController;
 use App\Models\Customer;
+use App\Models\Feedback;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\Order;
@@ -63,6 +64,17 @@ class DashboardController extends Controller
             ])
             ->values();
 
+        // ── Feedback (latest 5 + average rating) ─────────────────────────
+        $feedback = Feedback::with('customer:id,name')
+            ->orderByDesc('id')
+            ->take(5)
+            ->get(['id', 'customer_id', 'rating', 'comment', 'created_at']);
+
+        $feedbackStats = [
+            'avg_rating' => round((float) Feedback::avg('rating'), 1),
+            'total'      => Feedback::count(),
+        ];
+
         // ── Report blocks (reuse the existing JSON report logic) ──────────
         $summaryData = $reports->dailySummaryReport($rangeRequest)->getData(true);
         $diningData = $reports->dailySummaryReportdining($rangeRequest)->getData(true);
@@ -79,6 +91,8 @@ class DashboardController extends Controller
             'counts' => $counts,
             'recentOrders' => $recentOrders,
             'topCategories' => $topCategories,
+            'feedback' => $feedback,
+            'feedbackStats' => $feedbackStats,
             'range' => ['start_date' => $startDate, 'end_date' => $endDate],
             'reports' => [
                 'summary' => [

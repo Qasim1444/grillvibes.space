@@ -21,7 +21,6 @@ use Illuminate\Validation\ValidationException;
 /**
  * Public (unauthenticated) API powering both:
  *  - QR dine-in ordering  → guest scans QR, gets a session, browses menu, places order
- *  - Kiosk mode           → same endpoints, but the kiosk is tied to a place directly
  *
  * All responses are JSON. No Sanctum token needed.
  * CSRF is not required for API routes (stateless by default in Laravel).
@@ -63,7 +62,6 @@ class GuestMenuController extends Controller
                 ? ['id' => $qr->dining_table_id, 'number' => $qr->diningTable->table_number]
                 : null,
             'menu'            => $this->menuPayload($qr->place_id),
-            'kiosk_config'    => $this->kioskConfigPayload($qr->place_id),
         ]);
     }
 
@@ -378,60 +376,6 @@ class GuestMenuController extends Controller
             'Content-Type' => 'image/svg+xml',
             'Cache-Control' => 'public, max-age=86400',
         ]);
-    }
-
-    // ── Kiosk config (admin) ──────────────────────────────────────────────────
-
-    public function kioskConfigIndex(Request $request): \Inertia\Response
-    {
-        return \Inertia\Inertia::render('KioskConfig', [
-            'configs' => KioskConfig::with('place:id,name')->get()->map(fn ($c) => [
-                ...$c->only('id', 'place_id', 'order_types', 'splash_title', 'splash_subtitle',
-                             'accent_color', 'idle_timeout_seconds', 'require_name',
-                             'require_phone', 'is_active'),
-                'place_name' => $c->place?->name,
-            ]),
-            'places' => Place::where('status', true)->orderBy('name')->get(['id', 'name']),
-        ]);
-    }
-
-    public function kioskConfigStore(Request $request): \Illuminate\Http\RedirectResponse
-    {
-        $data = $request->validate([
-            'place_id'             => 'nullable|exists:places,id|unique:kiosk_configs,place_id',
-            'order_types'          => 'nullable|array',
-            'splash_title'         => 'nullable|string|max:100',
-            'splash_subtitle'      => 'nullable|string|max:255',
-            'accent_color'         => 'nullable|string|max:20',
-            'idle_timeout_seconds' => 'nullable|integer|min:30',
-            'require_name'         => 'boolean',
-            'require_phone'        => 'boolean',
-            'is_active'            => 'boolean',
-        ]);
-
-        KioskConfig::create($data);
-
-        return back()->with('success', 'Kiosk config saved.');
-    }
-
-    public function kioskConfigUpdate(Request $request, int $id): \Illuminate\Http\RedirectResponse
-    {
-        $config = KioskConfig::findOrFail($id);
-
-        $data = $request->validate([
-            'order_types'          => 'nullable|array',
-            'splash_title'         => 'nullable|string|max:100',
-            'splash_subtitle'      => 'nullable|string|max:255',
-            'accent_color'         => 'nullable|string|max:20',
-            'idle_timeout_seconds' => 'nullable|integer|min:30',
-            'require_name'         => 'boolean',
-            'require_phone'        => 'boolean',
-            'is_active'            => 'boolean',
-        ]);
-
-        $config->update($data);
-
-        return back()->with('success', 'Kiosk config updated.');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

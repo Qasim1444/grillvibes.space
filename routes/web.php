@@ -58,10 +58,6 @@ Route::get('/menu/{slug}', function (string $slug) {
     return Inertia::render('Guest/QRMenu', ['slug' => $slug]);
 })->name('guest.menu');
 
-Route::get('/kiosk/{placeId}', function (int $placeId) {
-    return Inertia::render('Guest/Kiosk', ['placeId' => $placeId]);
-})->name('guest.kiosk');
-
 // ── Public marketing home page ───────────────────────────────────────────────
 // Redirect the site root: authenticated users go to the dashboard, guests go
 // to the login page (no public marketing page in this admin build).
@@ -257,6 +253,14 @@ Route::middleware('auth')->group(function () {
             ->middleware('can.access:hr.leaves.approve')->name('leaves.decide');
         Route::delete('/leaves/{id}', [LeaveController::class, 'destroy'])
             ->middleware('can.access:hr.leaves.delete')->name('leaves.destroy');
+
+        // Leave types (manage the dropdown options)
+        Route::post('/leaves/types', [LeaveController::class, 'storeLeaveType'])
+            ->middleware('can.access:hr.leaves.create')->name('leaves.types.store');
+        Route::put('/leaves/types/{id}', [LeaveController::class, 'updateLeaveType'])
+            ->middleware('can.access:hr.leaves.update')->name('leaves.types.update');
+        Route::delete('/leaves/types/{id}', [LeaveController::class, 'destroyLeaveType'])
+            ->middleware('can.access:hr.leaves.delete')->name('leaves.types.destroy');
 
         // Overtime
         Route::get('/overtime', [OvertimeController::class, 'index'])
@@ -561,7 +565,7 @@ Route::middleware('auth')->group(function () {
             ->middleware('can.access:reports.food-cost.view')->name('food-cost');
     });
 
-    // ── QR Codes & Kiosk config (admin management pages) ─────────────────────
+    // ── QR Codes (admin management pages) ─────────────────────
     Route::get('/qr-codes', [GuestMenuController::class, 'qrIndex'])
         ->middleware('can.access:qr.view')->name('qr-codes.index');
     Route::get('/qr-codes/{id}/image', [GuestMenuController::class, 'qrImage'])
@@ -572,13 +576,6 @@ Route::middleware('auth')->group(function () {
         ->middleware('can.access:qr.update')->name('qr-codes.update');
     Route::delete('/qr-codes/{id}', [GuestMenuController::class, 'qrDestroy'])
         ->middleware('can.access:qr.delete')->name('qr-codes.destroy');
-
-    Route::get('/kiosk-config', [GuestMenuController::class, 'kioskConfigIndex'])
-        ->middleware('can.access:kiosk.config')->name('kiosk-config.index');
-    Route::post('/kiosk-config', [GuestMenuController::class, 'kioskConfigStore'])
-        ->middleware('can.access:kiosk.config')->name('kiosk-config.store');
-    Route::put('/kiosk-config/{id}', [GuestMenuController::class, 'kioskConfigUpdate'])
-        ->middleware('can.access:kiosk.config')->name('kiosk-config.update');
 
     // Account — profile + change password
     Route::get('/profile', [AccountController::class, 'profile'])->name('profile');

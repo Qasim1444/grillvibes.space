@@ -62,6 +62,51 @@ class LeaveController extends Controller
         ]);
     }
 
+    // ── Leave type management ─────────────────────────────────────────────────
+
+    public function storeLeaveType(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name'          => ['required', 'string', 'max:100', 'unique:leave_types,name'],
+            'days_per_year' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'is_paid'       => ['boolean'],
+        ]);
+
+        LeaveType::create($data + ['is_paid' => $data['is_paid'] ?? true]);
+
+        return back()->with('success', 'Leave type added.');
+    }
+
+    public function updateLeaveType(Request $request, int $id): RedirectResponse
+    {
+        $type = LeaveType::findOrFail($id);
+
+        $data = $request->validate([
+            'name'          => ['required', 'string', 'max:100', Rule::unique('leave_types', 'name')->ignore($id)],
+            'days_per_year' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'is_paid'       => ['boolean'],
+        ]);
+
+        $type->update($data);
+
+        return back()->with('success', 'Leave type updated.');
+    }
+
+    public function destroyLeaveType(int $id): RedirectResponse
+    {
+        $type = LeaveType::findOrFail($id);
+
+        // Existing leave requests reference this type (FK restrict) —
+        // block deletion instead of orphaning them.
+        if (Leave::where('leave_type_id', $id)->exists()) {
+            return back()->with('error', "Cannot delete “{$type->name}” — it is used by existing leave requests.");
+        }
+
+        $type->delete();
+
+        return back()->with('success', 'Leave type deleted.');
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $data = $this->validated($request);

@@ -88,6 +88,13 @@ class HomeController extends Controller
                 ->latest('published_at')
                 ->take(3)
                 ->get(['id', 'title', 'slug', 'excerpt', 'body', 'featured_image', 'published_at']),
+            // Published customer reviews for the public testimonials section
+            'feedback' => \App\Models\Feedback::query()
+                ->where('is_published', true)
+                ->with('customer:id,name')
+                ->orderByDesc('id')
+                ->take(6)
+                ->get(['id', 'customer_id', 'rating', 'comment', 'created_at']),
         ];
     }
 }

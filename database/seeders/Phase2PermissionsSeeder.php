@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
  * Seeds all Phase-2 permissions:
  *   KDS (Kitchen Display System)
  *   Reservations, Floor Plan & Waitlist
- *   QR Codes & Kiosk Config
+ *   QR Codes
  *
  * Safe to re-run — uses firstOrCreate throughout.
  */
@@ -40,8 +40,6 @@ class Phase2PermissionsSeeder extends Seeder
             ['name' => 'Update QR Codes', 'key' => 'qr.update', 'group' => 'QR & Kiosk'],
             ['name' => 'Delete QR Codes', 'key' => 'qr.delete', 'group' => 'QR & Kiosk'],
 
-            // ── Kiosk Config ──────────────────────────────────────────────────
-            ['name' => 'Manage Kiosk Config', 'key' => 'kiosk.config', 'group' => 'QR & Kiosk'],
         ];
 
         $ids = [];

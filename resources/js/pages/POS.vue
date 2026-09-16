@@ -535,7 +535,7 @@ const openTopTen = () => {
   });
 };
 
-const money = (v) => `$${Number(v || 0).toFixed(2)}`;
+const money = (v) => `Rs ${Number(v || 0).toFixed(2)}`;
 const num = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;

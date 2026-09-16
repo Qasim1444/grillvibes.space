@@ -109,7 +109,7 @@ const groups = [
   {
     title: "Content",
     items: [
-     
+
         { to: "/admin/blog", label: "Blog Posts", icon: icon.clipboard, permission: "blog.view" },
     ],
   },
@@ -164,7 +164,6 @@ const groups = [
     title: "QR & Kiosk",
     items: [
       { to: "/qr-codes",     label: "QR Codes",     icon: icon.qrcode, permission: "qr.view" },
-      { to: "/kiosk-config", label: "Kiosk Config",  icon: icon.kiosk,  permission: "kiosk.config" },
     ],
   },
   {
