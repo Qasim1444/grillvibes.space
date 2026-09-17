@@ -1,8 +1,11 @@
 <template>
   <aside class="sidebar" :class="{ 'sidebar--collapsed': state.collapsed, 'sidebar--mobile-open': state.mobileOpen }">
     <div class="sidebar__brand">
-      <div class="sidebar__logo">J</div>
-      <span class="sidebar__brand-name">GrillVibes Admin</span>
+      <div class="sidebar__logo" :class="{ 'sidebar__logo--image': logoUrl && !logoFailed }">
+        <img v-if="logoUrl && !logoFailed" :src="logoUrl" alt="GrillVibes logo" @error="logoFailed = true" />
+        <span v-else>G</span>
+      </div>
+      <span class="sidebar__brand-name">{{ page.props.branding?.name ?? 'GrillVibes' }}</span>
     </div>
 
     <nav class="sidebar__nav">
@@ -27,12 +30,15 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { useSidebar } from "../composables/useSidebar";
 import { usePermissions } from "../composables/usePermissions";
 
 const page = usePage();
+const logoUrl = computed(() => page.props.branding?.logo ?? null);
+const logoFailed = ref(false);
+watch(logoUrl, () => { logoFailed.value = false; });
 const { state, closeMobile } = useSidebar();
 const { can } = usePermissions();
 
@@ -244,17 +250,23 @@ const visibleGroups = computed(() =>
 }
 
 .sidebar__logo {
-  width: 38px;
-  height: 38px;
-  border-radius: 11px;
-  background: var(--brand);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: transparent;
   color: #fff;
   font-weight: 800;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+/* Fallback "G" tile only shows when there's no logo image — keep the
+   brand color background so the letter stays visible against the sidebar. */
+.sidebar__logo:not(.sidebar__logo--image) {
+  background: var(--brand);
 }
 
 .sidebar__brand-name {
@@ -262,6 +274,19 @@ const visibleGroups = computed(() =>
   font-size: 1.05rem;
   color: #fff;
   white-space: nowrap;
+}
+
+.sidebar__logo--image {
+  background: transparent;
+  padding: 0;
+  overflow: hidden;
+}
+
+.sidebar__logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .sidebar__nav {

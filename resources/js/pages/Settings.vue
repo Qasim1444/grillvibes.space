@@ -7,6 +7,18 @@
     </PageHeader>
 
     <DataTable :columns="columns" :rows="props.settings" index searchable search-placeholder="Search settings…">
+      <template #cell:logo="{ row }">
+        <div class="settings-logo-cell">
+          <img
+            v-if="logoSrc(row.logo)"
+            :src="logoSrc(row.logo)"
+            :alt="`${row.company || row.name || 'Company'} logo`"
+            class="settings-logo-cell__image"
+          />
+          <span v-else class="settings-logo-cell__fallback">{{ logoInitial(row) }}</span>
+        </div>
+      </template>
+
       <template #actions="{ row }">
         <button v-if="can('settings.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="editSetting(row)">Edit</button>
         <button v-if="can('settings.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="deleteSetting(row.id)">Delete</button>
@@ -30,7 +42,7 @@
         </div>
         <img
           v-else-if="existingLogo"
-          :src="existingLogo"
+          :src="logoSrc(existingLogo)"
           alt="Logo"
           style="max-width: 120px; margin-top: 10px; border-radius: 8px"
         />
@@ -66,7 +78,7 @@ const props = defineProps({
 });
 
 const columns = [
-  { key: "name", label: "Name" },
+  { key: "logo", label: "Logo", width: "110px" },
   { key: "company", label: "Company" },
   { key: "address", label: "Address" },
   { key: "email", label: "Email" },
@@ -121,6 +133,15 @@ const handleFileUpload = (event) => {
   }
 };
 
+const logoSrc = (path) => {
+  if (!path || typeof path !== "string") return null;
+  if (/^(https?:)?\/\//.test(path) || path.startsWith("/")) return path;
+  return `/${path}`;
+};
+
+const logoInitial = (setting) =>
+  (setting?.company || setting?.name || "G").trim().charAt(0).toUpperCase();
+
 const saveSetting = () => {
   const isEdit = !!form.id;
   const url = isEdit ? `/settings/${form.id}` : "/settings";
@@ -151,3 +172,33 @@ const deleteSetting = (id) => {
   router.delete(`/settings/${id}`, { preserveScroll: true });
 };
 </script>
+
+<style scoped>
+.settings-logo-cell {
+  display: inline-grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.settings-logo-cell__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+}
+
+.settings-logo-cell__fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  color: #fff;
+  background: var(--brand);
+  font-weight: 800;
+}
+</style>

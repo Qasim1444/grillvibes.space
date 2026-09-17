@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Setting;
 use App\Support\CurrentBranch;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -38,6 +39,11 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
+            'branding' => function () use ($request) {
+                $logo = $request->user() ? Setting::orderBy('id')->value('logo') : null;
+
+                return ['logo' => $logo ? asset($logo) : null];
+            },
             'auth' => [
                 'user' => $request->user()
                     ? $request->user()->only('id', 'name', 'email', 'phone', 'address')
