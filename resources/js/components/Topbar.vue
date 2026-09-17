@@ -334,4 +334,16 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
     max-width: 90px;
   }
 }
+
+@media (max-width: 640px) {
+  .topbar { height: auto; min-height: var(--topbar-h); padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
+  .topbar__left { flex: 1 1 150px; min-width: 0; gap: 8px; }
+  .topbar__title { font-size: 1rem; overflow-wrap: anywhere; }
+  .topbar__toggle { flex-shrink: 0; width: 44px; height: 44px; }
+  .topbar__right { gap: 6px; margin-left: auto; }
+  .topbar__branch-btn, .topbar__user-btn { min-height: 44px; }
+  .topbar__menu--branch { left: auto; right: 0; min-width: 160px; }
+  .topbar__menu-item { min-height: 44px; overflow-wrap: anywhere; }
+}
+
 </style>

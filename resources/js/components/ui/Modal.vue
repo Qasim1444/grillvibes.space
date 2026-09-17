@@ -144,4 +144,17 @@ onBeforeUnmount(() => {
 .ui-modal-leave-to .ui-modal__dialog {
   transform: translateY(-16px) scale(0.98);
 }
+
+@media (max-width: 640px) {
+  .ui-modal { padding: 12px; }
+  .ui-modal__dialog { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); min-width: 0; }
+  .ui-modal__header, .ui-modal__footer { padding: 12px 16px; flex-shrink: 0; gap: 8px; }
+  .ui-modal__title { overflow-wrap: anywhere; }
+  .ui-modal__body { padding: 16px; min-height: 0; max-height: none; overflow: auto; }
+  .ui-modal__body--flush { padding: 0; }
+  .ui-modal__footer { flex-wrap: wrap; }
+  .ui-modal__footer :deep(.ui-btn) { flex: 1 1 auto; }
+  .ui-modal__close { min-width: 44px; min-height: 44px; flex-shrink: 0; }
+}
+
 </style>

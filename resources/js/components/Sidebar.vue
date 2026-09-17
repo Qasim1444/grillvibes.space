@@ -370,4 +370,7 @@ const visibleGroups = computed(() =>
     z-index: 39;
   }
 }
+
+@media (max-width: 900px) { .sidebar { height: 100dvh; max-width: calc(100vw - 44px); visibility: hidden; } .sidebar--mobile-open { visibility: visible; } .sidebar__link { min-height: 44px; } }
+
 </style>

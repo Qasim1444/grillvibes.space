@@ -552,4 +552,19 @@ const submitReservation = () => {
   .reserve-form{padding:20px}.form-head{margin:-20px -20px 20px;padding:18px 20px}
   .site-footer{padding:28px 0}.footer-grid{display:block}.site-footer nav{margin:24px 0}.footer-cta{text-align:left}
 }
+
+@media (max-width: 700px) {
+  .hero > *, .reserve-section > * { min-width: 0; }
+  .hero h1 { font-size: clamp(2.35rem, 8vw, 3.45rem); overflow-wrap: break-word; }
+  .hero-actions, .site-footer nav, .form-head { flex-wrap: wrap; }
+  .reserve-form input, .reserve-form select, .reserve-form textarea { min-width: 0; font-size: 16px; }
+  .menu-toggle { min-width: 44px; min-height: 44px; }
+  .site-nav a { min-height: 44px; }
+}
+@media (max-width: 380px) {
+  .header-actions > .button { padding: 10px; font-size: .65rem; }
+  .header-actions { gap: 6px; }
+  .brand { font-size: 1.1rem; }
+}
+
 </style>

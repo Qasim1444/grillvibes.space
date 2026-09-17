@@ -131,4 +131,8 @@ function formatCell(row, col) {
   color: var(--text);
   background: transparent;
 }
+
+.data-table__search-input { min-width: 0; }
+@media (max-width: 640px) { .data-table__search-input { font-size: 16px; } .data-table__search { max-width: none; min-height: 44px; } }
+
 </style>

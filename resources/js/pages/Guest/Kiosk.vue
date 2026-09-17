@@ -388,4 +388,21 @@ const fmt = v => 'Rs ' + Number(v ?? 0).toLocaleString('en-PK', { minimumFractio
 /* Nav buttons */
 .kiosk__back { background: #f1f5f9; border: none; border-radius: 10px; padding: 14px 28px; font-size: 1rem; cursor: pointer; }
 .kiosk__next-btn { flex: 1; background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+
+@media (max-width: 900px) {
+  .kiosk__menu-layout { grid-template-columns: minmax(0, 1fr); height: auto; min-height: 100dvh; }
+  .kiosk__menu-left { overflow: visible; min-width: 0; }
+  .kiosk__items-grid { overflow: visible; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .kiosk__cart { border-left: 0; border-top: 2px solid #f1f5f9; }
+}
+@media (max-width: 480px) {
+  .kiosk__menu-header { flex-wrap: wrap; gap: 12px; padding: 16px; }
+  .kiosk__items-grid, .kiosk__cats { padding: 12px; gap: 10px; }
+  .kiosk__cart-line { grid-template-columns: minmax(0, 1fr) auto; padding: 12px; }
+  .kiosk__cl-name { grid-column: 1 / -1; overflow-wrap: anywhere; }
+  .kiosk__cl-qty button { width: 44px; height: 44px; }
+  .kiosk__attract-title { font-size: 2.5rem; }
+  .kiosk__type-select, .kiosk__confirmed { padding: 24px 16px; }
+}
+
 </style>

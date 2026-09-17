@@ -446,3 +446,21 @@ a {
 .auth-card__footer a {
     font-weight: 600;
 }
+
+/* Shared small-screen layout: allow children to shrink, with tables scrolling locally. */
+.admin__main, .admin__content, .ui-card, .ui-field { min-width: 0; }
+.data-table-wrap { max-width: 100%; overscroll-behavior-x: contain; }
+.page-header__actions { flex-wrap: wrap; max-width: 100%; }
+.ui-input, .ui-select, .ui-textarea { min-width: 0; max-width: 100%; }
+@media (max-width: 640px) {
+    .admin .page { padding: 18px 12px; }
+    .ui-card-pad { padding: 16px; }
+    .ui-card-header { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+    .page-header__title { font-size: 1.3rem; overflow-wrap: anywhere; }
+    .page-header__actions { width: 100%; }
+    .page-header__actions > .ui-btn { flex: 1 1 auto; }
+    .ui-btn { min-height: 44px; white-space: normal; line-height: 1.25; }
+    .ui-btn--icon { min-width: 44px; }
+    .ui-input, .ui-select, .ui-textarea { font-size: 16px; }
+    .data-table th, .data-table td { overflow-wrap: break-word; }
+}

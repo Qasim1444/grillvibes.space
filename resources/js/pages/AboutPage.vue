@@ -673,4 +673,7 @@ const goToLogin = () => {
     font-size: 2rem;
   }
 }
+
+@media (max-width: 640px) { .story-grid, .values-grid, .team-grid, .investors-grid { grid-template-columns: minmax(0, 1fr); } }
+
 </style>

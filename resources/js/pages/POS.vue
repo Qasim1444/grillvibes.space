@@ -1811,4 +1811,8 @@ const placeOrder = () => {
     flex-shrink: 0;
   }
 }
+
+.pos-layout > *, .pos-line__content { min-width: 0; }
+@media (max-width: 640px) { .pos-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .pos-line__name { overflow-wrap: anywhere; } }
+
 </style>

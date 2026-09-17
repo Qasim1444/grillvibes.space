@@ -109,4 +109,7 @@ const go = (url) => {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+@media (max-width: 640px) { .pager__btn { min-width: 44px; height: 44px; } }
+
 </style>
