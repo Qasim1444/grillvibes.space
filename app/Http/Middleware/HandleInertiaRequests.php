@@ -39,10 +39,16 @@ class HandleInertiaRequests extends Middleware
     {
         return [
             ...parent::share($request),
-            'branding' => function () use ($request) {
-                $logo = $request->user() ? Setting::orderBy('id')->value('logo') : null;
+            'branding' => function () {
+                $setting = Setting::query()
+                    ->orderBy('id')
+                    ->first(['name', 'company', 'logo']);
 
-                return ['logo' => $logo ? asset($logo) : null];
+                return [
+                    'name' => $setting?->name ?: 'GrillVibes',
+                    'company' => $setting?->company ?: 'GrillVibes',
+                    'logo' => $setting?->logo ? asset($setting->logo) : null,
+                ];
             },
             'auth' => [
                 'user' => $request->user()

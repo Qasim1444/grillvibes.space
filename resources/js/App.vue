@@ -14,7 +14,7 @@ import BlankLayout from "./layouts/BlankLayout.vue";
 const route = useRoute();
 
 const layout = computed(() => {
-  if (route.path === "/login" || route.path === "/register" || route.path === "/forgot-password") {
+  if (route.path === "/login") {
     return LoginLayout;
   }
   // POS is a full-screen standalone screen — no sidebar/topbar.
