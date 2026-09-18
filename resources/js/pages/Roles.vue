@@ -56,7 +56,7 @@
       <div class="ui-field">
         <div class="roles__matrix-head">
           <label class="ui-label">Permissions</label>
-          <span class="roles__count">{{ form.permission_ids.length }} of {{ props.permissions.length }} selected</span>
+          <span class="roles__count">{{ selectedVisibleCount }} of {{ visiblePermissions.length }} selected</span>
         </div>
         <p v-if="form.errors.permission_ids" class="ui-field__error">{{ form.errors.permission_ids }}</p>
 
@@ -121,9 +121,17 @@ const columns = [
 
 const roles = computed(() => props.roles?.data ?? []);
 
+const visiblePermissions = computed(() => props.permissions);
+
+const visiblePermissionIds = computed(() => visiblePermissions.value.map((p) => p.id));
+
+const selectedVisibleCount = computed(() =>
+  form.permission_ids.filter((id) => visiblePermissionIds.value.includes(id)).length
+);
+
 // Section the flat catalogue by its `group` column for the matrix layout.
 const grouped = computed(() =>
-  props.permissions.reduce((acc, p) => {
+  visiblePermissions.value.reduce((acc, p) => {
     (acc[p.group] ??= []).push(p);
     return acc;
   }, {})
@@ -165,7 +173,7 @@ const editRole = (role) => {
   form.id = role.id;
   form.name = role.name;
   form.description = role.description || "";
-  form.permission_ids = [...(role.permission_ids ?? [])];
+  form.permission_ids = (role.permission_ids ?? []).filter((id) => visiblePermissionIds.value.includes(id));
   form.clearErrors();
   showModal.value = true;
 };

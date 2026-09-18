@@ -132,7 +132,7 @@
 
             <div class="check-list">
               <div><span>✓</span>Complete Laravel + Vue restaurant platform</div>
-              <div><span>✓</span>POS, QR menu, kiosk, KDS, inventory, HR, CRM, and finance</div>
+              <div><span>✓</span>POS, QR menu, KDS, inventory, HR, CRM, and finance</div>
               <div><span>✓</span>Role-based admin workspace with web and API routes</div>
               <div><span>✓</span>Suitable for agencies, SaaS founders, and resellers</div>
               <div><span>✓</span>Ready for demo, branding, and client customization</div>
@@ -205,8 +205,8 @@
               <div class="qr-pattern"><i></i><i></i><i></i><i></i></div>
               <small>TABLE 18</small>
             </div>
-            <div class="kiosk-card">
-              <small>KIOSK ORDER</small>
+            <div class="qr-order-card">
+              <small>QR ORDER</small>
               <strong>2 × House ramen</strong>
               <span>1 × Yuzu soda</span>
               <em>Routed to kitchen →</em>
@@ -274,7 +274,7 @@ const mobileOpen = ref(false);
 
 const heroModules = [
   { label: 'POS & Orders', icon: '▣' },
-  { label: 'QR & Kiosk', icon: '◫' },
+  { label: 'QR Menu', icon: '◫' },
   { label: 'Inventory', icon: '▦' },
   { label: 'HR Payroll', icon: '♙' },
   { label: 'Finance', icon: '₨' },
@@ -284,7 +284,7 @@ const heroModules = [
 
 const extendedModules = [
   { index: '01', icon: '⌁', tone: 'violet', title: 'POS & Order Management', description: 'Dine-in, takeaway, delivery-style orders, printable receipts, promo preview, and customer lookup.', link: 'POS module', href: '/pos' },
-  { index: '02', icon: '▦', tone: 'teal', title: 'QR Menu, Kiosk & KDS', description: 'Guest QR menu, kiosk ordering, kitchen stations, live tickets, bump actions, and order status flow.', link: 'guest and kitchen flow', href: '/kds/board' },
+  { index: '02', icon: '▦', tone: 'teal', title: 'QR Menu & KDS', description: 'Guest QR menu ordering, kitchen stations, live tickets, bump actions, and order status flow.', link: 'guest and kitchen flow', href: '/kds/board' },
   { index: '03', icon: '◒', tone: 'gold', title: 'Inventory & Procurement', description: 'Ingredients, recipes, stock ledger, stock adjustment, vendors, purchase orders, and goods receipts.', link: 'inventory tools', href: '/inventory/stock' },
   { index: '04', icon: '↗', tone: 'blue', title: 'HR, Payroll & Attendance', description: 'Employees, designations, attendance punch, leave approvals, overtime, loans, deductions, and payroll runs.', link: 'HR modules', href: '/hr/attendance' },
   { index: '05', icon: '◇', tone: 'pink', title: 'CRM & Customer Growth', description: 'Customer records, loyalty settings, point adjustments, promo codes, discount campaigns, and feedback replies.', link: 'CRM modules', href: '/customers' },
@@ -382,7 +382,7 @@ const workflow = [
 .module-icon.violet{color:#a69cff;background:rgba(102,83,244,.15)}.module-icon.teal{color:#55ceb2;background:rgba(50,188,159,.12)}.module-icon.gold{color:#e4b961;background:rgba(215,167,57,.12)}.module-icon.blue{color:#77b6ff;background:rgba(80,145,230,.12)}.module-icon.pink{color:#f68eb3;background:rgba(232,82,130,.12)}.module-icon.green{color:#78d698;background:rgba(74,189,113,.12)}
 .workflow-section{background:#0d121b;border-top:1px solid #1c2533;border-bottom:1px solid #1c2533}.workflow-inner{display:grid;grid-template-columns:.8fr 1.2fr;gap:90px;padding:120px 0}.workflow-copy>p:not(.kicker){max-width:350px;color:#929cad;line-height:1.7;font-size:.9rem;margin:25px 0 30px}.flow-list{border-top:1px solid #303a4c}.flow-step{display:grid;grid-template-columns:45px 1fr;gap:20px;padding:23px 0;border-bottom:1px solid #303a4c}.flow-step>span{color:#7c70ff;font:600 .72rem 'Space Grotesk',sans-serif}.flow-step b{color:#fff;font:600 1rem 'Space Grotesk',sans-serif}.flow-step p{color:#8791a1;font-size:.72rem;line-height:1.6;margin:7px 0 0}
 .guest-section{padding:120px 0}.guest-card{position:relative;overflow:hidden;display:grid;grid-template-columns:1fr .75fr;gap:60px;align-items:center;border:1px solid #3a324e;background:radial-gradient(circle at 85% 30%,rgba(102,83,244,.27),transparent 30%),linear-gradient(135deg,#1b1930,#0e121c 64%);border-radius:18px;padding:65px 70px;box-shadow:0 30px 70px rgba(0,0,0,.3)}
-.guest-card h2{font-size:clamp(2.3rem,3.5vw,3.4rem)}.guest-copy>p:not(.kicker){max-width:500px;color:#a6afbd;font-size:.85rem;line-height:1.7;margin:25px 0}.guest-links{display:flex;flex-wrap:wrap;gap:22px}.guest-links a{color:#b7aeff;text-decoration:none;font-size:.7rem;font-weight:700}.guest-visual{position:relative;min-height:230px}.qr-card,.kiosk-card,.pos-chip{position:absolute;background:#fff;color:#161a23;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3)}.qr-card{left:8%;top:0;width:135px;height:155px;padding:16px;transform:rotate(-7deg)}.qr-card>span{font:700 1.8rem 'Space Grotesk',sans-serif}.qr-card small{display:block;margin-top:55px;font-size:.55rem;color:#677084}.qr-pattern{position:absolute;right:12px;top:14px;display:grid;grid-template-columns:repeat(2,14px);gap:7px}.qr-pattern i{width:14px;height:14px;border:4px solid #161a23}.kiosk-card{right:0;top:42px;width:195px;padding:17px;display:flex;flex-direction:column;gap:7px;transform:rotate(5deg)}.kiosk-card small{color:#5b50df;font-size:.52rem;font-weight:800}.kiosk-card strong{font:600 .82rem 'Space Grotesk',sans-serif}.kiosk-card span{color:#6e7889;font-size:.62rem}.kiosk-card em{border-top:1px solid #e8ebf0;padding-top:9px;margin-top:5px;color:#33a06b;font-style:normal;font-size:.59rem;font-weight:700}.pos-chip{left:32%;bottom:2px;padding:9px 12px;font-size:.55rem;font-weight:800;background:#27233c;color:#fff;border:1px solid #6656c9}.pos-chip span{color:#67d39a;margin-left:8px}
+.guest-card h2{font-size:clamp(2.3rem,3.5vw,3.4rem)}.guest-copy>p:not(.kicker){max-width:500px;color:#a6afbd;font-size:.85rem;line-height:1.7;margin:25px 0}.guest-links{display:flex;flex-wrap:wrap;gap:22px}.guest-links a{color:#b7aeff;text-decoration:none;font-size:.7rem;font-weight:700}.guest-visual{position:relative;min-height:230px}.qr-card,.qr-order-card,.pos-chip{position:absolute;background:#fff;color:#161a23;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.3)}.qr-card{left:8%;top:0;width:135px;height:155px;padding:16px;transform:rotate(-7deg)}.qr-card>span{font:700 1.8rem 'Space Grotesk',sans-serif}.qr-card small{display:block;margin-top:55px;font-size:.55rem;color:#677084}.qr-pattern{position:absolute;right:12px;top:14px;display:grid;grid-template-columns:repeat(2,14px);gap:7px}.qr-pattern i{width:14px;height:14px;border:4px solid #161a23}.qr-order-card{right:0;top:42px;width:195px;padding:17px;display:flex;flex-direction:column;gap:7px;transform:rotate(5deg)}.qr-order-card small{color:#5b50df;font-size:.52rem;font-weight:800}.qr-order-card strong{font:600 .82rem 'Space Grotesk',sans-serif}.qr-order-card span{color:#6e7889;font-size:.62rem}.qr-order-card em{border-top:1px solid #e8ebf0;padding-top:9px;margin-top:5px;color:#33a06b;font-style:normal;font-size:.59rem;font-weight:700}.pos-chip{left:32%;bottom:2px;padding:9px 12px;font-size:.55rem;font-weight:800;background:#27233c;color:#fff;border:1px solid #6656c9}.pos-chip span{color:#67d39a;margin-left:8px}
 .menu-showcase{padding:0 0 120px}.section-heading--menu{margin-bottom:45px}.product-menu-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.product-menu-card{overflow:hidden;border:1px solid #273142;background:#101621}.product-image{height:190px;background:#0b1018}.product-image img{width:100%;height:100%;object-fit:cover;display:block}.product-image--empty{display:grid;place-items:center;color:#6f67e8;font-weight:700}.product-menu-card__body{padding:17px}.product-menu-card__body>span{color:#8d82ff;font-size:.58rem;text-transform:uppercase;font-weight:700;letter-spacing:.08em}.product-menu-card h3{margin:9px 0 6px;color:#fff;font:600 1rem 'Space Grotesk',sans-serif}.product-menu-card p{margin:0 0 17px;color:#8993a3;font-size:.68rem;line-height:1.6}.product-menu-card strong{color:#fff;font:600 .8rem 'Space Grotesk',sans-serif}.menu-empty{border-top:1px solid #263041;padding-top:20px;color:#8f99aa}
 .final-cta{padding:0 0 120px}.final-cta-inner{display:flex;justify-content:space-between;align-items:center;gap:50px;padding:62px 68px;border-radius:18px;border:1px solid #4b405e;background:linear-gradient(135deg,#16112d,#0e131d);box-shadow:0 28px 70px rgba(0,0,0,.3)}.final-cta h2{font-size:clamp(2.4rem,4vw,4rem)}.final-cta p:not(.kicker){max-width:550px;color:#8f99aa;line-height:1.7;font-size:.85rem;margin:22px 0 0}.final-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 .site-footer{padding:35px 0;border-top:1px solid #1f2836;background:#070a10}.footer-grid{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:25px}.site-footer .brand{color:#fff}.site-footer p{color:#778293;font-size:.66rem;margin:8px 0 0}.site-footer nav{display:flex;gap:22px}.site-footer nav a,.footer-signin{color:#8d97a7;text-decoration:none;font-size:.67rem}.footer-signin{color:#fff;font-weight:700}

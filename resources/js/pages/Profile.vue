@@ -20,12 +20,12 @@
           :error="profileForm.errors.address"
         />
 
-        <button class="ui-btn ui-btn--primary" :disabled="profileForm.processing" @click="updateProfile">
+        <button v-if="can('profile.update')" class="ui-btn ui-btn--primary" :disabled="profileForm.processing" @click="updateProfile">
           {{ profileForm.processing ? "Saving…" : "Update Profile" }}
         </button>
       </div>
 
-      <div class="ui-card">
+      <div v-if="can('change-password.update')" class="ui-card">
         <div class="ui-card-header">
           <span>Change Password</span>
         </div>
@@ -69,11 +69,13 @@ import { useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
 import PageHeader from "../components/ui/PageHeader.vue";
 import FormField from "../components/ui/FormField.vue";
+import { usePermissions } from "../composables/usePermissions";
 
 defineOptions({ layout: AdminLayout });
 
 // The signed-in user is shared globally as `auth.user`; seed the form from it.
 const user = usePage().props.auth?.user ?? {};
+const { can } = usePermissions();
 
 const profileForm = useForm({
   name: user.name ?? "",

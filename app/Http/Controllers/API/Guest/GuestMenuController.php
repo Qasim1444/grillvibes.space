@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\DiningTable;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
-use App\Models\KioskConfig;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Place;
@@ -19,7 +18,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Public (unauthenticated) API powering both:
+ * Public (unauthenticated) API powering:
  *  - QR dine-in ordering  → guest scans QR, gets a session, browses menu, places order
  *
  * All responses are JSON. No Sanctum token needed.
@@ -62,42 +61,6 @@ class GuestMenuController extends Controller
                 ? ['id' => $qr->dining_table_id, 'number' => $qr->diningTable->table_number]
                 : null,
             'menu'            => $this->menuPayload($qr->place_id),
-        ]);
-    }
-
-    // ── Kiosk bootstrap ──────────────────────────────────────────────────────
-
-    /**
-     * Kiosk start — returns menu + config for a place. No QR involved.
-     * GET /api/guest/kiosk/{place_id}
-     */
-    public function kioskStart(int $placeId): JsonResponse
-    {
-        $place = Place::where('id', $placeId)->where('status', true)->first();
-
-        if (! $place) {
-            return response()->json(['error' => 'Branch not found.'], 404);
-        }
-
-        $config = KioskConfig::forPlace($placeId);
-
-        if (! $config->is_active) {
-            return response()->json(['error' => 'Kiosk is not active for this branch.'], 403);
-        }
-
-        // Create a kiosk session (linked to place, no QR, no table)
-        $session = QrSession::create([
-            'session_token' => QrSession::generateToken(),
-            'place_id'      => $placeId,
-            'status'        => 'active',
-            'expires_at'    => now()->addHours(1),
-        ]);
-
-        return response()->json([
-            'session_token' => $session->session_token,
-            'place'         => ['id' => $place->id, 'name' => $place->name],
-            'menu'          => $this->menuPayload($placeId),
-            'kiosk_config'  => $this->kioskConfigPayload($placeId),
         ]);
     }
 
@@ -399,22 +362,6 @@ class GuestMenuController extends Controller
             ]);
 
         return ['categories' => $categories, 'items' => $items];
-    }
-
-    private function kioskConfigPayload(?int $placeId): array
-    {
-        $config = KioskConfig::forPlace($placeId);
-
-        return [
-            'order_types'          => $config->order_types ?? ['dine_in', 'takeaway'],
-            'splash_title'         => $config->splash_title ?? 'Welcome',
-            'splash_subtitle'      => $config->splash_subtitle ?? 'Tap to order',
-            'splash_image'         => $config->splash_image,
-            'accent_color'         => $config->accent_color ?? '#6366f1',
-            'idle_timeout_seconds' => $config->idle_timeout_seconds ?? 120,
-            'require_name'         => (bool) $config->require_name,
-            'require_phone'        => (bool) $config->require_phone,
-        ];
     }
 
     private function resolveSession(?string $token): QrSession

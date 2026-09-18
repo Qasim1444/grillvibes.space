@@ -104,8 +104,8 @@ Route::post('/whatsapp/send-media', [WhatsAppChatController::class, 'sendMedia']
 Route::get('/whatsapp/calls', [WhatsAppChatController::class, 'calls']);
 Route::post('/whatsapp/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);
 
-// ── Guest / QR / Kiosk — public, no auth ─────────────────────────────────────
-// These routes serve the guest-facing QR menu and kiosk ordering flow.
+// ── Guest / QR — public, no auth ─────────────────────────────────────────────
+// These routes serve the guest-facing QR menu ordering flow.
 // No Sanctum middleware — the session_token in the request body is the auth.
 Route::prefix('guest')->name('guest.')->group(function () {
     // QR scan → creates session + returns menu

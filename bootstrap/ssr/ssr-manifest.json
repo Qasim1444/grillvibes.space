@@ -4,20 +4,20 @@
   ],
   "node_modules/laravel-vite-plugin/inertia-helpers/index.js": [],
   "resources/js/components/Sidebar.vue": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
-  "resources/js/components/Sidebar.vue?vue&type=style&index=0&scoped=37d3812b&lang.css": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+  "resources/js/components/Sidebar.vue?vue&type=style&index=0&scoped=f8492592&lang.css": [
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/components/Topbar.vue": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/components/Topbar.vue?vue&type=style&index=0&scoped=87f4162a&lang.css": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/components/ui/CustomerPicker.vue": [
     "/build/assets/CustomerPicker-Bya7Uknk.js",
@@ -69,20 +69,20 @@
     "/build/assets/useNotifications-CvzCW6Mx.js"
   ],
   "resources/js/composables/usePermissions.js": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/composables/useSidebar.js": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/layouts/AdminLayout.vue": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/layouts/AdminLayout.vue?vue&type=style&index=0&scoped=26586321&lang.css": [
-    "/build/assets/AdminLayout-BhC2A239.js",
-    "/build/assets/AdminLayout-BJ6akXP1.css"
+    "/build/assets/AdminLayout-D618cxCi.js",
+    "/build/assets/AdminLayout-CTpSDK4C.css"
   ],
   "resources/js/layouts/LoginLayout.vue": [
     "/build/assets/Login-p7KWldUU.js",
@@ -117,47 +117,47 @@
     "/build/assets/AdminLoginPage-Cb7a_cr0.css"
   ],
   "resources/js/pages/Blog.vue": [
-    "/build/assets/Blog-Bsmi3Ss4.js",
+    "/build/assets/Blog-DHriuYfX.js",
     "/build/assets/Blog-CvSt1Dfs.css"
   ],
   "resources/js/pages/Blog.vue?vue&type=style&index=0&scoped=eef4b681&lang.css": [
-    "/build/assets/Blog-Bsmi3Ss4.js",
+    "/build/assets/Blog-DHriuYfX.js",
     "/build/assets/Blog-CvSt1Dfs.css"
   ],
   "resources/js/pages/CRM/Discounts.vue": [
-    "/build/assets/Discounts-BJCgOa97.js",
+    "/build/assets/Discounts-BBzL83JM.js",
     "/build/assets/Discounts-BqmX7_7K.css"
   ],
   "resources/js/pages/CRM/Discounts.vue?vue&type=style&index=0&scoped=ce795034&lang.css": [
-    "/build/assets/Discounts-BJCgOa97.js",
+    "/build/assets/Discounts-BBzL83JM.js",
     "/build/assets/Discounts-BqmX7_7K.css"
   ],
   "resources/js/pages/CRM/Feedback.vue": [
-    "/build/assets/Feedback-BytkrfnH.js",
+    "/build/assets/Feedback-xj6bGhme.js",
     "/build/assets/Feedback-DH6uCYKg.css"
   ],
   "resources/js/pages/CRM/Feedback.vue?vue&type=style&index=0&scoped=5ea8971a&lang.css": [
-    "/build/assets/Feedback-BytkrfnH.js",
+    "/build/assets/Feedback-xj6bGhme.js",
     "/build/assets/Feedback-DH6uCYKg.css"
   ],
   "resources/js/pages/CRM/Loyalty.vue": [
-    "/build/assets/Loyalty-DoM8A4GA.js",
+    "/build/assets/Loyalty-Bh5Ov6Ty.js",
     "/build/assets/Loyalty-CswPEKw0.css"
   ],
   "resources/js/pages/CRM/Loyalty.vue?vue&type=style&index=0&scoped=e91273fb&lang.css": [
-    "/build/assets/Loyalty-DoM8A4GA.js",
+    "/build/assets/Loyalty-Bh5Ov6Ty.js",
     "/build/assets/Loyalty-CswPEKw0.css"
   ],
   "resources/js/pages/CRM/PromoCodes.vue": [
-    "/build/assets/PromoCodes-XXisp9hc.js",
+    "/build/assets/PromoCodes-CFBvYjTA.js",
     "/build/assets/PromoCodes-qZvhhwt7.css"
   ],
   "resources/js/pages/CRM/PromoCodes.vue?vue&type=style&index=0&scoped=04077f65&lang.css": [
-    "/build/assets/PromoCodes-XXisp9hc.js",
+    "/build/assets/PromoCodes-CFBvYjTA.js",
     "/build/assets/PromoCodes-qZvhhwt7.css"
   ],
   "resources/js/pages/ChangePassword.vue": [
-    "/build/assets/ChangePassword-BTtWWsOx.js"
+    "/build/assets/ChangePassword-D55i1QWm.js"
   ],
   "resources/js/pages/ContactPage.vue": [
     "/build/assets/ContactPage-B0wpNQ4B.js",
@@ -168,19 +168,19 @@
     "/build/assets/ContactPage-Df5Uuaiw.css"
   ],
   "resources/js/pages/Customers.vue": [
-    "/build/assets/Customers-DHAUjPjK.js",
+    "/build/assets/Customers-DT2SFpPd.js",
     "/build/assets/Customers-kj12t24V.css"
   ],
   "resources/js/pages/Customers.vue?vue&type=style&index=0&scoped=2cba5b1a&lang.css": [
-    "/build/assets/Customers-DHAUjPjK.js",
+    "/build/assets/Customers-DT2SFpPd.js",
     "/build/assets/Customers-kj12t24V.css"
   ],
   "resources/js/pages/Dashboard.vue": [
-    "/build/assets/Dashboard-tIXzRbJJ.js",
+    "/build/assets/Dashboard-3llmex1M.js",
     "/build/assets/Dashboard-jRzn-bJt.css"
   ],
   "resources/js/pages/Dashboard.vue?vue&type=style&index=0&scoped=b7818330&lang.css": [
-    "/build/assets/Dashboard-tIXzRbJJ.js",
+    "/build/assets/Dashboard-3llmex1M.js",
     "/build/assets/Dashboard-jRzn-bJt.css"
   ],
   "resources/js/pages/FeaturesPage.vue": [
@@ -192,116 +192,108 @@
     "/build/assets/FeaturesPage-BeGhJMdW.css"
   ],
   "resources/js/pages/Finance/Expenses.vue": [
-    "/build/assets/Expenses-D44LE1Ge.js",
+    "/build/assets/Expenses-CE1FpqiU.js",
     "/build/assets/Expenses-DKKHs1I3.css"
   ],
   "resources/js/pages/Finance/Expenses.vue?vue&type=style&index=0&scoped=a1dafb6b&lang.css": [
-    "/build/assets/Expenses-D44LE1Ge.js",
+    "/build/assets/Expenses-CE1FpqiU.js",
     "/build/assets/Expenses-DKKHs1I3.css"
   ],
   "resources/js/pages/Finance/PettyCash.vue": [
-    "/build/assets/PettyCash-ocYvLalY.js",
+    "/build/assets/PettyCash-CpsDk_oR.js",
     "/build/assets/PettyCash-B2SNjAM8.css"
   ],
   "resources/js/pages/Finance/PettyCash.vue?vue&type=style&index=0&scoped=55e1adb4&lang.css": [
-    "/build/assets/PettyCash-ocYvLalY.js",
+    "/build/assets/PettyCash-CpsDk_oR.js",
     "/build/assets/PettyCash-B2SNjAM8.css"
   ],
   "resources/js/pages/Finance/Vouchers.vue": [
-    "/build/assets/Vouchers-TRBeNBJE.js",
+    "/build/assets/Vouchers-5POHV5co.js",
     "/build/assets/Vouchers-BgnnRWD_.css"
   ],
   "resources/js/pages/Finance/Vouchers.vue?vue&type=style&index=0&scoped=1b6b9244&lang.css": [
-    "/build/assets/Vouchers-TRBeNBJE.js",
+    "/build/assets/Vouchers-5POHV5co.js",
     "/build/assets/Vouchers-BgnnRWD_.css"
   ],
   "resources/js/pages/FoodCategories.vue": [
-    "/build/assets/FoodCategories-Byt2dg5u.js"
+    "/build/assets/FoodCategories-DaUQG9W5.js"
   ],
   "resources/js/pages/FoodItems.vue": [
-    "/build/assets/FoodItems-YGPssXzB.js",
-    "/build/assets/FoodItems-B-GCcz9B.css"
+    "/build/assets/FoodItems-BnLG0Orj.js",
+    "/build/assets/FoodItems-B9h0uhBd.css"
   ],
-  "resources/js/pages/FoodItems.vue?vue&type=style&index=0&scoped=24f7481e&lang.css": [
-    "/build/assets/FoodItems-YGPssXzB.js",
-    "/build/assets/FoodItems-B-GCcz9B.css"
+  "resources/js/pages/FoodItems.vue?vue&type=style&index=0&scoped=59ecb552&lang.css": [
+    "/build/assets/FoodItems-BnLG0Orj.js",
+    "/build/assets/FoodItems-B9h0uhBd.css"
   ],
   "resources/js/pages/ForgotPassword.vue": [
     "/build/assets/ForgotPassword-CbGU5rZU.js"
   ],
-  "resources/js/pages/Guest/Kiosk.vue": [
-    "/build/assets/Kiosk-ChLi300B.js",
-    "/build/assets/Kiosk-BTHssLQc.css"
-  ],
-  "resources/js/pages/Guest/Kiosk.vue?vue&type=style&index=0&scoped=82635177&lang.css": [
-    "/build/assets/Kiosk-ChLi300B.js",
-    "/build/assets/Kiosk-BTHssLQc.css"
-  ],
   "resources/js/pages/Guest/QRMenu.vue": [
-    "/build/assets/QRMenu-BBMp07EI.js",
-    "/build/assets/QRMenu-9brZ7jtD.css"
+    "/build/assets/QRMenu-DIvJKtme.js",
+    "/build/assets/QRMenu-BSJrc0GE.css"
   ],
-  "resources/js/pages/Guest/QRMenu.vue?vue&type=style&index=0&scoped=6f74139b&lang.css": [
-    "/build/assets/QRMenu-BBMp07EI.js",
-    "/build/assets/QRMenu-9brZ7jtD.css"
+  "resources/js/pages/Guest/QRMenu.vue?vue&type=style&index=0&scoped=453532df&lang.css": [
+    "/build/assets/QRMenu-DIvJKtme.js",
+    "/build/assets/QRMenu-BSJrc0GE.css"
   ],
   "resources/js/pages/HR/Attendance.vue": [
-    "/build/assets/Attendance-B0i0ksCY.js",
+    "/build/assets/Attendance-BlBQLr9s.js",
     "/build/assets/Attendance-BdoLGndQ.css"
   ],
   "resources/js/pages/HR/Attendance.vue?vue&type=style&index=0&scoped=6546aac5&lang.css": [
-    "/build/assets/Attendance-B0i0ksCY.js",
+    "/build/assets/Attendance-BlBQLr9s.js",
     "/build/assets/Attendance-BdoLGndQ.css"
   ],
   "resources/js/pages/HR/AttendancePunch.vue": [
-    "/build/assets/AttendancePunch-JsxnS6IP.js",
+    "/build/assets/AttendancePunch-zCWWZHBP.js",
     "/build/assets/AttendancePunch-DNtNJ9GV.css"
   ],
   "resources/js/pages/HR/AttendancePunch.vue?vue&type=style&index=0&scoped=11546beb&lang.css": [
-    "/build/assets/AttendancePunch-JsxnS6IP.js",
+    "/build/assets/AttendancePunch-zCWWZHBP.js",
     "/build/assets/AttendancePunch-DNtNJ9GV.css"
   ],
   "resources/js/pages/HR/Designations.vue": [
-    "/build/assets/Designations-BZLcFn5G.js"
+    "/build/assets/Designations-DPD8eThZ.js"
   ],
   "resources/js/pages/HR/Employees.vue": [
-    "/build/assets/Employees-BqTpqu0z.js",
+    "/build/assets/Employees-Bf3Zdo1w.js",
     "/build/assets/Employees-D6n4zPee.css"
   ],
   "resources/js/pages/HR/Employees.vue?vue&type=style&index=0&scoped=44a76143&lang.css": [
-    "/build/assets/Employees-BqTpqu0z.js",
+    "/build/assets/Employees-Bf3Zdo1w.js",
     "/build/assets/Employees-D6n4zPee.css"
   ],
   "resources/js/pages/HR/Leaves.vue": [
-    "/build/assets/Leaves-DsHSrmZH.js",
+    "/build/assets/Leaves-HVTTiY44.js",
     "/build/assets/Leaves-DR3_xn22.css"
   ],
   "resources/js/pages/HR/Leaves.vue?vue&type=style&index=0&scoped=443d6ef9&lang.css": [
-    "/build/assets/Leaves-DsHSrmZH.js",
+    "/build/assets/Leaves-HVTTiY44.js",
     "/build/assets/Leaves-DR3_xn22.css"
   ],
   "resources/js/pages/HR/Loans.vue": [
-    "/build/assets/Loans-DdgUEWqq.js",
+    "/build/assets/Loans-eDH926Tr.js",
     "/build/assets/Loans-DQqO9qul.css"
   ],
   "resources/js/pages/HR/Loans.vue?vue&type=style&index=0&scoped=57e71f9a&lang.css": [
-    "/build/assets/Loans-DdgUEWqq.js",
+    "/build/assets/Loans-eDH926Tr.js",
     "/build/assets/Loans-DQqO9qul.css"
   ],
   "resources/js/pages/HR/Overtime.vue": [
-    "/build/assets/Overtime-CfSbfHCW.js",
+    "/build/assets/Overtime-CUXJ7jnX.js",
     "/build/assets/Overtime-DuwG2KA9.css"
   ],
   "resources/js/pages/HR/Overtime.vue?vue&type=style&index=0&scoped=c605aa86&lang.css": [
-    "/build/assets/Overtime-CfSbfHCW.js",
+    "/build/assets/Overtime-CUXJ7jnX.js",
     "/build/assets/Overtime-DuwG2KA9.css"
   ],
   "resources/js/pages/HR/Payroll.vue": [
-    "/build/assets/Payroll-JS77FH8l.js",
+    "/build/assets/Payroll-DnBWnO0i.js",
     "/build/assets/Payroll-D7aiFON8.css"
   ],
   "resources/js/pages/HR/Payroll.vue?vue&type=style&index=0&scoped=9cecce2d&lang.css": [
-    "/build/assets/Payroll-JS77FH8l.js",
+    "/build/assets/Payroll-DnBWnO0i.js",
     "/build/assets/Payroll-D7aiFON8.css"
   ],
   "resources/js/pages/HomePage.vue": [
@@ -313,27 +305,27 @@
     "/build/assets/HomePage-7gMI3-KI.css"
   ],
   "resources/js/pages/Inventory/Ingredients.vue": [
-    "/build/assets/Ingredients-BGZQJWV_.js",
+    "/build/assets/Ingredients-CGLbEStB.js",
     "/build/assets/Ingredients-Dp9uwivC.css"
   ],
   "resources/js/pages/Inventory/Ingredients.vue?vue&type=style&index=0&scoped=4ca25eb8&lang.css": [
-    "/build/assets/Ingredients-BGZQJWV_.js",
+    "/build/assets/Ingredients-CGLbEStB.js",
     "/build/assets/Ingredients-Dp9uwivC.css"
   ],
   "resources/js/pages/Inventory/Recipes.vue": [
-    "/build/assets/Recipes-CkxApcMF.js",
+    "/build/assets/Recipes-CiDfCvvl.js",
     "/build/assets/Recipes-B3p5mvXV.css"
   ],
   "resources/js/pages/Inventory/Recipes.vue?vue&type=style&index=0&scoped=9aa3599b&lang.css": [
-    "/build/assets/Recipes-CkxApcMF.js",
+    "/build/assets/Recipes-CiDfCvvl.js",
     "/build/assets/Recipes-B3p5mvXV.css"
   ],
   "resources/js/pages/Inventory/Stock.vue": [
-    "/build/assets/Stock-BdOsomnW.js",
+    "/build/assets/Stock-vL7bySR2.js",
     "/build/assets/Stock-Bkiob9Rd.css"
   ],
   "resources/js/pages/Inventory/Stock.vue?vue&type=style&index=0&scoped=56204057&lang.css": [
-    "/build/assets/Stock-BdOsomnW.js",
+    "/build/assets/Stock-vL7bySR2.js",
     "/build/assets/Stock-Bkiob9Rd.css"
   ],
   "resources/js/pages/KDS/Board.vue": [
@@ -345,11 +337,11 @@
     "/build/assets/Board-D7fj00Q1.css"
   ],
   "resources/js/pages/KDS/Stations.vue": [
-    "/build/assets/Stations-VE9IdC9Y.js",
+    "/build/assets/Stations-CWt359AB.js",
     "/build/assets/Stations-iVTc7aKZ.css"
   ],
   "resources/js/pages/KDS/Stations.vue?vue&type=style&index=0&scoped=38ec4fb5&lang.css": [
-    "/build/assets/Stations-VE9IdC9Y.js",
+    "/build/assets/Stations-CWt359AB.js",
     "/build/assets/Stations-iVTc7aKZ.css"
   ],
   "resources/js/pages/Login.vue": [
@@ -361,27 +353,27 @@
     "/build/assets/Login-CR4Excgj.css"
   ],
   "resources/js/pages/Maintenance/Assets.vue": [
-    "/build/assets/Assets-Dc6NZ6gH.js",
+    "/build/assets/Assets-wAKhP7vy.js",
     "/build/assets/Assets-BNDyM-ar.css"
   ],
   "resources/js/pages/Maintenance/Assets.vue?vue&type=style&index=0&scoped=377b8cb5&lang.css": [
-    "/build/assets/Assets-Dc6NZ6gH.js",
+    "/build/assets/Assets-wAKhP7vy.js",
     "/build/assets/Assets-BNDyM-ar.css"
   ],
   "resources/js/pages/Maintenance/MaintenanceLogs.vue": [
-    "/build/assets/MaintenanceLogs-CwV44nUa.js",
+    "/build/assets/MaintenanceLogs-B6LaqaCf.js",
     "/build/assets/MaintenanceLogs-pne4FZ3z.css"
   ],
   "resources/js/pages/Maintenance/MaintenanceLogs.vue?vue&type=style&index=0&scoped=261ec578&lang.css": [
-    "/build/assets/MaintenanceLogs-CwV44nUa.js",
+    "/build/assets/MaintenanceLogs-B6LaqaCf.js",
     "/build/assets/MaintenanceLogs-pne4FZ3z.css"
   ],
   "resources/js/pages/Orders.vue": [
-    "/build/assets/Orders-DqaSJAJp.js",
+    "/build/assets/Orders-CYgsxEjI.js",
     "/build/assets/Orders-BFcZmpFt.css"
   ],
   "resources/js/pages/Orders.vue?vue&type=style&index=0&scoped=1bcf24d0&lang.css": [
-    "/build/assets/Orders-DqaSJAJp.js",
+    "/build/assets/Orders-CYgsxEjI.js",
     "/build/assets/Orders-BFcZmpFt.css"
   ],
   "resources/js/pages/POS.vue": [
@@ -393,7 +385,7 @@
     "/build/assets/POS-abxXmN6Y.css"
   ],
   "resources/js/pages/Places.vue": [
-    "/build/assets/Places-DuwfR4Fd.js"
+    "/build/assets/Places-GhZ6q9bL.js"
   ],
   "resources/js/pages/PricingPage.vue": [
     "/build/assets/PricingPage-DN3Gr8cc.js",
@@ -404,44 +396,44 @@
     "/build/assets/PricingPage-BT74JQpA.css"
   ],
   "resources/js/pages/Procurement/GoodsReceipts.vue": [
-    "/build/assets/GoodsReceipts-Bxr9pIbc.js",
+    "/build/assets/GoodsReceipts-CNvKokxa.js",
     "/build/assets/GoodsReceipts-CeckZUfB.css"
   ],
   "resources/js/pages/Procurement/GoodsReceipts.vue?vue&type=style&index=0&scoped=124657af&lang.css": [
-    "/build/assets/GoodsReceipts-Bxr9pIbc.js",
+    "/build/assets/GoodsReceipts-CNvKokxa.js",
     "/build/assets/GoodsReceipts-CeckZUfB.css"
   ],
   "resources/js/pages/Procurement/PurchaseOrders.vue": [
-    "/build/assets/PurchaseOrders-BMqN4Fxb.js",
+    "/build/assets/PurchaseOrders-CHGyu4nc.js",
     "/build/assets/PurchaseOrders-DEKADuLD.css"
   ],
   "resources/js/pages/Procurement/PurchaseOrders.vue?vue&type=style&index=0&scoped=bfc1de83&lang.css": [
-    "/build/assets/PurchaseOrders-BMqN4Fxb.js",
+    "/build/assets/PurchaseOrders-CHGyu4nc.js",
     "/build/assets/PurchaseOrders-DEKADuLD.css"
   ],
   "resources/js/pages/Procurement/Vendors.vue": [
-    "/build/assets/Vendors-CLttX0dW.js",
+    "/build/assets/Vendors-BdnWR8xg.js",
     "/build/assets/Vendors-BySm8l9p.css"
   ],
   "resources/js/pages/Procurement/Vendors.vue?vue&type=style&index=0&scoped=1442a70e&lang.css": [
-    "/build/assets/Vendors-CLttX0dW.js",
+    "/build/assets/Vendors-BdnWR8xg.js",
     "/build/assets/Vendors-BySm8l9p.css"
   ],
   "resources/js/pages/ProductPage.vue": [
-    "/build/assets/ProductPage-IT1nCOE5.js",
-    "/build/assets/ProductPage-Bm1tTbly.css"
+    "/build/assets/ProductPage-CWVDr3am.js",
+    "/build/assets/ProductPage-SnYmo44p.css"
   ],
-  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=35373aa6&lang.css": [
-    "/build/assets/ProductPage-IT1nCOE5.js",
-    "/build/assets/ProductPage-Bm1tTbly.css"
+  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=4fe8ebc4&lang.css": [
+    "/build/assets/ProductPage-CWVDr3am.js",
+    "/build/assets/ProductPage-SnYmo44p.css"
   ],
   "resources/js/pages/Profile.vue": [
-    "/build/assets/Profile-BTrYfO70.js",
-    "/build/assets/Profile-DKk5y44X.css"
+    "/build/assets/Profile-jztqXbPc.js",
+    "/build/assets/Profile-Ckslprdo.css"
   ],
-  "resources/js/pages/Profile.vue?vue&type=style&index=0&scoped=f476cff2&lang.css": [
-    "/build/assets/Profile-BTrYfO70.js",
-    "/build/assets/Profile-DKk5y44X.css"
+  "resources/js/pages/Profile.vue?vue&type=style&index=0&scoped=87a3268c&lang.css": [
+    "/build/assets/Profile-jztqXbPc.js",
+    "/build/assets/Profile-Ckslprdo.css"
   ],
   "resources/js/pages/PublicBlog.vue": [
     "/build/assets/PublicBlog-B-G0dpdy.js",
@@ -460,62 +452,62 @@
     "/build/assets/PublicBlogPost-BOXAT0NU.css"
   ],
   "resources/js/pages/QRCodes.vue": [
-    "/build/assets/QRCodes-DTQQagaS.js",
+    "/build/assets/QRCodes-BXu0jrnB.js",
     "/build/assets/QRCodes-BuVNqvvm.css"
   ],
   "resources/js/pages/QRCodes.vue?vue&type=style&index=0&scoped=6d1b6105&lang.css": [
-    "/build/assets/QRCodes-DTQQagaS.js",
+    "/build/assets/QRCodes-BXu0jrnB.js",
     "/build/assets/QRCodes-BuVNqvvm.css"
   ],
   "resources/js/pages/Register.vue": [
     "/build/assets/Register-B0uYGzjT.js"
   ],
   "resources/js/pages/Reports/FoodCost.vue": [
-    "/build/assets/FoodCost-O5OOeWuk.js",
+    "/build/assets/FoodCost-DrmtvZ_5.js",
     "/build/assets/FoodCost-CyU0lUR1.css"
   ],
   "resources/js/pages/Reports/FoodCost.vue?vue&type=style&index=0&scoped=7abfb395&lang.css": [
-    "/build/assets/FoodCost-O5OOeWuk.js",
+    "/build/assets/FoodCost-DrmtvZ_5.js",
     "/build/assets/FoodCost-CyU0lUR1.css"
   ],
   "resources/js/pages/Reservations/FloorPlan.vue": [
-    "/build/assets/FloorPlan-dt-CbOY8.js",
+    "/build/assets/FloorPlan-CHi4vxPZ.js",
     "/build/assets/FloorPlan-Dr_ZAC0M.css"
   ],
   "resources/js/pages/Reservations/FloorPlan.vue?vue&type=style&index=0&scoped=07130a9a&lang.css": [
-    "/build/assets/FloorPlan-dt-CbOY8.js",
+    "/build/assets/FloorPlan-CHi4vxPZ.js",
     "/build/assets/FloorPlan-Dr_ZAC0M.css"
   ],
   "resources/js/pages/Reservations/Index.vue": [
-    "/build/assets/Index-vEP2W6QT.js",
+    "/build/assets/Index-3XJkiu-k.js",
     "/build/assets/Index-Cv_IwH-C.css"
   ],
   "resources/js/pages/Reservations/Index.vue?vue&type=style&index=0&scoped=e9fccdc5&lang.css": [
-    "/build/assets/Index-vEP2W6QT.js",
+    "/build/assets/Index-3XJkiu-k.js",
     "/build/assets/Index-Cv_IwH-C.css"
   ],
   "resources/js/pages/Roles.vue": [
-    "/build/assets/Roles-C7sv4QIm.js",
-    "/build/assets/Roles-Be-zx_UJ.css"
+    "/build/assets/Roles-Bqwd8aCC.js",
+    "/build/assets/Roles-B0o3BLb1.css"
   ],
-  "resources/js/pages/Roles.vue?vue&type=style&index=0&scoped=2b15fa8d&lang.css": [
-    "/build/assets/Roles-C7sv4QIm.js",
-    "/build/assets/Roles-Be-zx_UJ.css"
+  "resources/js/pages/Roles.vue?vue&type=style&index=0&scoped=39331f85&lang.css": [
+    "/build/assets/Roles-Bqwd8aCC.js",
+    "/build/assets/Roles-B0o3BLb1.css"
   ],
   "resources/js/pages/Settings.vue": [
-    "/build/assets/Settings-5WEVuGMj.js",
+    "/build/assets/Settings-BvK8LxAe.js",
     "/build/assets/Settings-CsYHTJB7.css"
   ],
   "resources/js/pages/Settings.vue?vue&type=style&index=0&scoped=17d85182&lang.css": [
-    "/build/assets/Settings-5WEVuGMj.js",
+    "/build/assets/Settings-BvK8LxAe.js",
     "/build/assets/Settings-CsYHTJB7.css"
   ],
   "resources/js/pages/Users.vue": [
-    "/build/assets/Users-DlcmiJia.js",
+    "/build/assets/Users-Dozj_RSl.js",
     "/build/assets/Users-BInBMn01.css"
   ],
   "resources/js/pages/Users.vue?vue&type=style&index=0&scoped=8149b33d&lang.css": [
-    "/build/assets/Users-DlcmiJia.js",
+    "/build/assets/Users-Dozj_RSl.js",
     "/build/assets/Users-BInBMn01.css"
   ],
   "resources/js/services/api.js": [
@@ -525,7 +517,7 @@
     "/build/assets/api-DWk_W29k.js"
   ],
   "resources/js/services/whatsapp.js": [
-    "/build/assets/Customers-DHAUjPjK.js",
+    "/build/assets/Customers-DT2SFpPd.js",
     "/build/assets/Customers-kj12t24V.css"
   ],
   "resources/js/ssr.js": []

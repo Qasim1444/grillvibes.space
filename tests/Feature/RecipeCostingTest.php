@@ -264,12 +264,12 @@ class RecipeCostingTest extends TestCase
 
     public function test_cost_is_scoped_per_branch(): void
     {
-        $other = Branch::create(['name' => 'Airport Kiosk', 'status' => true]);
+        $other = Branch::create(['name' => 'Airport Counter', 'status' => true]);
 
         $flour = Ingredient::factory()->unit('kg')->create();
 
         $this->receive($flour, 10, 100); // main kitchen buys at 100
-        app(StockService::class)->receive($other->id, $flour->id, 10, 400); // kiosk pays 400
+        app(StockService::class)->receive($other->id, $flour->id, 10, 400); // other outlet pays 400
 
         $dish = $this->dish($flour, 1, 1000);
 

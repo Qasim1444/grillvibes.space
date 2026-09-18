@@ -4,14 +4,14 @@ GrillVibes is a restaurant operations platform for running the complete service 
 
 ## What the app covers
 
-- **Front of house** — POS, orders, customers, branches, dining tables, reservations, QR menus, and kiosk ordering.
+- **Front of house** — POS, orders, customers, branches, dining tables, reservations, and QR menus.
 - **Kitchen operations** — kitchen display stations, live ticket boards, preparation workflows, food items, categories, recipes, and food-cost reporting.
 - **Inventory and procurement** — ingredients, stock, recipes, vendors, purchase orders, and goods receipts.
 - **People and finance** — employees, attendance, leave, overtime, loans, payroll, expenses, vouchers, petty cash, and role-based permissions.
 - **Customer growth** — loyalty, promo codes, discount campaigns, feedback, blogs, and customer records.
 - **Operations control** — multi-branch administration, assets, maintenance logs, settings, WhatsApp device pairing, and activity visibility.
 
-The public home page introduces the product at `/`. Authenticated team members use `/dashboard`; public guest ordering is available through `/menu/{slug}` and `/kiosk/{placeId}`.
+The public home page introduces the product at `/`. Authenticated team members use `/dashboard`; public guest ordering is available through `/menu/{slug}`.
 
 ## Tech stack
 
@@ -44,7 +44,6 @@ The public home page introduces the product at `/`. Authenticated team members u
 | `/pos` | Point of sale |
 | `/orders` | Order management |
 | `/menu/{slug}` | Public QR menu |
-| `/kiosk/{placeId}` | Public kiosk ordering |
 | `/board` | Kitchen display board |
 | `/inventory/*` | Stock, ingredients, and recipes |
 | `/procurement/*` | Vendors, purchase orders, and goods receipts |

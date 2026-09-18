@@ -46,6 +46,10 @@ class PermissionSeeder extends Seeder
                 'customers' => ['Customers', ['view', 'create', 'update', 'delete']],
                 'roles' => ['Roles & Permissions', ['view', 'create', 'update', 'delete']],
             ],
+            'Account' => [
+                'profile' => ['Profile', ['view', 'update']],
+                'change-password' => ['Change Password', ['view', 'update']],
+            ],
             'HR' => [
                 'hr.designations' => ['Designations', ['view', 'create', 'update', 'delete']],
                 'hr.employees' => ['Employees', ['view', 'create', 'update', 'delete']],

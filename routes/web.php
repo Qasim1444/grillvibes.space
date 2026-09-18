@@ -52,7 +52,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 });
 
-// ── Public QR menu & Kiosk (no auth required) ────────────────────────────────
+// ── Public QR menu (no auth required) ────────────────────────────────────────
 // These render the guest-facing Vue SPA. Data comes via /api/guest/* endpoints.
 Route::get('/menu/{slug}', function (string $slug) {
     return Inertia::render('Guest/QRMenu', ['slug' => $slug]);
@@ -578,10 +578,14 @@ Route::middleware('auth')->group(function () {
         ->middleware('can.access:qr.delete')->name('qr-codes.destroy');
 
     // Account — profile + change password
-    Route::get('/profile', [AccountController::class, 'profile'])->name('profile');
-    Route::put('/profile', [AccountController::class, 'updateProfile'])->name('profile.update');
-    Route::get('/change-password', [AccountController::class, 'changePasswordForm'])->name('change-password');
-    Route::post('/change-password', [AccountController::class, 'changePassword'])->name('change-password.update');
+    Route::get('/profile', [AccountController::class, 'profile'])
+        ->middleware('can.access:profile.view')->name('profile');
+    Route::put('/profile', [AccountController::class, 'updateProfile'])
+        ->middleware('can.access:profile.update')->name('profile.update');
+    Route::get('/change-password', [AccountController::class, 'changePasswordForm'])
+        ->middleware('can.access:change-password.view')->name('change-password');
+    Route::post('/change-password', [AccountController::class, 'changePassword'])
+        ->middleware('can.access:change-password.update')->name('change-password.update');
 
     // WhatsApp chat/calls — retained real-time proxy (polled via fetch from the
     // Customers page; live polling can't be expressed as Inertia page props).

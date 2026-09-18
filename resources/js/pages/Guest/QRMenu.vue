@@ -765,7 +765,6 @@ onMounted(async () => {
 
     config.value = {
       ...config.value,
-      ...(data.kiosk_config || {}),
     };
 
     state.value = 'menu';

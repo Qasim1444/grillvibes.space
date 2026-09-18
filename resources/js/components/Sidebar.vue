@@ -79,7 +79,6 @@ const icon = {
   monitor: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>`,
   layout: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>`,
   qrcode: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="3" height="3"/><path d="M14 18h3v3"/></svg>`,
-  kiosk: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 6h6M9 10h6M9 14h2M15 14h2M9 18h6"/></svg>`,
   flask: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2v7.3L6 15a2 2 0 0 0 1.7 2.9h8.6a2 2 0 0 0 1.7-2.9l-4-5.7V2"/><path d="M8.5 2h7M7 2h10"/></svg>`,
   chart: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>`,
   clipboard: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/></svg>`,
@@ -204,10 +203,9 @@ const groups = [
   {
     title: "Account",
     items: [
-      // Always available — every signed-in user manages their own account.
-      { to: "/profile", label: "Profile", icon: icon.user },
+      { to: "/profile", label: "Profile", icon: icon.user, permission: "profile.view" },
       { to: "/settings", label: "Settings", icon: icon.settings, permission: "settings.view" },
-      { to: "/change-password", label: "Change Password", icon: icon.key },
+      { to: "/change-password", label: "Change Password", icon: icon.key, permission: "change-password.view" },
     ],
   },
 ];

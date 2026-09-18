@@ -67,9 +67,13 @@ class FoodItemController extends Controller
     {
         $item = FoodItem::findOrFail($id);
         $data = $request->validate($this->rules($id));
+
+        unset($data['image']);
+
         if ($request->hasFile('image')) {
             $data['image'] = $this->uploadImage($request->file('image'));
         }
+
         $item->update($data);
 
         return back()->with('success', 'Food item updated.');

@@ -29,7 +29,7 @@
           placeholder="••••••••"
         />
 
-        <button type="submit" class="ui-btn ui-btn--primary" :disabled="form.processing">
+        <button v-if="can('change-password.update')" type="submit" class="ui-btn ui-btn--primary" :disabled="form.processing">
           {{ form.processing ? "Updating…" : "Update Password" }}
         </button>
       </form>
@@ -42,9 +42,12 @@ import { useForm } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
 import PageHeader from "../components/ui/PageHeader.vue";
 import FormField from "../components/ui/FormField.vue";
+import { usePermissions } from "../composables/usePermissions";
 
 // Persistent layout — renders the sidebar + topbar around this page.
 defineOptions({ layout: AdminLayout });
+
+const { can } = usePermissions();
 
 const form = useForm({
   current_password: "",

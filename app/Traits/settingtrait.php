@@ -85,6 +85,8 @@ trait settingtrait
 
         $data = $request->validate($this->validationRules($id));
 
+        unset($data['image']);
+
         if ($request->hasFile('image')) {
             $data['image'] = $this->uploadImage($request->file('image'));
         }

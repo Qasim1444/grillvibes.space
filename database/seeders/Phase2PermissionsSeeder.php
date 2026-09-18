@@ -35,10 +35,10 @@ class Phase2PermissionsSeeder extends Seeder
             ['name' => 'Delete Reservations', 'key' => 'reservations.delete', 'group' => 'Reservations'],
 
             // ── QR Codes ──────────────────────────────────────────────────────
-            ['name' => 'View QR Codes',   'key' => 'qr.view',   'group' => 'QR & Kiosk'],
-            ['name' => 'Create QR Codes', 'key' => 'qr.create', 'group' => 'QR & Kiosk'],
-            ['name' => 'Update QR Codes', 'key' => 'qr.update', 'group' => 'QR & Kiosk'],
-            ['name' => 'Delete QR Codes', 'key' => 'qr.delete', 'group' => 'QR & Kiosk'],
+            ['name' => 'View QR Codes',   'key' => 'qr.view',   'group' => 'QR Codes'],
+            ['name' => 'Create QR Codes', 'key' => 'qr.create', 'group' => 'QR Codes'],
+            ['name' => 'Update QR Codes', 'key' => 'qr.update', 'group' => 'QR Codes'],
+            ['name' => 'Delete QR Codes', 'key' => 'qr.delete', 'group' => 'QR Codes'],
 
         ];
 

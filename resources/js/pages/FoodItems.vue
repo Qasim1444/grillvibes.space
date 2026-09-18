@@ -460,12 +460,18 @@ const saveItem = () => {
 
   form
     .transform((data) => {
+      const payload = { ...data };
+
+      if (form.id && !payload.image) {
+        delete payload.image;
+      }
+
       return form.id
         ? {
-            ...data,
+            ...payload,
             _method: "put",
           }
-        : data;
+        : payload;
     })
     .post(
       form.id
@@ -533,4 +539,3 @@ onBeforeUnmount(() => {
   margin-bottom: 8px;
 }
 </style>
-

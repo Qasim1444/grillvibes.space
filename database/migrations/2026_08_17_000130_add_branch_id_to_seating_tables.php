@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Schema;
  * Branch foundation, step 4 — seating-scoped tables gain a `branch_id` for
  * outlet-level filtering, while keeping `place_id` (the seating area) intact.
  *
- * A dining table, reservation, waitlist entry, QR code / session and kiosk
- * config all belong to a specific seating area — but staff want to scope them by
- * outlet too ("today's reservations at Main Branch"). `branch_id` is derived
- * from the seating area's branch and kept in sync going forward by the
- * controllers. Unlike the outlet tables, `place_id` is NOT dropped here.
+ * Dining tables, reservations, waitlist entries, QR codes, and QR sessions
+ * belong to a specific seating area — but staff want to scope them by outlet too
+ * ("today's reservations at Main Branch"). `branch_id` is derived from the
+ * seating area's branch and kept in sync going forward by the controllers.
+ * Unlike the outlet tables, `place_id` is NOT dropped here.
  */
 return new class extends Migration
 {
@@ -21,7 +21,7 @@ return new class extends Migration
     {
         $firstBranchId = DB::table('branches')->orderBy('id')->value('id');
 
-        foreach (['dining_tables', 'reservations', 'waitlist_entries', 'qr_codes', 'qr_sessions', 'kiosk_configs'] as $tbl) {
+        foreach (['dining_tables', 'reservations', 'waitlist_entries', 'qr_codes', 'qr_sessions'] as $tbl) {
             if (! Schema::hasColumn($tbl, 'branch_id')) {
                 Schema::table($tbl, function (Blueprint $table) {
                     $table->foreignId('branch_id')
@@ -43,7 +43,7 @@ return new class extends Migration
 
     public function down(): void
     {
-        foreach (['dining_tables', 'reservations', 'waitlist_entries', 'qr_codes', 'qr_sessions', 'kiosk_configs'] as $tbl) {
+        foreach (['dining_tables', 'reservations', 'waitlist_entries', 'qr_codes', 'qr_sessions'] as $tbl) {
             if (Schema::hasColumn($tbl, 'branch_id')) {
                 Schema::table($tbl, function (Blueprint $table) {
                     $table->dropForeign(['branch_id']);
