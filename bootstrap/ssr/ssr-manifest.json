@@ -302,12 +302,12 @@
     "/build/assets/Payroll-DdctWPyi.css"
   ],
   "resources/js/pages/HomePage.vue": [
-    "/build/assets/HomePage-DATogDkm.js",
-    "/build/assets/HomePage-DII2YuWE.css"
+    "/build/assets/HomePage-KNpsl5aL.js",
+    "/build/assets/HomePage-7gMI3-KI.css"
   ],
-  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=d136a967&lang.css": [
-    "/build/assets/HomePage-DATogDkm.js",
-    "/build/assets/HomePage-DII2YuWE.css"
+  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=2ce41a06&lang.css": [
+    "/build/assets/HomePage-KNpsl5aL.js",
+    "/build/assets/HomePage-7gMI3-KI.css"
   ],
   "resources/js/pages/Inventory/Ingredients.vue": [
     "/build/assets/Ingredients-BLpHMzLB.js",
@@ -421,12 +421,12 @@
     "/build/assets/Vendors-ChP8_zBN.css"
   ],
   "resources/js/pages/ProductPage.vue": [
-    "/build/assets/ProductPage-DGgR8AfK.js",
-    "/build/assets/ProductPage-BwvSgi27.css"
+    "/build/assets/ProductPage-IT1nCOE5.js",
+    "/build/assets/ProductPage-Bm1tTbly.css"
   ],
-  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=7ca41971&lang.css": [
-    "/build/assets/ProductPage-DGgR8AfK.js",
-    "/build/assets/ProductPage-BwvSgi27.css"
+  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=35373aa6&lang.css": [
+    "/build/assets/ProductPage-IT1nCOE5.js",
+    "/build/assets/ProductPage-Bm1tTbly.css"
   ],
   "resources/js/pages/Profile.vue": [
     "/build/assets/Profile-BTrYfO70.js",

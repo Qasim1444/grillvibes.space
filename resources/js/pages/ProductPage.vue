@@ -7,16 +7,16 @@
       </a>
 
       <nav class="site-nav" :class="{ 'site-nav--open': mobileOpen }" aria-label="Primary navigation">
-        <a href="#features" @click="mobileOpen=false">Features</a>
-        <a href="#solutions" @click="mobileOpen=false">Solutions</a>
-        <a href="#workflow" @click="mobileOpen=false">Pricing</a>
+        <a href="#features" @click="mobileOpen=false">Modules</a>
+        <a href="#solutions" @click="mobileOpen=false">Overview</a>
+        <a href="#workflow" @click="mobileOpen=false">Tech Stack</a>
         <a href="/blog" @click="mobileOpen=false">Blog</a>
         <a href="#footer" @click="mobileOpen=false">Contact</a>
       </nav>
 
       <div class="header-actions">
         <a class="header-login" href="/login">Sign In</a>
-        <a class="button button--violet button--small" href="/login">Get Started <span>↗</span></a>
+        <a class="button button--violet button--small" href="#footer">Contact Seller <span>↗</span></a>
         <button class="menu-toggle" type="button" :aria-expanded="mobileOpen" aria-label="Toggle navigation" @click="mobileOpen=!mobileOpen">
           <span></span><span></span><span></span>
         </button>
@@ -29,17 +29,17 @@
         <div class="hero-overlay"></div>
         <div class="hero-content section-wrap">
           <div class="hero-copy">
-            <p class="kicker"><span></span> Restaurant management made simple</p>
-            <h1>All You Need to Run<br />a Successful <em>Restaurant</em></h1>
-            <p class="hero-lede">From POS to kitchen, inventory to finance — GrillVibes brings everything together in one powerful platform.</p>
+            <p class="kicker"><span></span> Complete Laravel restaurant software project</p>
+            <h1>Restaurant POS & ERP<br />Project <em>For Sale</em></h1>
+            <p class="hero-lede">GrillVibes is a full restaurant operations platform built with Laravel 12, Vue 3, Inertia.js, Tailwind CSS, Bootstrap, and API-ready backend architecture.</p>
 
             <div class="hero-actions">
-              <a class="button button--violet" href="/login">Get Started Free</a>
-              <a class="button button--ghost" href="#solutions"><span class="play">▶</span> Watch Demo</a>
+              <a class="button button--violet" href="#footer">Request Demo</a>
+              <a class="button button--ghost" href="#features"><span class="play">▶</span> View Modules</a>
             </div>
 
             <div class="hero-mini-points">
-              <span>Every branch</span><span>Every service channel</span><span>Every handoff</span>
+              <span>Ready Laravel codebase</span><span>Restaurant SaaS potential</span><span>Developer-friendly stack</span>
             </div>
           </div>
 
@@ -51,7 +51,7 @@
               <div class="order-row"><b>#1024</b><span>Chicken Burger</span><em class="preparing">Preparing</em></div>
               <div class="order-row"><b>#1023</b><span>BBQ Platter</span><em class="ready">Ready</em></div>
               <div class="order-row"><b>#1022</b><span>Zinger Meal</span><em class="served">Served</em></div>
-              <a href="/orders">View all orders →</a>
+              <a href="#features">View project modules →</a>
             </div>
 
             <div class="burger-stage">
@@ -68,10 +68,10 @@
         </div>
 
         <div class="section-wrap stats-row">
-          <div><strong>500+</strong><span>Restaurants</span></div>
-          <div><strong>1M+</strong><span>Orders Daily</span></div>
-          <div><strong>99.9%</strong><span>Uptime</span></div>
-          <div><strong>24/7</strong><span>Support</span></div>
+          <div><strong>Laravel 12</strong><span>Modern Backend</span></div>
+          <div><strong>Vue 3</strong><span>Inertia Frontend</span></div>
+          <div><strong>40+</strong><span>Business Models</span></div>
+          <div><strong>API</strong><span>Sanctum Ready</span></div>
         </div>
       </section>
 
@@ -127,20 +127,20 @@
           </div>
 
           <div class="preview-copy">
-            <h2>Smart Tools for<br />Modern Restaurants</h2>
-            <p>GrillVibes gives you complete control over your restaurant operations with easy-to-use tools and powerful insights.</p>
+            <h2>Sell, Customize,<br />or Launch as SaaS</h2>
+            <p>Buy a feature-rich restaurant management codebase that can be customized for restaurants, cafes, cloud kitchens, food courts, and multi-branch food businesses.</p>
 
             <div class="check-list">
-              <div><span>✓</span>All-in-one restaurant management</div>
-              <div><span>✓</span>Works for single or multi-branch restaurants</div>
-              <div><span>✓</span>Real-time order & kitchen sync</div>
-              <div><span>✓</span>Secure and scalable</div>
-              <div><span>✓</span>Dedicated support</div>
+              <div><span>✓</span>Complete Laravel + Vue restaurant platform</div>
+              <div><span>✓</span>POS, QR menu, kiosk, KDS, inventory, HR, CRM, and finance</div>
+              <div><span>✓</span>Role-based admin workspace with web and API routes</div>
+              <div><span>✓</span>Suitable for agencies, SaaS founders, and resellers</div>
+              <div><span>✓</span>Ready for demo, branding, and client customization</div>
             </div>
 
             <div class="preview-actions">
-              <a class="button button--violet" href="/login">Get started free <span>→</span></a>
-              <a class="text-link text-link--light" href="#features">View features <span>↗</span></a>
+              <a class="button button--violet" href="#footer">Contact for price <span>→</span></a>
+              <a class="text-link text-link--light" href="#workflow">View stack <span>↗</span></a>
             </div>
           </div>
         </div>
@@ -149,9 +149,9 @@
       <section id="features" class="modules-section section-wrap">
         <div class="section-heading section-heading--center">
           <div>
-            <h2>Everything Your<br />Restaurant Needs</h2>
+            <h2>Everything Included<br />in the Project</h2>
           </div>
-          <p>Complete tools to run, manage and grow your restaurant business.</p>
+          <p>A broad restaurant software package with customer-facing pages, admin modules, APIs, and operational workflows.</p>
         </div>
 
         <div class="module-grid">
@@ -170,10 +170,10 @@
       <section id="workflow" class="workflow-section">
         <div class="section-wrap workflow-inner">
           <div class="workflow-copy">
-            <p class="kicker kicker--violet">The service loop</p>
-            <h2>Less chasing.<br /><em>More serving.</em></h2>
-            <p>One order can move from guest to station to stock movement to management report without being re-entered or lost between teams.</p>
-            <a class="button button--violet" href="/dashboard">See the operations view <span>→</span></a>
+            <p class="kicker kicker--violet">Technology stack</p>
+            <h2>Modern Laravel.<br /><em>Practical Architecture.</em></h2>
+            <p>The project uses a current Laravel backend, Vue/Inertia frontend, Vite build process, Sanctum APIs, image/barcode utilities, and migration-backed business modules.</p>
+            <a class="button button--violet" href="#footer">Ask for demo access <span>→</span></a>
           </div>
 
           <div class="flow-list">
@@ -188,14 +188,14 @@
       <section id="guest-ordering" class="guest-section section-wrap">
         <div class="guest-card">
           <div class="guest-copy">
-            <p class="kicker kicker--violet">Guest channels, one kitchen queue</p>
-            <h2>One guest experience.<br /><em>One kitchen queue.</em></h2>
-            <p>Publish a QR menu for the table, run a branded kiosk at the counter, or take the order at POS. Every channel lands in the same kitchen and reporting flow.</p>
+            <p class="kicker kicker--violet">Buyer opportunity</p>
+            <h2>Useful for Agencies,<br /><em>Founders, and Resellers.</em></h2>
+            <p>Use GrillVibes as a starting point for client restaurant projects, a branded POS product, or a restaurant SaaS platform with modules already built across operations.</p>
 
             <div class="guest-links">
-              <a href="/menu/demo">Preview QR menu ↗</a>
-              <a href="/kiosk/1">Open kiosk ↗</a>
-              <a href="/pos">See POS ↗</a>
+              <a href="#features">See modules ↗</a>
+              <a href="#workflow">See stack ↗</a>
+              <a href="#footer">Contact seller ↗</a>
             </div>
           </div>
 
@@ -219,10 +219,10 @@
       <section id="menu" class="menu-showcase section-wrap">
         <div class="section-heading section-heading--menu">
           <div>
-            <p class="kicker kicker--violet">Live menu catalogue</p>
-            <h2>Every dish.<br /><em>Always connected.</em></h2>
+            <p class="kicker kicker--violet">Restaurant website included</p>
+            <h2>Public Menu.<br /><em>Admin Controlled.</em></h2>
           </div>
-          <p>Use the same live food catalogue for your team and guest-facing channels.</p>
+          <p>The same project includes a public restaurant homepage, menu display, blog, reviews, reservations, and guest ordering pages.</p>
         </div>
 
         <div v-if="foodItems.length" class="product-menu-grid">
@@ -245,13 +245,13 @@
       <section class="final-cta section-wrap">
         <div class="final-cta-inner">
           <div>
-            <p class="kicker kicker--violet">Your restaurant, connected</p>
-            <h2>Run your restaurant<br /><em>with more control.</em></h2>
-            <p>Bring your front of house, kitchen, stock, people, finance, and guest channels into one connected workspace.</p>
+            <p class="kicker kicker--violet">Project for sale</p>
+            <h2>Own GrillVibes<br /><em>and Start Selling Faster.</em></h2>
+            <p>A strong base for restaurants, cafes, cloud kitchens, food courts, and software houses that want a complete restaurant management platform without starting from zero.</p>
           </div>
           <div class="final-actions">
-            <a class="button button--violet" href="/login">Get started free <span>→</span></a>
-            <a class="text-link text-link--light" href="#features">Explore GrillVibes <span>↗</span></a>
+            <a class="button button--violet" href="#footer">Request demo and price <span>→</span></a>
+            <a class="text-link text-link--light" href="#features">Review modules <span>↗</span></a>
           </div>
         </div>
       </section>
@@ -259,9 +259,9 @@
 
     <footer id="footer" class="site-footer">
       <div class="section-wrap footer-grid">
-        <div><a class="brand" href="/"><span class="brand-mark">G</span><span>Grill<span class="brand-accent">Vibes</span></span></a><p>One calm place to run a busy restaurant.</p></div>
-        <nav aria-label="Footer navigation"><a href="#features">Features</a><a href="#workflow">Workflow</a><a href="#guest-ordering">Guest ordering</a><a href="#menu">Menu</a></nav>
-        <a href="/login" class="footer-signin">Sign in to GrillVibes ↗</a>
+        <div><a class="brand" href="/"><span class="brand-mark">G</span><span>Grill<span class="brand-accent">Vibes</span></span></a><p>Complete restaurant POS and management project for sale.</p></div>
+        <nav aria-label="Footer navigation"><a href="#features">Modules</a><a href="#workflow">Tech Stack</a><a href="#guest-ordering">Buyer Fit</a><a href="#menu">Public Pages</a></nav>
+        <a href="/login" class="footer-signin">Open admin demo ↗</a>
       </div>
     </footer>
   </div>
@@ -274,21 +274,21 @@ const mobileOpen = ref(false);
 
 const heroModules = [
   { label: 'POS & Orders', icon: '▣' },
-  { label: 'Kitchen Display', icon: '◫' },
+  { label: 'QR & Kiosk', icon: '◫' },
   { label: 'Inventory', icon: '▦' },
-  { label: 'Staff', icon: '♙' },
+  { label: 'HR Payroll', icon: '♙' },
   { label: 'Finance', icon: '₨' },
-  { label: 'Customers', icon: '◌' },
+  { label: 'CRM', icon: '◌' },
   { label: 'Reports', icon: '◒' },
 ];
 
 const extendedModules = [
-  { index: '01', icon: '⌁', tone: 'violet', title: 'Front of House', description: 'POS, orders, tables, reservations, QR menus, and guest flow.', link: 'front-of-house tools', href: '/pos' },
-  { index: '02', icon: '▦', tone: 'teal', title: 'Kitchen Operations', description: 'KDS, recipes, food items, stations, and production workflows.', link: 'kitchen workspace', href: '/kds/board' },
-  { index: '03', icon: '◒', tone: 'gold', title: 'Inventory & Purchasing', description: 'Ingredients, stock, vendors, purchase orders, and goods receipts.', link: 'stock controls', href: '/inventory/stock' },
-  { index: '04', icon: '↗', tone: 'blue', title: 'People & Finance', description: 'Employees, payroll, expenses, attendance, leave, and reporting.', link: 'people tools', href: '/hr/attendance' },
-  { index: '05', icon: '◇', tone: 'pink', title: 'Customer Growth', description: 'Loyalty, promos, discounts, feedback, CRM, and guest records.', link: 'customer tools', href: '/customers' },
-  { index: '06', icon: '⌘', tone: 'green', title: 'Multi-Branch & Control', description: 'Branches, assets, settings, WhatsApp, activity, and operations control.', link: 'management tools', href: '/dashboard' },
+  { index: '01', icon: '⌁', tone: 'violet', title: 'POS & Order Management', description: 'Dine-in, takeaway, delivery-style orders, printable receipts, promo preview, and customer lookup.', link: 'POS module', href: '/pos' },
+  { index: '02', icon: '▦', tone: 'teal', title: 'QR Menu, Kiosk & KDS', description: 'Guest QR menu, kiosk ordering, kitchen stations, live tickets, bump actions, and order status flow.', link: 'guest and kitchen flow', href: '/kds/board' },
+  { index: '03', icon: '◒', tone: 'gold', title: 'Inventory & Procurement', description: 'Ingredients, recipes, stock ledger, stock adjustment, vendors, purchase orders, and goods receipts.', link: 'inventory tools', href: '/inventory/stock' },
+  { index: '04', icon: '↗', tone: 'blue', title: 'HR, Payroll & Attendance', description: 'Employees, designations, attendance punch, leave approvals, overtime, loans, deductions, and payroll runs.', link: 'HR modules', href: '/hr/attendance' },
+  { index: '05', icon: '◇', tone: 'pink', title: 'CRM & Customer Growth', description: 'Customer records, loyalty settings, point adjustments, promo codes, discount campaigns, and feedback replies.', link: 'CRM modules', href: '/customers' },
+  { index: '06', icon: '⌘', tone: 'green', title: 'Finance, Roles & Control', description: 'Expenses, vouchers, petty cash, roles, permissions, settings, branches, maintenance logs, and WhatsApp APIs.', link: 'admin controls', href: '/dashboard' },
 ];
 
 const props = defineProps({
@@ -311,10 +311,10 @@ const modules = [
 ];
 
 const workflow = [
-  { title: 'Take the order', description: 'POS, QR menu, kiosk, and front-of-house teams feed one order stream.' },
-  { title: 'Make production visible', description: 'The KDS shows the right ticket, station, timing, and priority to the kitchen.' },
-  { title: 'Keep stock accountable', description: 'Recipes, purchase orders, and goods receipts connect service volume to inventory movement.' },
-  { title: 'Run the business', description: 'Reports bring sales, food cost, expenses, people, and guest signals together.' },
+  { title: 'Backend', description: 'Laravel 12, PHP 8.2+, session authentication, Sanctum API auth, controllers grouped by business domain.' },
+  { title: 'Frontend', description: 'Vue 3, Inertia.js, Vite, Tailwind CSS v4, Bootstrap 5, reusable admin UI components, and public pages.' },
+  { title: 'Business data', description: 'Migrations and models for orders, menu, branches, stock, recipes, HR, payroll, finance, CRM, blog, and WhatsApp records.' },
+  { title: 'Selling angle', description: 'A practical base for custom restaurant software, white-label POS services, agency delivery, or SaaS product development.' },
 ];
 </script>
 

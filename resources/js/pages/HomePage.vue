@@ -8,7 +8,7 @@
 
       <nav class="site-nav" :class="{ 'site-nav--open': mobileOpen }" aria-label="Primary navigation">
         <a href="/" @click="mobileOpen = false">Home</a>
-        <a href="/product" @click="mobileOpen = false">Products</a>
+        <a href="/product" @click="mobileOpen = false">Project</a>
         <a href="#menu" @click="mobileOpen = false">Menu</a>
         <a href="#reserve" @click="mobileOpen = false">Reservation</a>
         <a href="#blog" @click="mobileOpen = false">Blog</a>
@@ -18,7 +18,7 @@
 
       <div class="header-actions">
         <a class="header-login" href="/login">Sign In</a>
-        <a class="button button--coral button--small" href="#reserve">Get Started <span>↗</span></a>
+        <a class="button button--coral button--small" href="#reserve">Book a Table <span>↗</span></a>
         <button class="menu-toggle" type="button" :aria-expanded="mobileOpen" aria-label="Toggle navigation" @click="mobileOpen = !mobileOpen">
           <span></span><span></span><span></span>
         </button>
@@ -29,22 +29,22 @@
       <section class="hero section-shell">
         <div class="hero-copy">
           <div class="scribble">Good Food<br />Better Business <span>♡</span></div>
-          <p class="eyebrow"><span class="eyebrow-dot"></span> Restaurant operations, beautifully connected</p>
-          <h1>Delicious Food<br /><em>Smarter Operations</em></h1>
+          <p class="eyebrow"><span class="eyebrow-dot"></span> Flame-grilled food, served fresh</p>
+          <h1>Bold Flavors<br /><em>Fresh From the Grill</em></h1>
           <p class="hero-text">
-            GrillVibes helps restaurants manage orders, kitchen, inventory, staff, finance, and guest experiences — so you can focus on serving great food.
+            Welcome to GrillVibes, a warm neighborhood restaurant for smoky burgers, sizzling platters, fresh sides, and easy table reservations.
           </p>
 
           <div class="hero-actions">
             <a class="button button--coral" href="#reserve">Book a Table</a>
-            <a class="button button--outline" href="#story"><span class="play">▶</span> Watch Video</a>
+            <a class="button button--outline" href="#menu"><span class="play">▶</span> View Menu</a>
           </div>
 
           <div class="hero-stats" aria-label="GrillVibes highlights">
-            <div><strong>500+</strong><span>Restaurants</span></div>
-            <div><strong>50K+</strong><span>Happy Customers</span></div>
-            <div><strong>99.9%</strong><span>Uptime</span></div>
-            <div><strong>24/7</strong><span>Support</span></div>
+            <div><strong>35+</strong><span>Signature Dishes</span></div>
+            <div><strong>4.8</strong><span>Guest Rating</span></div>
+            <div><strong>7 Days</strong><span>Open Weekly</span></div>
+            <div><strong>Fresh</strong><span>Daily Prep</span></div>
           </div>
         </div>
 
@@ -63,7 +63,7 @@
         </div>
       </section>
 
-      <section class="feature-ribbon section-shell" aria-label="GrillVibes capabilities">
+      <section class="feature-ribbon section-shell" aria-label="Restaurant highlights">
         <div v-for="(feature, index) in ribbonFeatures" :key="feature.label" class="ribbon-item">
           <div class="ribbon-icon" :class="feature.tone"><span>{{ feature.icon }}</span></div>
           <span>{{ feature.label }}</span>
@@ -73,22 +73,22 @@
 
       <section id="story" class="experience section-shell">
         <div class="experience-copy">
-          <p class="eyebrow">A complete restaurant management platform</p>
-          <h2>Run the restaurant.<br /><em>Enjoy the craft.</em></h2>
+          <p class="eyebrow">Our story</p>
+          <h2>Good food.<br /><em>Good company.</em></h2>
           <p class="section-lede">
-            From front of house to back of house, GrillVibes brings everything together in one connected platform.
+            GrillVibes is built around fire, freshness, and comfort. We serve generous plates, casual dining energy, and food that feels worth gathering for.
           </p>
 
           <div class="check-list">
-            <div><span>✓</span>Easy to use and quick to set up</div>
-            <div><span>✓</span>Works for single or multi-branch restaurants</div>
-            <div><span>✓</span>Built for restaurants of all sizes</div>
-            <div><span>✓</span>Loved by restaurant owners</div>
+            <div><span>✓</span>Fresh ingredients prepared every day</div>
+            <div><span>✓</span>Flame-grilled mains, burgers, and platters</div>
+            <div><span>✓</span>Comfortable seating for family and friends</div>
+            <div><span>✓</span>Easy online reservations</div>
           </div>
 
           <div class="inline-actions">
-            <a class="button button--coral button--small" href="/login">Get Started <span>↗</span></a>
-            <a class="text-link" href="/product">Learn More <span>→</span></a>
+            <a class="button button--coral button--small" href="#reserve">Reserve Now <span>↗</span></a>
+            <a class="text-link" href="#menu">Explore Menu <span>→</span></a>
           </div>
         </div>
 
@@ -115,7 +115,7 @@
               <p class="eyebrow">From the kitchen</p>
               <h2>Made to be<br /><em>remembered.</em></h2>
             </div>
-            <p>Browse your live menu by category. Every dish shown here comes from the GrillVibes food catalogue.</p>
+            <p>Browse guest favorites by category, from smoky mains to shareable plates and fresh sides.</p>
           </div>
 
           <div class="category-row" role="tablist" aria-label="Food categories">
@@ -177,9 +177,9 @@
           <div class="section-heading blog-heading">
             <div>
               <p class="eyebrow">From the GrillVibes journal</p>
-              <h2>Ideas for a<br /><em>better service.</em></h2>
+              <h2>Stories from<br /><em>our table.</em></h2>
             </div>
-            <p>Practical stories and fresh thinking from the people behind better restaurant operations.</p>
+            <p>Fresh updates, kitchen notes, specials, and stories from the GrillVibes team.</p>
           </div>
 
           <div class="blog-grid">
@@ -190,7 +190,7 @@
               </div>
               <div class="blog-card-body">
                 <div class="blog-meta">
-                  <span>{{ post.categories?.[0]?.name || 'Restaurant operations' }}</span>
+                  <span>{{ post.categories?.[0]?.name || 'Restaurant stories' }}</span>
                   <time :datetime="post.published_at">{{ formatBlogDate(post.published_at) }}</time>
                 </div>
                 <h3>{{ post.title }}</h3>
@@ -284,14 +284,14 @@
       <div class="section-shell footer-grid">
         <div>
           <a class="brand" href="/"><span class="brand-mark">G</span><span>Grill<span class="brand-accent">Vibes</span></span></a>
-          <p>Great food. Better operations.</p>
+          <p>Fresh grill, warm tables, bold flavor.</p>
         </div>
         <nav aria-label="Footer navigation">
-          <a href="#menu">Menu</a><a href="#reserve">Reservations</a><a href="/product">Product</a><a href="#story">About</a>
+          <a href="#menu">Menu</a><a href="#reserve">Reservations</a><a href="/product">Project</a><a href="#story">About</a>
         </nav>
         <div class="footer-cta">
-          <span>Ready to run service better?</span>
-          <a href="/login">Enter GrillVibes ↗</a>
+          <span>Hungry already?</span>
+          <a href="#reserve">Reserve a table ↗</a>
         </div>
       </div>
     </footer>
@@ -317,13 +317,13 @@ const stars = r => '★'.repeat(Math.max(0, Math.min(5, Number(r) || 0))) + '☆
 const mobileOpen = ref(false);
 
 const ribbonFeatures = [
-  { label: 'POS & Orders', icon: '▣', tone: 'pink' },
-  { label: 'Kitchen Display', icon: '◫', tone: 'orange' },
-  { label: 'Inventory', icon: '▦', tone: 'green' },
-  { label: 'Staff Management', icon: '♙', tone: 'blue' },
+  { label: 'Flame Grill', icon: '▣', tone: 'pink' },
+  { label: 'Fresh Prep', icon: '◫', tone: 'orange' },
+  { label: 'Family Tables', icon: '▦', tone: 'green' },
+  { label: 'Quick Service', icon: '♙', tone: 'blue' },
   { label: 'Reservations', icon: '⌑', tone: 'violet' },
   { label: 'QR Menu', icon: '⌁', tone: 'rose' },
-  { label: 'Reports', icon: '◒', tone: 'gold' },
+  { label: 'Guest Reviews', icon: '◒', tone: 'gold' },
 ];
 
 const categoriesById = id => props.categories.find(category => category.id === id)?.name;
