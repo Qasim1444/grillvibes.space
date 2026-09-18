@@ -309,6 +309,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -395,8 +396,8 @@ const changeMonth = (value) => {
   router.get("/hr/payroll", { month: value }, { preserveState: false, preserveScroll: true });
 };
 
-const generate = () => {
-  if (props.run && !confirm("Recompute this draft? Its payslips will be replaced with fresh numbers.")) return;
+const generate = async () => {
+  if (props.run && !(await confirmDialog("Recompute this draft? Its payslips will be replaced with fresh numbers."))) return;
   generating.value = true;
   router.post(
     "/hr/payroll",
@@ -405,18 +406,18 @@ const generate = () => {
   );
 };
 
-const approve = () => {
-  if (!confirm("Approve this payroll? The numbers lock and one-off deductions are consumed.")) return;
+const approve = async () => {
+  if (!(await confirmDialog("Approve this payroll? The numbers lock and one-off deductions are consumed."))) return;
   router.put(`/hr/payroll/${props.run.id}/approve`, {}, { preserveScroll: true });
 };
 
-const markPaid = () => {
-  if (!confirm("Mark this payroll paid? Loan balances will be reduced by the collected installments.")) return;
+const markPaid = async () => {
+  if (!(await confirmDialog("Mark this payroll paid? Loan balances will be reduced by the collected installments."))) return;
   router.put(`/hr/payroll/${props.run.id}/paid`, {}, { preserveScroll: true });
 };
 
-const destroyRun = () => {
-  if (!confirm("Delete this draft run?")) return;
+const destroyRun = async () => {
+  if (!(await confirmDialog("Delete this draft run?"))) return;
   router.delete(`/hr/payroll/${props.run.id}`, { preserveScroll: true });
 };
 
@@ -457,8 +458,8 @@ const saveDeduction = () => {
   else dForm.post("/hr/deductions", opts);
 };
 
-const deleteDeduction = (id) => {
-  if (!confirm("Delete this deduction?")) return;
+const deleteDeduction = async (id) => {
+  if (!(await confirmDialog("Delete this deduction?"))) return;
   router.delete(`/hr/deductions/${id}`, { preserveScroll: true });
 };
 

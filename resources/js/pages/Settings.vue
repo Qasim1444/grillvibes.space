@@ -59,6 +59,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { ref } from "vue";
 import { useForm, router } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
@@ -167,8 +168,8 @@ const saveSetting = () => {
     });
 };
 
-const deleteSetting = (id) => {
-  if (!confirm("Are you sure?")) return;
+const deleteSetting = async (id) => {
+  if (!(await confirmDialog("Are you sure?"))) return;
   router.delete(`/settings/${id}`, { preserveScroll: true });
 };
 </script>

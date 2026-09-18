@@ -239,6 +239,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { ref, computed, watch } from "vue";
 import { Link, router } from "@inertiajs/vue3";
 import PageHeader from "../components/ui/PageHeader.vue";
@@ -539,8 +540,8 @@ const saveOrder = () => {
 };
 
 // ── Delete ─────────────────────────────────────────────────────────────────
-const deleteOrder = (id) => {
-  if (!confirm(`Delete order #${id}? It will show under "Deleted Orders" on the dashboard.`)) return;
+const deleteOrder = async (id) => {
+  if (!(await confirmDialog(`Delete order #${id}? It will show under "Deleted Orders" on the dashboard.`))) return;
   router.delete(`/orders/${id}`, {
     preserveScroll: true,
     onError: () => {

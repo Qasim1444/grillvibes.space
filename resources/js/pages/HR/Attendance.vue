@@ -128,6 +128,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -194,9 +195,9 @@ const tallies = computed(() =>
   }, {})
 );
 
-const changeDate = (value) => {
+const changeDate = async (value) => {
   if (!value) return;
-  if (dirty.value && !confirm("You have unsaved changes. Discard them and load another date?")) return;
+  if (dirty.value && !(await confirmDialog("You have unsaved changes. Discard them and load another date?"))) return;
   router.get("/hr/attendance", { date: value }, { preserveState: false, preserveScroll: true });
 };
 
@@ -221,8 +222,8 @@ const saveSheet = () => {
   );
 };
 
-const clearRow = (row) => {
-  if (!confirm(`Remove the saved attendance entry for ${row.name}?`)) return;
+const clearRow = async (row) => {
+  if (!(await confirmDialog(`Remove the saved attendance entry for ${row.name}?`))) return;
   router.delete(`/hr/attendance/${row.attendance_id}`, { preserveScroll: true });
 };
 

@@ -234,6 +234,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -323,8 +324,8 @@ const openWriteOff = () => {
   showWriteOff.value = true;
 };
 
-const saveWriteOff = () => {
-  if (!confirm('Write this stock off? It will leave inventory at its carrying cost.')) return;
+const saveWriteOff = async () => {
+  if (!(await confirmDialog('Write this stock off? It will leave inventory at its carrying cost.'))) return;
   wasteForm.post('/inventory/stock/write-off', {
     preserveScroll: true,
     onSuccess: () => (showWriteOff.value = false),

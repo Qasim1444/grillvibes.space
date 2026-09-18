@@ -126,6 +126,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -197,11 +198,11 @@ const save = () => {
   else form.post('/inventory/ingredients', opts);
 };
 
-const del = row => {
+const del = async row => {
   const warning = row.used_in_recipes > 0
     ? `${row.name} is used in ${row.used_in_recipes} recipe(s) and cannot be deleted until it is taken off them. Try anyway?`
     : `Delete ${row.name}? Its stock history is kept.`;
-  if (!confirm(warning)) return;
+  if (!(await confirmDialog(warning))) return;
   router.delete(`/inventory/ingredients/${row.id}`, { preserveScroll: true });
 };
 

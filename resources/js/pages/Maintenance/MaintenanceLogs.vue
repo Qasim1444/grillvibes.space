@@ -128,6 +128,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -226,8 +227,8 @@ const save = () => {
   else form.post('/maintenance/logs', opts);
 };
 
-const del = row => {
-  if (!confirm(`Delete work order ${row.maintenance_number}?`)) return;
+const del = async row => {
+  if (!(await confirmDialog(`Delete work order ${row.maintenance_number}?`))) return;
   router.delete(`/maintenance/logs/${row.id}`, { preserveScroll: true });
 };
 

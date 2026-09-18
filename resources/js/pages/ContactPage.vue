@@ -204,6 +204,7 @@
 </template>
 
 <script setup>
+import { alertDialog } from "../composables/useNotifications";
 import { ref } from 'vue';
 import { router } from '@inertiajs/vue3';
 const expandedFaq = ref(0);
@@ -248,7 +249,7 @@ const quickFaqs = [
 const handleSubmit = () => {
   // Handle form submission
   console.log('Form submitted:', form.value);
-  alert('Thank you for reaching out! We\'ll get back to you within 24 hours.');
+  alertDialog('Thank you for reaching out! We\'ll get back to you within 24 hours.');
 
   // Reset form
   form.value = {
@@ -263,7 +264,7 @@ const handleSubmit = () => {
 };
 
 const openChat = () => {
-  alert('Chat window would open here');
+  alertDialog('Chat window would open here');
 };
 
 const goToLogin = () => {

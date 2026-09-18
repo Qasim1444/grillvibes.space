@@ -87,6 +87,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { computed, ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../layouts/AdminLayout.vue';
@@ -146,8 +147,8 @@ const save = () => {
   else form.post('/qr-codes', opts);
 };
 
-const del = id => {
-  if (!confirm('Delete this QR code? Existing printed codes will stop working.')) return;
+const del = async id => {
+  if (!(await confirmDialog('Delete this QR code? Existing printed codes will stop working.'))) return;
   router.delete(`/qr-codes/${id}`, { preserveScroll: true });
 };
 

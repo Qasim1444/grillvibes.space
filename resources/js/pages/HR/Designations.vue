@@ -52,6 +52,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -115,8 +116,8 @@ const save = () => {
   else form.post("/hr/designations", opts);
 };
 
-const deleteRow = (id) => {
-  if (!confirm("Delete this designation?")) return;
+const deleteRow = async (id) => {
+  if (!(await confirmDialog("Delete this designation?"))) return;
   router.delete(`/hr/designations/${id}`, { preserveScroll: true });
 };
 </script>

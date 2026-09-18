@@ -134,6 +134,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -248,8 +249,8 @@ const save = () => {
   else form.post("/hr/employees", opts);
 };
 
-const deleteRow = (id) => {
-  if (!confirm("Delete this employee? Staff with payslips must be marked 'left' instead.")) return;
+const deleteRow = async (id) => {
+  if (!(await confirmDialog("Delete this employee? Staff with payslips must be marked 'left' instead."))) return;
   router.delete(`/hr/employees/${id}`, { preserveScroll: true });
 };
 

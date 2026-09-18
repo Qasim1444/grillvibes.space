@@ -120,6 +120,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 
@@ -312,8 +313,8 @@ const savePlace = () => {
 |--------------------------------------------------------------------------
 */
 
-const deletePlace = (id) => {
-  if (!confirm("Are you sure?")) {
+const deletePlace = async (id) => {
+  if (!(await confirmDialog("Are you sure?"))) {
     return;
   }
 

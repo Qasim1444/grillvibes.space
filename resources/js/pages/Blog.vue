@@ -804,6 +804,7 @@
 
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 
 import {
     computed,
@@ -1761,10 +1762,10 @@ const savePost = () => {
 // DELETE POST
 // ============================================================
 
-const deletePost = (id) => {
+const deletePost = async (id) => {
 
     if (
-        confirm(
+        await confirmDialog(
             'Are you sure?'
         )
     ) {
@@ -1833,10 +1834,10 @@ const updateCategory = (id) => {
 // DELETE CATEGORY
 // ============================================================
 
-const deleteCategory = (id) => {
+const deleteCategory = async (id) => {
 
     if (
-        confirm(
+        await confirmDialog(
             'Delete this category? Existing posts will be detached.'
         )
     ) {
@@ -1911,10 +1912,10 @@ const updateTag = (id) => {
 // DELETE TAG
 // ============================================================
 
-const deleteTag = (id) => {
+const deleteTag = async (id) => {
 
     if (
-        confirm(
+        await confirmDialog(
             'Delete this tag? Existing posts will be detached.'
         )
     ) {

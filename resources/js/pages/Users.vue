@@ -88,6 +88,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
@@ -188,8 +189,8 @@ const saveAssignRole = () => {
   });
 };
 
-const deleteUser = (id) => {
-  if (!confirm("Are you sure you want to delete this user?")) return;
+const deleteUser = async (id) => {
+  if (!(await confirmDialog("Are you sure you want to delete this user?"))) return;
   router.delete(`/users/${id}`, { preserveScroll: true });
 };
 

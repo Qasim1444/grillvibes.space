@@ -154,6 +154,7 @@
 </template>
 
 <script setup>
+import { alertDialog, confirmDialog } from "../../composables/useNotifications";
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -252,8 +253,8 @@ const save = () => {
   form.id ? form.put(`/reservations/${form.id}`, opts) : form.post('/reservations', opts);
 };
 
-const del = id => {
-  if (!confirm('Delete this reservation?')) return;
+const del = async id => {
+  if (!(await confirmDialog('Delete this reservation?'))) return;
   router.delete(`/reservations/${id}`, { preserveScroll: true });
 };
 
@@ -286,7 +287,7 @@ const waLink = entry => {
 
 const notifyWaitlist = entry => {
   if (!entry.guest_phone) {
-    alert('This guest has no phone number — add one before notifying.');
+    alertDialog('This guest has no phone number — add one before notifying.');
     return;
   }
   // Server sends the WhatsApp message via the gateway and stamps notified_at.

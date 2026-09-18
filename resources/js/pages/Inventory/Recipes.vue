@@ -197,6 +197,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, onMounted, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -271,14 +272,14 @@ const openBuilder = row => {
 const addLine = () => form.lines.push({ ingredient_id: '', quantity: null, note: '' });
 const removeLine = i => form.lines.splice(i, 1);
 
-const save = () => {
+const save = async () => {
   // Blank rows are an unfinished thought, not a line — drop them rather than
   // failing validation on something the user hasn't filled in yet.
   const lines = form.lines
     .filter(l => l.ingredient_id && Number(l.quantity) > 0)
     .map(l => ({ ingredient_id: l.ingredient_id, quantity: l.quantity, note: l.note || null }));
 
-  if (!lines.length && !confirm('No ingredients listed. Save an empty recipe? The dish will stop being costed.')) return;
+  if (!lines.length && !(await confirmDialog('No ingredients listed. Save an empty recipe? The dish will stop being costed.'))) return;
 
   form.transform(() => ({ lines })).put(`/inventory/recipes/${dish.value.id}`, {
     preserveScroll: true,

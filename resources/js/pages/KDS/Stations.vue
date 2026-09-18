@@ -72,6 +72,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { ref } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -116,8 +117,8 @@ const save = () => {
   form.id ? form.put(`/kds/stations/${form.id}`, opts) : form.post('/kds/stations', opts);
 };
 
-const del = id => {
-  if (!confirm('Delete this station?')) return;
+const del = async id => {
+  if (!(await confirmDialog('Delete this station?'))) return;
   router.delete(`/kds/stations/${id}`, { preserveScroll: true });
 };
 </script>

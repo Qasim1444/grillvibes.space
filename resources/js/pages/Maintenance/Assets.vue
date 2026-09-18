@@ -128,6 +128,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -239,8 +240,8 @@ const save = () => {
   else form.post('/maintenance/assets', opts);
 };
 
-const del = row => {
-  if (!confirm(`Delete asset "${row.name}"? Its maintenance history will be removed too.`)) return;
+const del = async row => {
+  if (!(await confirmDialog(`Delete asset "${row.name}"? Its maintenance history will be removed too.`))) return;
   router.delete(`/maintenance/assets/${row.id}`, { preserveScroll: true });
 };
 

@@ -251,6 +251,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -354,8 +355,8 @@ const viewing = ref(null);
 const openView = row => { viewing.value = row; showView.value = true; };
 
 // ── Send / cancel / delete ──────────────────────────────────────────────────
-const send = row => {
-  if (!confirm(`Send ${row.po_number} to ${row.vendor_name}? Once sent, the lines can no longer be changed.`)) return;
+const send = async row => {
+  if (!(await confirmDialog(`Send ${row.po_number} to ${row.vendor_name}? Once sent, the lines can no longer be changed.`))) return;
   router.put(`/procurement/purchase-orders/${row.id}/order`, {}, { preserveScroll: true });
 };
 
@@ -374,8 +375,8 @@ const saveCancel = () => cancelForm.put(`/procurement/purchase-orders/${cancelli
   onSuccess: () => (showCancel.value = false),
 });
 
-const del = row => {
-  if (!confirm(`Delete draft ${row.po_number}? Nothing has been committed, so this cannot be recovered.`)) return;
+const del = async row => {
+  if (!(await confirmDialog(`Delete draft ${row.po_number}? Nothing has been committed, so this cannot be recovered.`))) return;
   router.delete(`/procurement/purchase-orders/${row.id}`, { preserveScroll: true });
 };
 

@@ -125,6 +125,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -237,13 +238,13 @@ const save = () => {
 };
 
 const approve = row => router.put(`/finance/expenses/${row.id}/approve`, {}, { preserveScroll: true });
-const reject = row => {
-  if (!confirm(`Reject expense ${row.expense_number}?`)) return;
+const reject = async row => {
+  if (!(await confirmDialog(`Reject expense ${row.expense_number}?`))) return;
   router.put(`/finance/expenses/${row.id}/reject`, {}, { preserveScroll: true });
 };
 
-const del = row => {
-  if (!confirm(`Delete expense ${row.expense_number}? Any petty-cash entry it created will be reversed.`)) return;
+const del = async row => {
+  if (!(await confirmDialog(`Delete expense ${row.expense_number}? Any petty-cash entry it created will be reversed.`))) return;
   router.delete(`/finance/expenses/${row.id}`, { preserveScroll: true });
 };
 

@@ -89,6 +89,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
@@ -178,8 +179,8 @@ const saveRole = () => {
   }
 };
 
-const deleteRole = (role) => {
-  if (!confirm(`Delete the "${role.name}" role?`)) return;
+const deleteRole = async (role) => {
+  if (!(await confirmDialog(`Delete the "${role.name}" role?`))) return;
   router.delete(`/roles/${role.id}`, { preserveScroll: true });
 };
 </script>

@@ -115,6 +115,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -189,11 +190,11 @@ const save = () => {
   else form.post('/procurement/vendors', opts);
 };
 
-const del = row => {
+const del = async row => {
   const warning = row.open_purchase_orders > 0
     ? `${row.name} has ${row.open_purchase_orders} purchase order(s) still open — receive or cancel them first.`
     : `Delete ${row.name}? Past orders and receipts keep the name.`;
-  if (!confirm(warning)) return;
+  if (!(await confirmDialog(warning))) return;
   router.delete(`/procurement/vendors/${row.id}`, { preserveScroll: true });
 };
 

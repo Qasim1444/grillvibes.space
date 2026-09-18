@@ -198,6 +198,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../composables/useNotifications";
 import { computed, ref, watch, onBeforeUnmount } from "vue";
 import { Link, router, useForm } from "@inertiajs/vue3";
 
@@ -480,8 +481,8 @@ const saveItem = () => {
 |--------------------------------------------------------------------------
 */
 
-const deleteItem = (id) => {
-  if (!confirm("Are you sure you want to delete this food item?")) {
+const deleteItem = async (id) => {
+  if (!(await confirmDialog("Are you sure you want to delete this food item?"))) {
     return;
   }
 

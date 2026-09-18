@@ -165,6 +165,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -257,8 +258,8 @@ const submitAdjust = () => {
   });
 };
 
-const runExpiry = () => {
-  if (!confirm("Write off every point past its expiry date?")) return;
+const runExpiry = async () => {
+  if (!(await confirmDialog("Write off every point past its expiry date?"))) return;
   router.post("/crm/loyalty/expire", {}, { preserveScroll: true });
 };
 

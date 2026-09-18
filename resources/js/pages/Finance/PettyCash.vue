@@ -140,6 +140,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -223,8 +224,8 @@ const saveAccount = () => {
   if (accForm.id) accForm.put(`/finance/petty-cash/accounts/${accForm.id}`, opts);
   else accForm.post('/finance/petty-cash/accounts', opts);
 };
-const delAccount = row => {
-  if (!confirm(`Delete fund "${row.name}"?`)) return;
+const delAccount = async row => {
+  if (!(await confirmDialog(`Delete fund "${row.name}"?`))) return;
   router.delete(`/finance/petty-cash/accounts/${row.id}`, { preserveScroll: true });
 };
 
@@ -242,8 +243,8 @@ const openTxn = row => {
 const saveTxn = () => txnForm.post('/finance/petty-cash/transactions',
   { preserveScroll: true, onSuccess: () => (showTxn.value = false) });
 
-const delTxn = row => {
-  if (!confirm(`Delete this ${typeLabel(row.type)} transaction of ${signed(row.amount)}? The fund balance will be recalculated.`)) return;
+const delTxn = async row => {
+  if (!(await confirmDialog(`Delete this ${typeLabel(row.type)} transaction of ${signed(row.amount)}? The fund balance will be recalculated.`))) return;
   router.delete(`/finance/petty-cash/transactions/${row.id}`, { preserveScroll: true });
 };
 

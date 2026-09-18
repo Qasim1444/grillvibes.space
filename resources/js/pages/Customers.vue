@@ -324,6 +324,7 @@
 </template>
 
 <script setup>
+import { alertDialog, confirmDialog } from "../composables/useNotifications";
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from "vue";
 import { router, useForm } from "@inertiajs/vue3";
 import AdminLayout from "../layouts/AdminLayout.vue";
@@ -719,7 +720,7 @@ const loadMessages = async () => {
 const openChat = async (customer) => {
   const num = normalizeNumber(customer.contact);
   if (!num) {
-    alert("This customer has no valid contact number.");
+    alertDialog("This customer has no valid contact number.");
     return;
   }
   chatCustomer.value = customer;
@@ -757,10 +758,10 @@ const sendMessage = async () => {
       clearAttachment();
       await loadMessages();
     } else {
-      alert(res.message || "Failed to send message.");
+      alertDialog(res.message || "Failed to send message.");
     }
   } catch (err) {
-    alert(err.data?.message || err.message || "Failed to send message.");
+    alertDialog(err.data?.message || err.message || "Failed to send message.");
   } finally {
     sendingMessage.value = false;
   }
@@ -811,8 +812,8 @@ const saveCustomer = () => {
   }
 };
 
-const deleteCustomer = (id) => {
-  if (!confirm("Are you sure?")) return;
+const deleteCustomer = async (id) => {
+  if (!(await confirmDialog("Are you sure?"))) return;
   router.delete(`/customers/${id}`, { preserveScroll: true });
 };
 

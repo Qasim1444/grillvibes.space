@@ -173,6 +173,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -313,8 +314,8 @@ const save = () => {
   else form.post("/crm/discounts", opts);
 };
 
-const deleteRow = (id) => {
-  if (!confirm("Delete this campaign?")) return;
+const deleteRow = async (id) => {
+  if (!(await confirmDialog("Delete this campaign?"))) return;
   router.delete(`/crm/discounts/${id}`, { preserveScroll: true });
 };
 

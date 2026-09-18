@@ -148,6 +148,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -264,8 +265,8 @@ const togglePublish = (row) => {
   router.put(`/crm/feedback/${row.id}/publish`, {}, { preserveScroll: true });
 };
 
-const deleteRow = (id) => {
-  if (!confirm("Delete this feedback?")) return;
+const deleteRow = async (id) => {
+  if (!(await confirmDialog("Delete this feedback?"))) return;
   router.delete(`/crm/feedback/${id}`, { preserveScroll: true });
 };
 

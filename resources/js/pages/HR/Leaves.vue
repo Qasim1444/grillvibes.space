@@ -157,6 +157,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -253,8 +254,8 @@ const decide = (row, next) => {
   router.put(`/hr/leaves/${row.id}/decide`, { status: next }, { preserveScroll: true });
 };
 
-const deleteRow = (id) => {
-  if (!confirm("Delete this leave request?")) return;
+const deleteRow = async (id) => {
+  if (!(await confirmDialog("Delete this leave request?"))) return;
   router.delete(`/hr/leaves/${id}`, { preserveScroll: true });
 };
 
@@ -279,8 +280,8 @@ const saveType = () => {
   else typeForm.post("/hr/leaves/types", opts);
 };
 
-const deleteType = (t) => {
-  if (!confirm(`Delete leave type "${t.name}"?`)) return;
+const deleteType = async (t) => {
+  if (!(await confirmDialog(`Delete leave type "${t.name}"?`))) return;
   router.delete(`/hr/leaves/types/${t.id}`, { preserveScroll: true });
 };
 

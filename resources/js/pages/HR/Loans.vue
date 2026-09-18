@@ -170,6 +170,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from "vue";
 import { router, useForm, usePage } from "@inertiajs/vue3";
 import AdminLayout from "../../layouts/AdminLayout.vue";
@@ -303,8 +304,8 @@ const openHistory = (row) => {
   showHistory.value = true;
 };
 
-const deleteRow = (id) => {
-  if (!confirm("Delete this loan?")) return;
+const deleteRow = async (id) => {
+  if (!(await confirmDialog("Delete this loan?"))) return;
   router.delete(`/hr/loans/${id}`, { preserveScroll: true });
 };
 

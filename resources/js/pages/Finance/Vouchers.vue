@@ -145,6 +145,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, ref, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -308,8 +309,8 @@ const reject = row => {
   router.put(`/finance/vouchers/${row.id}/reject`, { rejection_reason: reason || null }, { preserveScroll: true });
 };
 
-const del = row => {
-  if (!confirm(`Delete voucher ${row.voucher_number}? The fund will be credited back and its ${row.expenses.length} expense(s) released.`)) return;
+const del = async row => {
+  if (!(await confirmDialog(`Delete voucher ${row.voucher_number}? The fund will be credited back and its ${row.expenses.length} expense(s) released.`))) return;
   router.delete(`/finance/vouchers/${row.id}`, { preserveScroll: true });
 };
 

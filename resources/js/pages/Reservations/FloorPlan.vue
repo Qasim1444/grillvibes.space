@@ -102,6 +102,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { ref, computed, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -241,8 +242,8 @@ const saveTable = () => {
     : tableForm.post('/reservations/tables', opts);
 };
 
-const deleteTable = id => {
-  if (!confirm('Remove this table from the floor plan?')) return;
+const deleteTable = async id => {
+  if (!(await confirmDialog('Remove this table from the floor plan?'))) return;
   router.delete(`/reservations/tables/${id}`, {
     preserveScroll: true, onSuccess: () => { selected.value = null; tables.value = tables.value.filter(t => t.id !== id); },
   });

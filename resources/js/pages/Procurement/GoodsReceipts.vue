@@ -277,6 +277,7 @@
 </template>
 
 <script setup>
+import { confirmDialog } from "../../composables/useNotifications";
 import { computed, onMounted, ref, watch } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -364,7 +365,7 @@ const removeLine = i => form.lines.splice(i, 1);
 
 const validLines = computed(() => form.lines.filter(l => l.ingredient_id && Number(l.quantity) > 0));
 
-const save = () => {
+const save = async () => {
   const lines = validLines.value.map(l => ({
     ingredient_id: l.ingredient_id,
     purchase_order_item_id: l.purchase_order_item_id ?? null,
@@ -372,7 +373,7 @@ const save = () => {
     unit_cost: Number(l.unit_cost || 0),
   }));
 
-  if (!confirm('Post this receipt? Stock will be raised and the affected ingredients re-valued. Receipts cannot be edited afterwards.')) return;
+  if (!(await confirmDialog('Post this receipt? Stock will be raised and the affected ingredients re-valued. Receipts cannot be edited afterwards.'))) return;
 
   form.transform(() => ({
     purchase_order_id: form.purchase_order_id || null,
@@ -399,8 +400,8 @@ const openFull = order => {
   showFull.value = true;
 };
 
-const saveFull = () => {
-  if (!confirm(`Book every outstanding line on ${fullOrder.value.po_number} at the ordered prices?`)) return;
+const saveFull = async () => {
+  if (!(await confirmDialog(`Book every outstanding line on ${fullOrder.value.po_number} at the ordered prices?`))) return;
   fullForm.post(`/procurement/goods-receipts/receive-po/${fullOrder.value.id}`, {
     preserveScroll: true,
     onSuccess: () => (showFull.value = false),
