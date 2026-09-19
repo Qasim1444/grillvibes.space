@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Branch;
+use App\Models\User;
 use Illuminate\Support\Collection;
 
 /**
@@ -32,12 +33,14 @@ class CurrentBranch
 
         $selected = session(self::SESSION_KEY);
 
-        if ($selected && Branch::whereKey($selected)->exists()) {
+        $available = self::all();
+
+        if ($selected && $available->contains('id', (int) $selected)) {
             return self::$memo = (int) $selected;
         }
 
-        $fallback = Branch::where('status', true)->orderBy('id')->value('id')
-            ?? Branch::orderBy('id')->value('id');
+        $fallback = $available->firstWhere('status', true)?->id
+            ?? $available->first()?->id;
 
         return self::$memo = $fallback ? (int) $fallback : null;
     }
@@ -64,8 +67,15 @@ class CurrentBranch
      */
     public static function all(): Collection
     {
-        return Branch::orderByDesc('status')->orderBy('name')
-            ->get(['id', 'name', 'status']);
+        $user = auth()->user();
+
+        $query = Branch::orderByDesc('status')->orderBy('name');
+
+        if ($user instanceof User && ! $user->isSuperAdmin() && $user->branches()->exists()) {
+            $query->whereIn('id', $user->branches()->select('branches.id'));
+        }
+
+        return $query->get(['id', 'name', 'status']);
     }
 
     /** Clear the in-request memo (test isolation). */

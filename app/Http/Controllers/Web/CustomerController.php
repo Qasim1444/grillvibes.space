@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\FoodItem;
 use App\Models\Order;
+use App\Support\CurrentBranch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -23,6 +24,7 @@ class CustomerController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
+        $branchId = CurrentBranch::id();
 
         // The customers table can hold hundreds of thousands of rows, so it is
         // NEVER loaded in full — that exhausts PHP's memory_limit. Paginate and
@@ -45,6 +47,7 @@ class CustomerController extends Controller
             // Orders are few (unlike customers), so loading them all is fine.
             'orders' => Order::query()
                 ->with('orderItems')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->get(['id', 'customer_id', 'status', 'paid', 'type', 'order_datetime', 'grand_total']),
             // Menu items — used to resolve line-item names in the modal.
             'foodItems' => FoodItem::get(['id', 'name']),

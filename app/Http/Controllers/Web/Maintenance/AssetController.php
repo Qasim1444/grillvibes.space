@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Web\Maintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
-use App\Models\Branch;
 use App\Models\Vendor;
 use App\Support\CurrentBranch;
 use Illuminate\Http\RedirectResponse;
@@ -19,7 +18,7 @@ class AssetController extends Controller
         $search = trim((string) $request->query('search', ''));
         $category = $request->query('category', '');
         $status = $request->query('status', '');
-        $branchId = $request->query('branch_id', '');
+        $branchId = $request->query('branch_id', CurrentBranch::id());
         $flag = $request->query('flag', ''); // due | warranty
 
         $assets = Asset::with(['branch:id,name', 'vendor:id,name'])
@@ -54,11 +53,11 @@ class AssetController extends Controller
 
         return Inertia::render('Maintenance/Assets', [
             'assets' => $assets,
-            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'branches' => CurrentBranch::all(),
             'vendors' => Vendor::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'categories' => Asset::CATEGORIES,
             'statuses' => Asset::STATUSES,
-            'summary' => $this->summary(),
+            'summary' => $this->summary($branchId ? (int) $branchId : null),
             'filters' => [
                 'search' => $search, 'category' => $category, 'status' => $status,
                 'branch_id' => $branchId, 'flag' => $flag,
@@ -121,14 +120,15 @@ class AssetController extends Controller
     }
 
     /** Register KPIs — counted across all outlets (unfiltered). */
-    private function summary(): array
+    private function summary(?int $branchId): array
     {
         return [
-            'total' => Asset::count(),
-            'active' => Asset::where('status', 'active')->count(),
-            'under_maintenance' => Asset::where('status', 'under_maintenance')->count(),
-            'maintenance_due' => Asset::serviceDue()->count(),
+            'total' => Asset::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->count(),
+            'active' => Asset::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'active')->count(),
+            'under_maintenance' => Asset::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'under_maintenance')->count(),
+            'maintenance_due' => Asset::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->serviceDue()->count(),
             'warranty_expiring' => Asset::whereNotNull('warranty_expiry')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereDate('warranty_expiry', '>=', now())
                 ->whereDate('warranty_expiry', '<=', now()->addDays(30))
                 ->count(),

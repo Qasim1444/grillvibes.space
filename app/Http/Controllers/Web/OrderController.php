@@ -46,11 +46,13 @@ class OrderController extends Controller
     public function index(Request $request): Response
     {
         $search = trim((string) $request->query('search', ''));
+        $branchId = CurrentBranch::id();
 
         // Base query shared by the paginated list and the summary aggregates, so
         // the stat cards reflect the whole (filtered) result set — not just the
         // current 10-row page.
         $base = Order::query()
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('id', 'like', "%{$search}%")
                     ->orWhere('status', 'like', "%{$search}%")
@@ -74,7 +76,9 @@ class OrderController extends Controller
                 'revenue' => (float) (clone $base)->sum('grand_total'),
             ],
             'foodItems' => FoodItem::orderBy('name')->get(['id', 'name', 'price', 'foodcategory_id']),
-            'places' => Place::orderBy('name')->get(['id', 'name']),
+            'places' => Place::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'kdsStations' => KdsStation::where('is_active', true)
                 ->where(function ($q) {
                     $q->where('branch_id', CurrentBranch::id())->orWhereNull('branch_id');
@@ -127,7 +131,7 @@ class OrderController extends Controller
 
     public function update(Request $request, $id): RedirectResponse
     {
-        $order = Order::findOrFail($id);
+        $order = Order::where('branch_id', CurrentBranch::id())->findOrFail($id);
 
         $data = $this->normalize($request->validate($this->rules()));
         $orderItems = $data['order_items'];
@@ -161,7 +165,7 @@ class OrderController extends Controller
 
     public function destroy($id): RedirectResponse
     {
-        $order = Order::with('orderItems')->findOrFail($id);
+        $order = Order::with('orderItems')->where('branch_id', CurrentBranch::id())->findOrFail($id);
 
         DB::transaction(function () use ($order) {
             // Voiding a sale returns its ingredients to the shelf, before the

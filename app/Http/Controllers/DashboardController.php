@@ -10,6 +10,7 @@ use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\Order;
 use App\Models\User;
+use App\Support\CurrentBranch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,10 +26,12 @@ class DashboardController extends Controller
         // same-day orders, so widen to cover the full day(s).
         $startDate = $request->input('start_date', Carbon::today()->toDateString());
         $endDate = $request->input('end_date', Carbon::today()->toDateString());
+        $branchId = CurrentBranch::id();
 
         $rangeRequest = new Request([
             'start_date' => $startDate.' 00:00:00',
             'end_date' => $endDate.' 23:59:59',
+            'branch_id' => $branchId,
         ]);
 
         $reports = new ReportController;
@@ -39,11 +42,12 @@ class DashboardController extends Controller
             'users' => User::count(),
             'customers' => Customer::count(),
             'foodItems' => FoodItem::count(),
-            'orders' => Order::count(),
+            'orders' => Order::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->count(),
         ];
 
         // ── Recent orders (latest 5) ─────────────────────────────────────
         $recentOrders = Order::with('customer:id,name')
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->latest('id')
             ->take(5)
             ->get(['id', 'customer_id', 'type', 'status', 'grand_total']);
@@ -66,13 +70,14 @@ class DashboardController extends Controller
 
         // ── Feedback (latest 5 + average rating) ─────────────────────────
         $feedback = Feedback::with('customer:id,name')
+            ->whereHas('customer.orders', fn ($q) => $q->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)))
             ->orderByDesc('id')
             ->take(5)
             ->get(['id', 'customer_id', 'rating', 'comment', 'created_at']);
 
         $feedbackStats = [
-            'avg_rating' => round((float) Feedback::avg('rating'), 1),
-            'total'      => Feedback::count(),
+            'avg_rating' => round((float) Feedback::whereHas('customer.orders', fn ($q) => $q->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)))->avg('rating'), 1),
+            'total'      => Feedback::whereHas('customer.orders', fn ($q) => $q->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)))->count(),
         ];
 
         // ── Report blocks (reuse the existing JSON report logic) ──────────

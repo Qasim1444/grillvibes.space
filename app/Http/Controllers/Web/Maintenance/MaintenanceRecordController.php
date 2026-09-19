@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Web\Maintenance;
 
 use App\Http\Controllers\Controller;
 use App\Models\Asset;
-use App\Models\Branch;
 use App\Models\MaintenanceRecord;
 use App\Models\Vendor;
+use App\Support\CurrentBranch;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -20,7 +20,7 @@ class MaintenanceRecordController extends Controller
         $search = trim((string) $request->query('search', ''));
         $type = $request->query('type', '');
         $status = $request->query('status', '');
-        $branchId = $request->query('branch_id', '');
+        $branchId = $request->query('branch_id', CurrentBranch::id());
         $assetId = $request->query('asset_id', '');
 
         $records = MaintenanceRecord::with(['asset:id,name,asset_code', 'branch:id,name', 'vendor:id,name', 'createdBy:id,name'])
@@ -52,12 +52,15 @@ class MaintenanceRecordController extends Controller
 
         return Inertia::render('Maintenance/MaintenanceLogs', [
             'records' => $records,
-            'assets' => Asset::whereNotIn('status', ['disposed'])->orderBy('name')->get(['id', 'name', 'asset_code']),
-            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'assets' => Asset::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+                ->whereNotIn('status', ['disposed'])
+                ->orderBy('name')
+                ->get(['id', 'name', 'asset_code']),
+            'branches' => CurrentBranch::all(),
             'vendors' => Vendor::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'types' => MaintenanceRecord::TYPES,
             'statuses' => MaintenanceRecord::STATUSES,
-            'summary' => $this->summary(),
+            'summary' => $this->summary($branchId ? (int) $branchId : null),
             'filters' => [
                 'search' => $search, 'type' => $type, 'status' => $status,
                 'branch_id' => $branchId, 'asset_id' => $assetId,
@@ -190,15 +193,17 @@ class MaintenanceRecordController extends Controller
     }
 
     /** Work-order KPIs. */
-    private function summary(): array
+    private function summary(?int $branchId): array
     {
         return [
-            'scheduled' => MaintenanceRecord::where('status', 'scheduled')->count(),
-            'in_progress' => MaintenanceRecord::where('status', 'in_progress')->count(),
+            'scheduled' => MaintenanceRecord::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'scheduled')->count(),
+            'in_progress' => MaintenanceRecord::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'in_progress')->count(),
             'completed_this_month' => MaintenanceRecord::where('status', 'completed')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('completed_date', [now()->startOfMonth(), now()->endOfMonth()])
                 ->count(),
             'cost_this_month' => (float) MaintenanceRecord::where('status', 'completed')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('completed_date', [now()->startOfMonth(), now()->endOfMonth()])
                 ->sum('cost'),
         ];

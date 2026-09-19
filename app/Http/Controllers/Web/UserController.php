@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -22,7 +23,7 @@ class UserController extends Controller
         $search = trim((string) $request->query('search', ''));
 
         $users = User::select('id', 'name', 'email', 'phone', 'address', 'created_at')
-            ->with('roles:id,name')
+            ->with('roles:id,name', 'branches:id,name')
             ->when($search !== '', fn ($q) => $q->where(function ($w) use ($search) {
                 $w->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%")
@@ -35,11 +36,14 @@ class UserController extends Controller
                 ...$user->only('id', 'name', 'email', 'phone', 'address', 'created_at'),
                 'role_ids' => $user->roles->pluck('id'),
                 'role_names' => $user->roles->pluck('name')->implode(', '),
+                'branch_ids' => $user->branches->pluck('id'),
+                'branch_names' => $user->branches->pluck('name')->implode(', '),
             ]);
 
         return Inertia::render('Users', [
             'users' => $users,
             'roles' => Role::orderBy('name')->get(['id', 'name']),
+            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
             'filters' => ['search' => $search],
         ]);
     }
@@ -54,13 +58,17 @@ class UserController extends Controller
             'password' => 'required|min:6',
             'role_ids' => 'array',
             'role_ids.*' => 'integer|exists:roles,id',
+            'branch_ids' => 'array',
+            'branch_ids.*' => 'integer|exists:branches,id',
         ]);
         $roleIds = $data['role_ids'] ?? [];
-        unset($data['role_ids']);
+        $branchIds = $data['branch_ids'] ?? [];
+        unset($data['role_ids'], $data['branch_ids']);
 
         $data['password'] = Hash::make($data['password']);
         $user = User::create($data);
         $user->syncRoles($roleIds);
+        $user->branches()->sync($branchIds);
 
         return back()->with('success', 'User created.');
     }
@@ -76,6 +84,8 @@ class UserController extends Controller
             'password' => 'nullable|min:6',
             'role_ids' => 'array',
             'role_ids.*' => 'integer|exists:roles,id',
+            'branch_ids' => 'array',
+            'branch_ids.*' => 'integer|exists:branches,id',
         ]);
 
         $user->name = $data['name'];
@@ -87,6 +97,7 @@ class UserController extends Controller
         }
         $user->save();
         $user->syncRoles($data['role_ids'] ?? []);
+        $user->branches()->sync($data['branch_ids'] ?? []);
 
         return back()->with('success', 'User updated.');
     }

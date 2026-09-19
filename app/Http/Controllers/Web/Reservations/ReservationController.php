@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\DiningTable;
 use App\Models\Reservation;
 use App\Models\WaitlistEntry;
+use App\Support\CurrentBranch;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class ReservationController extends Controller
     public function index(Request $request): Response
     {
         $date     = $request->query('date', now()->toDateString());
-        $branchId = $request->query('branch_id', '');
+        $branchId = $request->query('branch_id', CurrentBranch::id());
         $status   = $request->query('status', '');
 
         $reservations = Reservation::with(['diningTable:id,table_number', 'branch:id,name'])
@@ -54,7 +55,7 @@ class ReservationController extends Controller
         return Inertia::render('Reservations/Index', [
             'reservations'  => $reservations,
             'waitlist'      => $waitlist,
-            'branches'      => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'branches'      => CurrentBranch::all(),
             'tables'        => DiningTable::where('is_active', true)
                 ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->orderBy('table_number')
@@ -132,6 +133,7 @@ class ReservationController extends Controller
 
         Reservation::create([
             ...$data,
+            'branch_id'  => $data['branch_id'] ?? CurrentBranch::id(),
             'status'     => $data['status'] ?? 'confirmed',
             'created_by' => $request->user()->id,
         ]);
@@ -193,7 +195,7 @@ class ReservationController extends Controller
 
     public function floorPlan(Request $request): Response
     {
-        $branchId = $request->query('branch_id', '');
+        $branchId = $request->query('branch_id', CurrentBranch::id());
 
         $tables = DiningTable::with('currentOrder:id,type,order_datetime')
             ->where('is_active', true)
@@ -214,7 +216,7 @@ class ReservationController extends Controller
         return Inertia::render('Reservations/FloorPlan', [
             'tables'           => $tables,
             'todayReservations'=> $todayReservations,
-            'branches'         => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'branches'         => CurrentBranch::all(),
             'tableStatuses'    => DiningTable::STATUSES,
             'tableShapes'      => DiningTable::SHAPES,
             'selectedBranchId' => $branchId ? (int) $branchId : null,
@@ -259,7 +261,12 @@ class ReservationController extends Controller
             'pos_y'        => 'nullable|integer|min:0',
         ]);
 
-        DiningTable::create([...$data, 'status' => 'available', 'is_active' => true]);
+        DiningTable::create([
+            ...$data,
+            'branch_id' => $data['branch_id'] ?? CurrentBranch::id(),
+            'status' => 'available',
+            'is_active' => true,
+        ]);
 
         return back()->with('success', 'Table added.');
     }
@@ -305,6 +312,7 @@ class ReservationController extends Controller
 
         WaitlistEntry::create([
             ...$data,
+            'branch_id'      => $data['branch_id'] ?? CurrentBranch::id(),
             'status'         => 'waiting',
             'checked_in_at'  => now(),
             'created_by'     => $request->user()->id,

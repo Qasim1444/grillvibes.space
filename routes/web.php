@@ -108,7 +108,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/branches/switch', [BranchController::class, 'switch'])
         ->name('branches.switch');
     Route::put('/branches/{id}/attendance-settings', [BranchController::class, 'updateAttendanceSettings'])
-        ->middleware('can.access:branches.update')->name('branches.attendance-settings');
+        ->middleware('can.access:hr.attendance.update')->name('branches.attendance-settings');
 
     // Food Categories
     Route::get('/food-categories', [FoodCategoryController::class, 'index'])

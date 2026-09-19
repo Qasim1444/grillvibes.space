@@ -38,9 +38,6 @@ class PermissionSeeder extends Seeder
             'Blog' => [
                 'blog' => ['Blog Posts', ['view', 'create', 'update', 'delete']],
             ],
-            'Branches' => [
-                'branches' => ['Branches', ['view', 'create', 'update', 'delete']],
-            ],
             'People' => [
                 'users' => ['Users', ['view', 'create', 'update', 'delete']],
                 'customers' => ['Customers', ['view', 'create', 'update', 'delete']],

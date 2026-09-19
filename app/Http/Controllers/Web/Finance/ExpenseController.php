@@ -24,7 +24,7 @@ class ExpenseController extends Controller
         $category = $request->query('category', '');
         $status = $request->query('status', '');
         $paidVia = $request->query('paid_via', '');
-        $branchId = $request->query('branch_id', '');
+        $branchId = $request->query('branch_id', CurrentBranch::id());
 
         $expenses = Expense::with([
             'branch:id,name', 'vendor:id,name', 'pettyCashAccount:id,name',
@@ -58,13 +58,13 @@ class ExpenseController extends Controller
 
         return Inertia::render('Finance/Expenses', [
             'expenses' => $expenses,
-            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'branches' => CurrentBranch::all(),
             'vendors' => Vendor::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'accounts' => PettyCashAccount::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'categories' => Expense::CATEGORIES,
             'paidVia' => Expense::PAID_VIA,
             'statuses' => Expense::STATUSES,
-            'summary' => $this->summary(),
+            'summary' => $this->summary($branchId ? (int) $branchId : null),
             'filters' => [
                 'search' => $search, 'category' => $category, 'status' => $status,
                 'paid_via' => $paidVia, 'branch_id' => $branchId,
@@ -201,18 +201,20 @@ class ExpenseController extends Controller
     }
 
     /** Expense KPIs — counted across all outlets (unfiltered). */
-    private function summary(): array
+    private function summary(?int $branchId): array
     {
         $monthStart = now()->startOfMonth();
         $monthEnd = now()->endOfMonth();
 
         return [
-            'pending' => Expense::where('status', 'pending')->count(),
-            'pending_amount' => (float) Expense::where('status', 'pending')->sum('amount'),
+            'pending' => Expense::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'pending')->count(),
+            'pending_amount' => (float) Expense::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'pending')->sum('amount'),
             'approved_this_month' => (float) Expense::where('status', 'approved')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('expense_date', [$monthStart, $monthEnd])
                 ->sum('amount'),
-            'total_this_month' => (float) Expense::whereBetween('expense_date', [$monthStart, $monthEnd])
+            'total_this_month' => (float) Expense::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+                ->whereBetween('expense_date', [$monthStart, $monthEnd])
                 ->sum('amount'),
         ];
     }

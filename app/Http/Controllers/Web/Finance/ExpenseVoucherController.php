@@ -34,7 +34,7 @@ class ExpenseVoucherController extends Controller
         $search = trim((string) $request->query('search', ''));
         $status = $request->query('status', '');
         $accountId = $request->query('account_id', '');
-        $branchId = $request->query('branch_id', '');
+        $branchId = $request->query('branch_id', CurrentBranch::id());
 
         $vouchers = ExpenseVoucher::with([
             'branch:id,name', 'pettyCashAccount:id,name', 'claimant:id,name',
@@ -76,13 +76,13 @@ class ExpenseVoucherController extends Controller
 
         return Inertia::render('Finance/Vouchers', [
             'vouchers' => $vouchers,
-            'claimableExpenses' => $this->claimableExpenses(),
+            'claimableExpenses' => $this->claimableExpenses($branchId ? (int) $branchId : null),
             'accounts' => PettyCashAccount::where('is_active', true)->orderBy('name')
                 ->get(['id', 'name', 'current_balance']),
             'claimants' => User::employees()->orderBy('name')->get(['id', 'name']),
-            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'branches' => CurrentBranch::all(),
             'statuses' => ExpenseVoucher::STATUSES,
-            'summary' => $this->summary(),
+            'summary' => $this->summary($branchId ? (int) $branchId : null),
             'filters' => [
                 'search' => $search, 'status' => $status,
                 'account_id' => $accountId, 'branch_id' => $branchId,
@@ -265,11 +265,12 @@ class ExpenseVoucherController extends Controller
     }
 
     /** The unclaimed pool the picker draws from — newest first. */
-    private function claimableExpenses(): \Illuminate\Support\Collection
+    private function claimableExpenses(?int $branchId): \Illuminate\Support\Collection
     {
         return Expense::with(['pettyCashAccount:id,name', 'vendor:id,name'])
             ->whereNull('expense_voucher_id')
             ->where('status', '!=', 'rejected')
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->orderByDesc('expense_date')->orderByDesc('id')
             ->limit(200)
             ->get()
@@ -284,18 +285,20 @@ class ExpenseVoucherController extends Controller
     }
 
     /** Voucher KPIs — counted across all outlets (unfiltered). */
-    private function summary(): array
+    private function summary(?int $branchId): array
     {
         $monthStart = now()->startOfMonth();
         $monthEnd = now()->endOfMonth();
 
         return [
-            'pending' => ExpenseVoucher::where('status', 'pending')->count(),
-            'pending_amount' => (float) ExpenseVoucher::where('status', 'pending')->sum('amount'),
+            'pending' => ExpenseVoucher::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'pending')->count(),
+            'pending_amount' => (float) ExpenseVoucher::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('status', 'pending')->sum('amount'),
             'claimed_this_month' => (float) ExpenseVoucher::where('status', '!=', 'rejected')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('voucher_date', [$monthStart, $monthEnd])
                 ->sum('amount'),
             'approved_this_month' => (float) ExpenseVoucher::where('status', 'approved')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('voucher_date', [$monthStart, $monthEnd])
                 ->sum('amount'),
         ];

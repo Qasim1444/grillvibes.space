@@ -29,12 +29,16 @@ class POSController extends Controller
 {
     public function index(): Response
     {
+        $branchId = CurrentBranch::id();
+
         return Inertia::render('POS', [
             'foodItems' => FoodItem::where('status', 1)
                 ->orderBy('name')
                 ->get(['id', 'name', 'price', 'image', 'foodcategory_id']),
             'categories' => FoodCategory::orderBy('name')->get(['id', 'name']),
-            'places' => Place::orderBy('name')->get(['id', 'name']),
+            'places' => Place::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'kdsStations' => KdsStation::where('is_active', true)
                 ->where(function ($q) {
                     $q->where('branch_id', CurrentBranch::id())->orWhereNull('branch_id');
@@ -82,6 +86,7 @@ class POSController extends Controller
     private function todaysOrders(?int $limit = null)
     {
         return Order::with('customer:id,name')
+            ->when(CurrentBranch::id(), fn ($q, $branchId) => $q->where('branch_id', $branchId))
             ->whereBetween('order_datetime', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
             ->orderByDesc('order_datetime')
             ->when($limit, fn ($q) => $q->take($limit))

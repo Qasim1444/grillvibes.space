@@ -40,7 +40,7 @@
       You have unsaved changes on this sheet — click <strong>Save Sheet</strong> before switching dates.
     </div>
 
-    <div v-if="can('branches.update')" class="att__settings ui-card ui-card-pad">
+    <div v-if="can('hr.attendance.update')" class="att__settings ui-card ui-card-pad">
       <div>
         <strong>Branch attendance locations</strong>
         <p class="att__hint">Each employee is checked against the branch assigned to their place.</p>

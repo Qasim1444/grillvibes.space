@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Web\Finance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
 use App\Models\PettyCashAccount;
 use App\Models\PettyCashTransaction;
 use App\Support\CurrentBranch;
@@ -19,11 +18,13 @@ class PettyCashController extends Controller
     {
         $accountId = $request->query('account_id', '');
         $type = $request->query('type', '');
+        $branchId = CurrentBranch::id();
 
         $transactions = PettyCashTransaction::with([
             'account:id,name', 'branch:id,name', 'expense:id,expense_number',
             'voucher:id,voucher_number', 'createdBy:id,name',
         ])
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->when($accountId, fn ($q) => $q->where('petty_cash_account_id', $accountId))
             ->when($type, fn ($q) => $q->where('type', $type))
             ->orderByDesc('id')
@@ -43,6 +44,7 @@ class PettyCashController extends Controller
             ]);
 
         $accounts = PettyCashAccount::with('branch:id,name')
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->orderByDesc('is_active')->orderBy('name')->get()
             ->map(fn ($a) => [
                 ...$a->only(
@@ -55,9 +57,9 @@ class PettyCashController extends Controller
         return Inertia::render('Finance/PettyCash', [
             'accounts' => $accounts,
             'transactions' => $transactions,
-            'branches' => Branch::where('status', true)->orderBy('name')->get(['id', 'name']),
+            'branches' => CurrentBranch::all(),
             'types' => PettyCashTransaction::TYPES,
-            'summary' => $this->summary(),
+            'summary' => $this->summary($branchId),
             'filters' => ['account_id' => $accountId, 'type' => $type],
         ]);
     }
@@ -181,18 +183,20 @@ class PettyCashController extends Controller
     }
 
     /** Petty-cash KPIs — across active floats. */
-    private function summary(): array
+    private function summary(?int $branchId): array
     {
         $monthStart = now()->startOfMonth();
         $monthEnd = now()->endOfMonth();
 
         return [
-            'total_balance' => (float) PettyCashAccount::where('is_active', true)->sum('current_balance'),
-            'active_funds' => PettyCashAccount::where('is_active', true)->count(),
+            'total_balance' => (float) PettyCashAccount::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('is_active', true)->sum('current_balance'),
+            'active_funds' => PettyCashAccount::when($branchId, fn ($q) => $q->where('branch_id', $branchId))->where('is_active', true)->count(),
             'disbursed_this_month' => (float) abs((float) PettyCashTransaction::where('amount', '<', 0)
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('occurred_on', [$monthStart, $monthEnd])
                 ->sum('amount')),
             'topped_up_this_month' => (float) PettyCashTransaction::where('type', 'top_up')
+                ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->whereBetween('occurred_on', [$monthStart, $monthEnd])
                 ->sum('amount'),
         ];

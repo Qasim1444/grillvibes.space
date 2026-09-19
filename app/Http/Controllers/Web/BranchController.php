@@ -22,7 +22,13 @@ class BranchController extends Controller
             'branch_id' => 'required|exists:branches,id',
         ]);
 
-        CurrentBranch::set((int) $data['branch_id']);
+        $branchId = (int) $data['branch_id'];
+
+        if (! CurrentBranch::all()->contains('id', $branchId)) {
+            return back()->with('error', 'You do not have access to that branch.');
+        }
+
+        CurrentBranch::set($branchId);
 
         return back()->with('success', 'Switched outlet.');
     }

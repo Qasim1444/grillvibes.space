@@ -20,6 +20,10 @@
         <span v-if="value" class="ui-badge ui-badge--success">{{ value }}</span>
         <span v-else class="ui-badge ui-badge--muted">No role</span>
       </template>
+      <template #cell:branch_names="{ value }">
+        <span v-if="value" class="ui-badge ui-badge--info">{{ value }}</span>
+        <span v-else class="ui-badge ui-badge--muted">All branches</span>
+      </template>
       <template #actions="{ row }">
         <button v-if="can('users.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="editUser(row)">Edit</button>
         <button v-if="can('users.update')" class="ui-btn ui-btn--secondary ui-btn--sm" @click="openAssignRole(row)">Assign Role</button>
@@ -55,6 +59,19 @@
           </p>
         </div>
         <span v-if="form.errors.role_ids" class="ui-field__error">{{ form.errors.role_ids }}</span>
+      </div>
+
+      <div class="ui-field">
+        <label class="ui-label">Branch Access</label>
+        <div class="users__roles">
+          <label v-for="branch in props.branches" :key="branch.id" class="users__role">
+            <input type="checkbox" :value="branch.id" v-model="form.branch_ids" />
+            <span>{{ branch.name }}</span>
+          </label>
+          <p v-if="!props.branches.length" class="users__roles-empty">No branches configured.</p>
+        </div>
+        <p class="users__roles-empty">Leave empty to allow all branches.</p>
+        <span v-if="form.errors.branch_ids" class="ui-field__error">{{ form.errors.branch_ids }}</span>
       </div>
 
       <template #footer>
@@ -105,6 +122,7 @@ const props = defineProps({
   // Laravel paginator: { data, links, from, to, total, current_page, ... }.
   users: { type: Object, default: () => ({ data: [] }) },
   roles: { type: Array, default: () => [] },
+  branches: { type: Array, default: () => [] },
   filters: { type: Object, default: () => ({ search: "" }) },
 });
 
@@ -116,6 +134,7 @@ const columns = [
   { key: "phone", label: "Phone" },
   { key: "address", label: "Address" },
   { key: "role_names", label: "Roles" },
+  { key: "branch_names", label: "Branches" },
   { key: "created_at", label: "Created At" },
 ];
 
@@ -138,7 +157,7 @@ watch(search, (value) => {
 });
 
 const showModal = ref(false);
-const form = useForm({ id: null, name: "", email: "", phone: "", address: "", password: "", role_ids: [] });
+const form = useForm({ id: null, name: "", email: "", phone: "", address: "", password: "", role_ids: [], branch_ids: [] });
 
 // Non-field-specific summary (e.g. a validation message not tied to one input).
 const errorMsg = computed(() => form.errors.message || "");
@@ -157,6 +176,7 @@ const editUser = (u) => {
   form.address = u.address || "";
   form.password = "";
   form.role_ids = [...(u.role_ids ?? [])];
+  form.branch_ids = [...(u.branch_ids ?? [])];
   form.clearErrors();
   showModal.value = true;
 };
