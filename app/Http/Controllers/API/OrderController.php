@@ -67,16 +67,7 @@ class OrderController extends Controller
 
         $data = $request->validate($this->validationRules());
 
-        // If device_id is not set, assign the first device id from whatsapps table
-        if (empty($data['device_id'])) {
-            $data['device_id'] = Whatsapp::query()->value('id');
-        }
-
-        // Mobile/API checkouts do not have the web session branch switcher, but
-        // the dashboard, orders page and reports are branch-scoped. Assign the
-        // order to the selected place's branch so API-created sales show beside
-        // web POS sales.
-        $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
+        $data = $this->normalizeOrderData($data);
 
         $orderItems = $data['order_items'];
         unset($data['order_items']);
@@ -192,7 +183,7 @@ class OrderController extends Controller
         $orderItems = $data['order_items'] ?? [];
         unset($data['order_items']);
 
-        $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
+        $data = $this->normalizeOrderData($data);
 
         DB::transaction(function () use ($order, $data, $orderItems) {
             $stock = app(StockConsumptionService::class);
@@ -256,6 +247,28 @@ class OrderController extends Controller
     private function resolveBranchId(int $placeId): ?int
     {
         return Place::whereKey($placeId)->value('branch_id') ?: CurrentBranch::id();
+    }
+
+    private function normalizeOrderData(array $data): array
+    {
+        // If device_id is not set, assign the first device id from whatsapps table.
+        if (empty($data['device_id'])) {
+            $data['device_id'] = Whatsapp::query()->value('id');
+        }
+
+        // Mobile apps commonly send ISO/UTC timestamps via new Date().toISOString().
+        // Reports use the restaurant's local business date, so store the local time.
+        $data['order_datetime'] = Carbon::parse($data['order_datetime'])
+            ->timezone(config('app.timezone'))
+            ->toDateTimeString();
+
+        // Mobile/API checkouts do not have the web session branch switcher, but
+        // the dashboard, orders page and reports are branch-scoped. Assign the
+        // order to the selected place's branch so API-created sales show beside
+        // web POS sales.
+        $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
+
+        return $data;
     }
 
     public function show($id): JsonResponse
