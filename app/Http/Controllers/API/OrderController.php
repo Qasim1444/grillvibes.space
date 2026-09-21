@@ -7,9 +7,11 @@ use App\Models\KdsStation;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Place;
 use App\Models\Whatsapp;
 use App\Services\ReceiptGenerator;
 use App\Services\StockConsumptionService;
+use App\Support\CurrentBranch;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -47,7 +49,7 @@ class OrderController extends Controller
                 'regex:/^\d+(\.\d{1,2})?$/',
             ],
             'grand_total' => 'required|numeric|min:0',
-            'place_id' => 'required|integer',
+            'place_id' => 'required|exists:places,id',
             'order_items' => 'required|array',
             'order_items.*.fooditems_id' => 'required|exists:food_items,id',
             'order_items.*.quantity' => 'required|integer|min:1',
@@ -69,6 +71,12 @@ class OrderController extends Controller
         if (empty($data['device_id'])) {
             $data['device_id'] = Whatsapp::query()->value('id');
         }
+
+        // Mobile/API checkouts do not have the web session branch switcher, but
+        // the dashboard, orders page and reports are branch-scoped. Assign the
+        // order to the selected place's branch so API-created sales show beside
+        // web POS sales.
+        $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
 
         $orderItems = $data['order_items'];
         unset($data['order_items']);
@@ -184,6 +192,8 @@ class OrderController extends Controller
         $orderItems = $data['order_items'] ?? [];
         unset($data['order_items']);
 
+        $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
+
         DB::transaction(function () use ($order, $data, $orderItems) {
             $stock = app(StockConsumptionService::class);
 
@@ -241,6 +251,11 @@ class OrderController extends Controller
         }
 
         return $line;
+    }
+
+    private function resolveBranchId(int $placeId): ?int
+    {
+        return Place::whereKey($placeId)->value('branch_id') ?: CurrentBranch::id();
     }
 
     public function show($id): JsonResponse

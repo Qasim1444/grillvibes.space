@@ -1,918 +1,1034 @@
-# GrillVibes API — RWCT Native App Documentation
+# GrillVibes Mobile POS API + React Native Build Guide
 
-> **Base URL:** `http://127.0.0.1:8000/api` (replace with production URL)  
-> **Format:** JSON  
-> **Auth Type:** Laravel Sanctum Bearer Token  
-> **Version:** 1.0.0
+This document is for building a React Native mobile app that works like the web POS screen in this Laravel system.
 
----
-
-## Table of Contents
-
-1. [Authentication](#authentication)
-   - [Login](#login)
-   - [Register](#register)
-   - [Logout](#logout)
-   - [Get Logged User](#get-logged-user)
-   - [Update Profile](#update-profile)
-   - [Change Password](#change-password)
-2. [Orders](#orders)
-   - [Create Order](#create-order)
-   - [List Orders](#list-orders)
-   - [Get Order](#get-order)
-   - [Update Order](#update-order)
-   - [Delete Order](#delete-order)
-   - [Generate Receipt](#generate-receipt)
-3. [Customers](#customers)
-4. [Food Menu](#food-menu)
-5. [Places](#places)
-6. [Guest QR Ordering](#guest-qr-ordering)
+> **API Base URL:** `http://127.0.0.1:8000/api` for API routes  
+> **Web POS Reference:** `/pos` in the Laravel web app  
+> **Data Format:** JSON, except image upload endpoints use `multipart/form-data`  
+> **Auth:** Laravel Sanctum Bearer token only on protected API routes  
+> **Main Mobile Goal:** cashier can log in, load menu, build cart, select order type/table/customer, choose KDS station, apply discount champion/running offer, apply promo code, redeem loyalty points, place order, and show the receipt after checkout.
 
 ---
 
-## General Response Format
+## Important Backend Note
 
-### Success
+The current API routes support the core POS workflow, but several web POS features currently live only in web/Inertia routes. To build the React Native app exactly like the web POS, expose API endpoints for these features before or during mobile development.
 
-```json
-{
-  "status": "success",
-  "message": "Operation completed.",
-  "data": { }
-}
-```
+| Web POS Feature | Current API Status | Needed for Exact Mobile Parity |
+| --- | --- | --- |
+| Menu items | Available through `GET /food-items` | OK |
+| Categories | Available through `GET /food-categories` | OK |
+| Places/tables | Available through `GET /places` | OK |
+| Customers | Available through `GET /customers` | OK, but mobile should ideally have search |
+| Place order | Available through `POST /orders` | OK |
+| Receipt PNG | Available through `GET|POST /orders/{id}/receipt` | OK |
+| Daily quick report | Available through `GET /daily-summary/quick-report` | OK |
+| Top 10 report | Available through `GET /daily-summary/top-ten-deals-report` | OK |
+| KDS station selection | API order payload accepts `kds_station_id` | Required: add endpoint to list active KDS stations |
+| Promo code quote | Web-only `/orders/quote-promo` | Required: add API promo quote endpoint |
+| Loyalty redemption | Web order controller supports it; API order controller does not | Required: add `redeem_points` support to API orders |
+| Discount champion/running offers | Web POS receives campaigns as Inertia props | Required: add campaigns in POS bootstrap API |
 
-### Error
-
-```json
-{
-  "message": "Error description",
-  "status": "failed"
-}
-```
-
-### Validation Error (422)
-
-```json
-{
-  "message": "The given data was invalid.",
-  "errors": {
-    "field_name": ["Error message"]
-  }
-}
-```
+For the full mobile app, build the core POS and also add API support for promo code, discount champion/running offers, redeem points, and KDS stations. These are required because the user wants the mobile app to behave like the web POS.
 
 ---
 
-## Authentication
+## React Native App Screens
 
-All endpoints under `/api` except those explicitly marked public require a valid Sanctum token in the `Authorization` header for protected routes.
+### 1. Login Screen
 
----
-
-### Login
-
-Authenticates a user and returns a Sanctum API token.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `POST /api/login`                  |
-| **Auth**     | No (public)                        |
-| **Description** | Authenticates user by email and password; returns a plain-text Sanctum token for subsequent API calls. |
-
-#### Request Body
-
-| Field     | Type   | Required | Description          |
-| --------- | ------ | -------- | -------------------- |
-| `email`   | string | Yes      | User email address   |
-| `password`| string | Yes      | User password        |
-
-#### Example Request
+Use:
 
 ```http
-POST /api/login HTTP/1.1
-Content-Type: application/json
-Accept: application/json
-
-{
-  "email": "admin@grillvibes.space",
-  "password": "password123"
-}
+POST /api/login
 ```
 
-#### Success Response (`200 OK`)
+Store the returned `token` securely using `expo-secure-store`, Keychain, or encrypted storage.
+
+Fields:
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `email` | string | Yes |
+| `password` | string | Yes |
+
+Success:
 
 ```json
 {
-  "token": "2|abc123def456ghi789...",
+  "token": "1|plain-text-token",
   "message": "Login Success",
   "status": "success"
 }
 ```
 
-#### Error Response (`401 Unauthorized`)
+### 2. POS Home Screen
 
-```json
-{
-  "message": "The Provided Credentials are incorrect",
-  "status": "failed"
-}
+This is the main app screen, matching the web POS layout.
+
+Mobile layout:
+
+1. Category tabs at top.
+2. Search box.
+3. Menu item grid/list.
+4. Cart button or bottom cart summary.
+5. Cart screen/bottom sheet for checkout.
+
+Load these on screen open:
+
+```http
+GET /api/food-categories
+GET /api/food-items
+GET /api/places
+GET /api/customers
 ```
+
+Recommended local state:
+
+```ts
+type CartLine = {
+  fooditems_id: number;
+  category_id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  add_note: string;
+  kds_station_id: number | null;
+};
+
+type PosForm = {
+  type: "dining" | "delivery" | "on-way";
+  place_id: number | "";
+  customer_id: number | null;
+  status: "pending" | "preparing" | "on-way" | "completed";
+  paid: boolean;
+  discount_type: "amount" | "percentage";
+  discount_amount: number;
+  service_charges_percentage: number;
+  promo_code: string;
+  redeem_points: number;
+};
+```
+
+### 3. Cart / Checkout Screen
+
+The mobile cart should support:
+
+| Feature | Details |
+| --- | --- |
+| Increase/decrease quantity | Minimum quantity is `1` |
+| Remove item | Delete cart line |
+| Add note | Sent as `order_items[].add_note` |
+| Select KDS station | Same as web POS: each cart line can use `Auto KDS station` or a selected station |
+| Select order type | `dining`, `delivery`, `on-way` |
+| Select table/place | Required as `place_id` |
+| Select customer | Required for `delivery`; optional for `dining` and `on-way` |
+| Set order status | Usually default `pending` |
+| Payment status | `paid: true/false` |
+| Manual discount | Fixed amount or percentage |
+| Discount champion/running offer | Show campaign chips like web POS; tapping one fills manual discount amount |
+| Promo code | Cashier enters code; app calls promo quote API and shows server-priced discount |
+| Redeem points | Customer must be selected; app shows points balance and redemption limit |
+| Service charge | Percentage |
+| Complete order | Submit order, then immediately show receipt preview from `receipt_url` |
+
+### Required Web POS Match Features
+
+#### Promo Code
+
+The mobile app must include a **Promo Code** field like web POS.
+
+Flow:
+
+1. Cashier types promo code.
+2. App calls `GET /api/orders/quote-promo?code=<code>&subtotal=<subtotal>&customer_id=<customer_id>`.
+3. App displays returned discount.
+4. App sends only `promo_code` in the final order payload.
+5. Backend calculates promo discount again when saving the order.
+
+Do not let the mobile app invent promo discount amounts locally.
+
+#### Discount Champion / Running Offers
+
+The mobile app must show active discount campaigns as chips/buttons, like web POS running offers.
+
+Expected behavior:
+
+1. Load `campaigns` from `GET /api/pos/bootstrap`.
+2. Calculate the campaign preview discount locally for display.
+3. When cashier taps a campaign, set:
+
+```ts
+form.discount_type = "amount";
+form.discount_amount = campaignDiscount;
+```
+
+This matches the web POS behavior: campaigns are suggestions, and tapping one fills the manual discount field.
+
+#### Redeem Points
+
+The mobile app must include **Redeem Points** when a customer is selected.
+
+Expected behavior:
+
+1. Customer search response must include `loyalty_points_balance`.
+2. POS bootstrap must include loyalty settings.
+3. App shows available points and max redeemable points.
+4. App validates minimum and maximum points before checkout.
+5. App sends `redeem_points` in order payload.
+6. Backend calculates loyalty discount and updates points ledger.
+
+#### KDS Station
+
+Each cart line must include a KDS station picker like the web POS:
+
+1. Default option: `Auto KDS station`.
+2. Manual options: active stations from `GET /api/kds/stations`.
+3. Send selected station as `order_items[].kds_station_id`.
+4. Send `null` for auto-routing.
+
+#### Show Receipt After Order Complete
+
+After successful `POST /api/orders`:
+
+1. Read `data.id` and `receipt_url` from the response.
+2. Navigate to a `ReceiptPreviewScreen` or open a receipt modal.
+3. Display the receipt image from `receipt_url`.
+4. Provide buttons: `Print`, `Share`, `WhatsApp`, `New Order`.
+5. If `receipt_url` is missing, call `GET /api/orders/{id}/receipt`.
+
+### 4. Orders Screen
+
+Use:
+
+```http
+GET /api/orders
+GET /api/orders/{id}
+DELETE /api/orders/{id}
+```
+
+Show order id, customer, type, status, paid/unpaid, grand total, and items.
+
+### 5. Reports Screen
+
+Use:
+
+```http
+GET /api/daily-summary/quick-report
+GET /api/daily-summary/top-ten-deals-report
+GET /api/daily-summary/report
+GET /api/daily-summary/reportdelivery
+GET /api/daily-summary/reportdining
+GET /api/daily-summary/reportonway
+GET /api/daily-category-sales/report
+GET /api/daily-category-sales-by-item-quantity/reportcurrentdate
+```
+
+Optional query parameters:
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `start_date` | date/datetime | Report start |
+| `end_date` | date/datetime | Report end |
+| `branch_id` | integer | Branch filter |
 
 ---
 
-### Register
+## Core POS Calculations
 
-Creates a new user account and returns a Sanctum API token.
+The React Native app should calculate the visible totals before submitting.
 
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `POST /api/register`               |
-| **Auth**     | No (public)                        |
-| **Description** | Registers a new user, generates an API token. |
+```ts
+const subtotal = cart.reduce(
+  (sum, line) => sum + Number(line.price) * Number(line.quantity),
+  0
+);
 
-#### Request Body
+const manualDiscount =
+  form.discount_type === "percentage"
+    ? Math.min(subtotal, subtotal * (Number(form.discount_amount) / 100))
+    : Math.min(subtotal, Number(form.discount_amount || 0));
 
-| Field     | Type   | Required | Description                  |
-| --------- | ------ | -------- | ---------------------------- |
-| `name`    | string | Yes      | Full name                    |
-| `email`   | string | Yes      | Email address (must be unique)|
-| `password`| string | Yes      | Password (min 6 chars, must be confirmed) |
+const promoDiscount = Number(appliedPromo?.discount || 0);
 
-#### Example Request
+const pointValue = Number(loyalty?.currency_per_point || 0);
+const loyaltyDiscount = Number(form.redeem_points || 0) * pointValue;
+
+const totalDiscount = manualDiscount + promoDiscount + loyaltyDiscount;
+
+const taxable = Math.max(0, subtotal - totalDiscount);
+
+const serviceCharges =
+  taxable * (Number(form.service_charges_percentage || 0) / 100);
+
+const grandTotal = Math.max(0, taxable + serviceCharges);
+
+const totalQty = cart.reduce((sum, line) => sum + Number(line.quantity), 0);
+```
+
+Validation before submit:
+
+1. Cart must not be empty.
+2. `place_id` is required.
+3. `customer_id` is required when `type === "delivery"`.
+4. Manual discount must not exceed subtotal.
+5. Manual discount + promo discount + loyalty discount must not exceed subtotal.
+6. `service_charges_percentage` must be between `0` and `100`.
+7. Promo codes must be priced by the backend quote API.
+8. Redeem points must not exceed customer balance or the loyalty max redeem percent.
+
+---
+
+## Place Order API
 
 ```http
-POST /api/register HTTP/1.1
+POST /api/orders
+Accept: application/json
 Content-Type: application/json
-Accept: application/json
-
-{
-  "name": "John Doe",
-  "email": "john@example.com",
-  "password": "secret123",
-  "password_confirmation": "secret123"
-}
+Authorization: Bearer <token>
 ```
 
-#### Success Response (`201 Created`)
+> The current route list does not put `/orders` inside Sanctum middleware, but the mobile app can still send the token. If the backend later protects POS APIs, the app will already be ready.
+
+### Request Body
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `device_id` | integer | No | WhatsApp device id; backend uses first device if omitted |
+| `customer_id` | integer | Conditional | Required unless type is `dining` or `on-way` |
+| `order_datetime` | string/date | Yes | Example: `2026-09-19 14:30:00` |
+| `status` | string | Yes | `pending`, `preparing`, `on-way`, `completed` |
+| `paid` | boolean | Yes | Payment status |
+| `type` | string | No | `dining`, `delivery`, `on-way` |
+| `qty` | integer | Yes | Total item quantity |
+| `subtotal` | number | Yes | Before discount/service |
+| `discount_type` | string | Yes | `amount` or `percentage` |
+| `discount_amount` | number | Yes | Send the calculated discount amount in currency |
+| `service_charges` | number | Yes | Calculated service charge amount |
+| `service_charges_percentage` | number | Yes | 0 to 100, max 2 decimals |
+| `grand_total` | number | Yes | Final total |
+| `place_id` | integer | Yes | Table/place id |
+| `promo_code` | string | No | Required for promo-code checkout; backend API must support it |
+| `redeem_points` | integer | No | Required for loyalty checkout; backend API must support it |
+| `order_items` | array | Yes | Cart lines |
+
+Order item:
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `fooditems_id` | integer | Yes | Food item id |
+| `category_id` | integer | Yes | Food category id |
+| `quantity` | integer | Yes | Minimum `1` |
+| `discount_amount` | number | No | Usually `0` |
+| `sub_total` | number | No | `price * quantity` |
+| `add_note` | string | No | Kitchen note |
+| `kds_station_id` | integer/null | No | Optional station id |
+
+### Example Request
 
 ```json
-{
-  "user": {
-    "id": 1,
-    "name": "John Doe",
-    "email": "john@example.com",
-    "password": null,
-    "created_at": "2024-01-15T10:00:00.000000Z",
-    "updated_at": "2024-01-15T10:00:00.000000Z"
-  },
-  "message": "Registration Success",
-  "status": "success"
-}
-```
-
-#### Error Response (Email exists — `200 OK`)
-
-```json
-{
-  "message": "Email already exists",
-  "status": "failed"
-}
-```
-
----
-
-### Logout
-
-Revokes the current user's Sanctum token(s). Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `POST /api/logout`                 |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Logs out the current user by deleting all their tokens. |
-
-#### Example Request
-
-```http
-POST /api/logout HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Content-Type: application/json
-Accept: application/json
-```
-
-#### Success Response (`200 OK`)
-
-```json
-{
-  "message": "Logout Success",
-  "status": "success"
-}
-```
-
----
-
-### Get Logged User
-
-Returns the currently authenticated user's data. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `GET /api/logged-user`             |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Fetches profile data of the logged-in user. |
-
-#### Example Request
-
-```http
-GET /api/logged-user HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Accept: application/json
-```
-
-#### Success Response (`200 OK`)
-
-```json
-{
-  "user": { "id": 1, "name": "John Doe", "email": "john@example.com", ... },
-  "message": "Logged User Data",
-  "status": "success"
-}
-```
-
----
-
-### Update Profile
-
-Updates the authenticated user's profile information. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `POST /api/update-profile`         |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Updates name, phone, and address of the logged-in user. |
-
-#### Request Body
-
-| Field     | Type   | Required | Description                |
-| --------- | ------ | -------- | -------------------------- |
-| `name`    | string | Yes      | Full name (max 255)        |
-| `phone`   | string | No       | Phone number (max 50)      |
-| `address` | string | No       | Address (max 1000)         |
-
-#### Example Request
-
-```http
-POST /api/update-profile HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Content-Type: application/json
-Accept: application/json
-
-{
-  "name": "John Doe Updated",
-  "phone": "+923001234567",
-  "address": "123 Main Street, Lahore"
-}
-```
-
-#### Success Response (`200 OK`)
-
-```json
-{
-  "user": {
-    "id": 1,
-    "name": "John Doe Updated",
-    "email": "john@example.com",
-    "phone": "+923001234567",
-    "address": "123 Main Street, Lahore",
-    "created_at": "2024-01-15T10:00:00.000000Z"
-  },
-  "message": "Profile updated successfully.",
-  "status": "success"
-}
-```
-
----
-
-### Change Password
-
-Changes the authenticated user's password. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `POST /api/change-password`        |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Changes password after verifying the current password. |
-
-#### Request Body
-
-| Field              | Type   | Required | Description                          |
-| ------------------ | ------ | -------- | ------------------------------------ |
-| `current_password` | string | Yes      | Current password                     |
-| `password`         | string | Yes      | New password (min 8 chars, confirmed)|
-
-#### Example Request
-
-```http
-POST /api/change-password HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Content-Type: application/json
-Accept: application/json
-
-{
-  "current_password": "oldpass123",
-  "password": "newpass123",
-  "password_confirmation": "newpass123"
-}
-```
-
-#### Success Response (`200 OK`)
-
-```json
-{
-  "message": "Password changed successfully.",
-  "status": "success"
-}
-```
-
-#### Error Response (`403 Forbidden`)
-
-```json
-{
-  "message": "Current password is incorrect.",
-  "status": "error"
-}
-```
-
----
-
-## Orders
-
-Order management endpoints. The `POST /api/orders` endpoint is the primary order creation endpoint used by the RWCT native app. It handles order creation, stock deduction (via recipe costing), receipt PNG generation, and optional WhatsApp delivery.
-
----
-
-### Create Order
-
-Creates a new order with items, deducts stock based on recipes, generates a receipt image, and optionally sends it via WhatsApp. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `POST /api/orders`                 |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Method**   | `POST`                             |
-| **Description** | Places a new order: validates items, deducts inventory stock atomically, generates a PNG receipt, and optionally sends it via WhatsApp to the customer. |
-
-#### Request Body
-
-| Field                        | Type      | Required | Description                                     |
-| ---------------------------- | --------- | -------- | ----------------------------------------------- |
-| `customer_id`                | integer   | Conditional* | Customer ID (required unless `type` is `dining` or `on-way`). Must exist in `customers` table. |
-| `device_id`                  | integer   | No       | WhatsApp device ID (auto-assigned if omitted).  |
-| `order_datetime`             | string    | Yes      | Order datetime (ISO 8601 date).                 |
-| `status`                     | string    | Yes      | Order status (e.g., `pending`, `processing`).   |
-| `paid`                       | boolean   | Yes      | Whether the order is paid.                      |
-| `type`                       | string    | No       | Order type: `dining`, `delivery`, or `on-way`.  |
-| `qty`                        | integer   | Yes      | Total quantity (min 1).                         |
-| `subtotal`                   | number    | Yes      | Subtotal amount (min 0).                        |
-| `discount_type`              | string    | Yes      | `amount` or `percentage`.                       |
-| `discount_amount`            | number    | Yes      | Discount value (min 0).                         |
-| `service_charges`            | number    | Yes      | Service charges (min 0).                        |
-| `service_charges_percentage` | number    | Yes      | Service charge % (0-100, 2 decimal places).     |
-| `grand_total`                | number    | Yes      | Grand total (min 0).                            |
-| `place_id`                   | integer   | Yes      | Place/outlet ID.                                |
-| `order_items`                | array     | Yes      | Array of order line items (see below).          |
-
-##### Order Item (in `order_items` array)
-
-| Field              | Type    | Required | Description                              |
-| ------------------ | ------- | -------- | ---------------------------------------- |
-| `fooditems_id`     | integer | Yes      | Food item ID (must exist in `food_items`).|
-| `category_id`      | integer | Yes      | Food category ID.                        |
-| `quantity`         | integer | Yes      | Quantity of this item (min 1).           |
-| `discount_amount`  | number  | No       | Discount for this line item.             |
-| `sub_total`        | number  | No       | Line item subtotal.                      |
-| `add_note`         | string  | No       | Special instruction / note.              |
-| `kds_station_id`   | integer | No       | Kitchen display station ID (auto-routed if omitted). |
-
-#### Example Request
-
-```http
-POST /api/orders HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Content-Type: application/json
-Accept: application/json
-
 {
   "customer_id": 1,
-  "order_datetime": "2024-01-15T12:30:00",
+  "order_datetime": "2026-09-19 14:30:00",
   "status": "pending",
   "paid": false,
-  "type": "dining",
-  "qty": 3,
-  "subtotal": 1500.00,
+  "type": "delivery",
+  "qty": 2,
+  "subtotal": 1800,
   "discount_type": "amount",
-  "discount_amount": 100.00,
-  "service_charges": 50.00,
-  "service_charges_percentage": 10.00,
-  "grand_total": 1450.00,
+  "discount_amount": 100,
+  "service_charges": 85,
+  "service_charges_percentage": 5,
+  "grand_total": 1785,
   "place_id": 1,
+  "promo_code": "FLAT100",
+  "redeem_points": 0,
   "order_items": [
     {
       "fooditems_id": 1,
       "category_id": 1,
       "quantity": 2,
       "discount_amount": 0,
-      "sub_total": 800.00,
-      "add_note": "No onions please",
+      "sub_total": 1800,
+      "add_note": "No spice",
       "kds_station_id": null
-    },
-    {
-      "fooditems_id": 2,
-      "category_id": 1,
-      "quantity": 1,
-      "discount_amount": 0,
-      "sub_total": 700.00,
-      "add_note": "",
-      "kds_station_id": 1
     }
   ]
 }
 ```
 
-#### Success Response (`201 Created`)
+Success:
 
 ```json
 {
   "status": "success",
   "message": "Order saved and receipt generated.",
   "data": {
-    "id": 1,
+    "id": 101,
     "customer_id": 1,
-    "order_datetime": "2024-01-15T12:30:00.000000Z",
-    "status": "pending",
-    "paid": false,
-    "type": "dining",
-    "grand_total": 1450.00,
-    "place_id": 1,
-    "created_at": "2024-01-15T12:30:00.000000Z"
+    "type": "delivery",
+    "qty": 2,
+    "subtotal": "1800.00",
+    "discount_amount": "100.00",
+    "service_charges": "85.00",
+    "grand_total": "1785.00"
   },
   "receipt_media": {
-    "id": 1,
-    "order_id": 1,
-    "file_path": "receipts/abc123.png",
-    "type": "image/png",
-    "uploaded_at": "2024-01-15T12:30:01.000000Z"
+    "id": 55,
+    "order_id": 101,
+    "file_path": "receipts/example.png",
+    "type": "image/png"
   },
-  "receipt_url": "http://127.0.0.1:8000/storage/receipts/abc123.png",
+  "receipt_url": "http://127.0.0.1:8000/storage/receipts/example.png",
   "whatsapp_notification": "Receipt sent to customer via WhatsApp."
 }
 ```
 
-#### Error Response (`422 Unprocessable Entity`)
+After success:
 
-```json
-{
-  "message": "The given data was invalid.",
-  "errors": {
-    "order_items.0.fooditems_id": ["The selected fooditems id is invalid."],
-    "place_id": ["The place id field is required."]
-  }
-}
-```
+1. Clear cart.
+2. Show success message with order id.
+3. Navigate to `ReceiptPreviewScreen`.
+4. Display `receipt_url` immediately.
+5. If `receipt_url` is missing, call `GET /api/orders/{id}/receipt`.
+6. Provide `Print`, `Share`, `WhatsApp`, and `New Order` actions.
 
 ---
 
-### List Orders
+## Receipt API
 
-Returns all orders with their items and customer details. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `GET /api/orders`                  |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Fetches all orders with order items and customer info. |
-
-#### Example Request
+Generate or regenerate a receipt PNG:
 
 ```http
-GET /api/orders HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Accept: application/json
+GET /api/orders/{id}/receipt
+POST /api/orders/{id}/receipt
 ```
 
-#### Success Response (`200 OK`)
+Optional query:
 
-```json
-{
-  "status": "success",
-  "data": [
-    {
-      "id": 1,
-      "customer": { "id": 1, "name": "John", "address": "123 St", "contact": "03001234567" },
-      "order_items": [
-        { "id": 1, "fooditems_id": 1, "quantity": 2, "sub_total": 800.00 }
-      ]
-    }
-  ],
-  "total_orders": 1
-}
-```
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `send` | boolean | Use `1` to send receipt over WhatsApp |
 
----
-
-### Get Order
-
-Returns a single order by ID with its items. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `GET /api/orders/{id}`             |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Fetches a specific order with its order items. |
-
-#### Path Parameters
-
-| Parameter | Type    | Description |
-| --------- | ------- | ----------- |
-| `id`      | integer | Order ID    |
-
-#### Example Request
+Example:
 
 ```http
-GET /api/orders/1 HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Accept: application/json
+GET /api/orders/101/receipt?send=1
 ```
 
-#### Success Response (`200 OK`)
-
-```json
-{
-  "id": 1,
-  "customer_id": 1,
-  "status": "pending",
-  "paid": false,
-  "order_items": [
-    { "id": 1, "fooditems_id": 1, "category_id": 1, "quantity": 2, "discount_amount": 0, "sub_total": 800.00, "add_note": "No onions" }
-  ],
-  "created_at": "2024-01-15T12:30:00.000000Z"
-}
-```
-
----
-
-### Update Order
-
-Updates an existing order. Reverses previous stock deductions and re-applies new ones atomically. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `PUT /api/orders/{id}`             |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Edits an order: reverses old stock consumption, updates the order, syncs order items, and re-consumes stock. |
-
-#### Request Body
-
-Same structure as [Create Order](#create-order). The `order_items` array replaces all existing items if provided.
-
-#### Success Response (`200 OK`)
-
-```json
-{
-  "id": 1,
-  "customer_id": 1,
-  "status": "processing",
-  "paid": true,
-  "order_items": [
-    { "id": 1, "fooditems_id": 1, "quantity": 3, "sub_total": 1200.00 }
-  ]
-}
-```
-
----
-
-### Delete Order
-
-Soft-deletes an order and reverses stock deductions. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `DELETE /api/orders/{id}`          |
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Voids an order: returns ingredients to stock, deletes order items, soft deletes the order. |
-
-#### Example Request
-
-```http
-DELETE /api/orders/1 HTTP/1.1
-Authorization: Bearer 2|abc123def456...
-Accept: application/json
-```
-
-#### Success Response (`200 OK`)
-
-```json
-{
-  "status": "success",
-  "message": "Order deleted successfully"
-}
-```
-
-#### Error Response (`500 Internal Server Error`)
-
-```json
-{
-  "status": "error",
-  "message": "Failed to delete order",
-  "error": "Error message"
-}
-```
-
----
-
-### Generate Receipt
-
-Generates a PNG receipt for an order. Optionally resends it via WhatsApp. Requires authentication.
-
-| Property     | Value                              |
-| ------------ | ---------------------------------- |
-| **URL**      | `GET|POST /api/orders/{id}/receipt`|
-| **Auth**     | Yes (`Bearer` token)               |
-| **Description** | Regenerates receipt PNG. Pass `?send=1` to also send via WhatsApp. |
-
-#### Path Parameters
-
-| Parameter | Type    | Description |
-| --------- | ------- | ----------- |
-| `id`      | integer | Order ID    |
-
-#### Query Parameters
-
-| Parameter | Type    | Required | Description                              |
-| --------- | ------- | -------- | ---------------------------------------- |
-| `send`    | boolean | No       | Set to `1` or `true` to resend via WhatsApp. |
-
-#### Success Response (`201 Created`)
+Success:
 
 ```json
 {
   "status": "success",
   "message": "Receipt generated.",
-  "order_id": 1,
-  "receipt_media": { "id": 2, "file_path": "receipts/def456.png", "type": "image/png" },
-  "receipt_url": "http://127.0.0.1:8000/storage/receipts/def456.png"
+  "order_id": 101,
+  "receipt_url": "http://127.0.0.1:8000/storage/receipts/example.png"
 }
 ```
 
 ---
 
-## Customers
+## Menu APIs
 
-Customer CRUD operations. Some endpoints require authentication (check middleware in `routes/api.php`).
+### Food Categories
 
-### List Customers
-
-| **URL**   | `GET /api/customers`               |
-| --------- | ---------------------------------- |
-| **Auth**  | Yes                                |
-
-#### Success Response
-
-```json
-[
-  { "id": 1, "name": "John", "address": "123 St", "contact": "03001234567", "email": "john@example.com" }
-]
+```http
+GET /api/food-categories
+POST /api/food-categories
+GET /api/food-categories/{id}
+PUT /api/food-categories/{id}
+DELETE /api/food-categories/{id}
 ```
 
-### Create Customer
+Create/update fields:
 
-| **URL**   | `POST /api/customers`              |
-| --------- | ---------------------------------- |
-| **Auth**  | Yes                                |
+| Field | Type | Required |
+| --- | --- | --- |
+| `name` | string | Yes |
+| `status` | boolean | Yes |
 
-| Field     | Type   | Required | Description          |
-| --------- | ------ | -------- | -------------------- |
-| `name`    | string | Yes      | Customer name        |
-| `contact` | string | No       | Phone number         |
-| `email`   | string | No       | Email address        |
-| `address` | string | No       | Address              |
+### Food Items
 
-### Get Customer
+```http
+GET /api/food-items
+POST /api/food-items
+GET /api/food-items/{id}
+PUT /api/food-items/{id}
+DELETE /api/food-items/{id}
+```
 
-| **URL**   | `GET /api/customers/{id}`          |
-| --------- | ---------------------------------- |
-| **Auth**  | Yes                                |
+Food item fields:
 
-### Update Customer
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `foodcategory_id` | integer | Yes | Existing category id |
+| `name` | string | Yes | Item name |
+| `image` | file | Yes on create | jpeg, png, jpg, gif, max 2048 KB |
+| `description` | string | Yes | Item description |
+| `code` | string | Yes | Unique item code |
+| `price` | number | Yes | Minimum `0` |
+| `status` | boolean | Yes | Active/inactive |
 
-| **URL**   | `PUT /api/customers/{id}`          |
-| --------- | ---------------------------------- |
-| **Auth**  | Yes                                |
+For POS item cards, use:
 
-### Delete Customer
+```ts
+{
+  id: number;
+  name: string;
+  price: string | number;
+  image: string | null;
+  foodcategory_id: number;
+  status: boolean;
+}
+```
 
-| **URL**   | `DELETE /api/customers/{id}`       |
-| --------- | ---------------------------------- |
-| **Auth**  | Yes                                |
+Filter mobile menu to active items only:
+
+```ts
+const activeItems = foodItems.filter(item => item.status === true || item.status === 1);
+```
 
 ---
 
-## Food Menu
+## Places / Tables API
 
-### List Food Categories
-
-| **URL**   | `GET /api/food-categories`         |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
-
-#### Success Response
-
-```json
-[
-  { "id": 1, "name": "Grills", "status": true, "slug": "grills" },
-  { "id": 2, "name": "Drinks", "status": true, "slug": "drinks" }
-]
+```http
+GET /api/places
+POST /api/places
+GET /api/places/{id}
+PUT /api/places/{id}
+DELETE /api/places/{id}
 ```
 
-### List Food Items
+Create/update fields:
 
-| **URL**   | `GET /api/food-items`              |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+| Field | Type | Required |
+| --- | --- | --- |
+| `name` | string | Yes |
+| `status` | boolean | Yes |
 
-#### Success Response
+Use `place_id` when placing every order.
+
+---
+
+## Customers API
+
+```http
+GET /api/customers
+POST /api/customers
+GET /api/customers/{id}
+PUT /api/customers/{id}
+DELETE /api/customers/{id}
+```
+
+Create/update fields:
+
+| Field | Type | Required | Notes |
+| --- | --- | --- | --- |
+| `name` | string | Yes | Customer name |
+| `contact` | string | Yes | Phone number |
+| `address` | string | Yes | Delivery address |
+| `email` | string | No | Must be unique when present |
+| `date_of_birth` | date | No | Optional |
+
+Mobile usage:
+
+1. For small customer tables, load all customers with `GET /api/customers`.
+2. For production, add an API search endpoint like the web route `/customers/search?q=ali` to avoid loading thousands of customers.
+
+Suggested mobile customer search endpoint to add:
+
+```http
+GET /api/customers/search?q=<name-or-phone>
+```
+
+Suggested response:
 
 ```json
 [
   {
     "id": 1,
-    "foodcategory_id": 1,
-    "name": "Chicken Biryani",
-    "description": "Spicy biryani with chicken",
-    "code": "BRY-001",
-    "price": 800.00,
-    "image": null,
-    "status": true
+    "name": "Ali Khan",
+    "contact": "03001234567",
+    "loyalty_points_balance": 120
   }
 ]
 ```
 
-### Create Food Item
+---
 
-| **URL**   | `POST /api/food-items`             |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+## Auth and User APIs
 
-| Field       | Type    | Required | Description             |
-| ----------- | ------- | -------- | ----------------------- |
-| `foodcategory_id` | integer | Yes | Category ID       |
-| `name`      | string  | Yes      | Item name               |
-| `description`| string | No       | Description             |
-| `code`      | string  | No       | Item code               |
-| `price`     | number  | No       | Price (2 decimals)      |
-| `image`     | string  | No       | Image path              |
-| `status`    | boolean | No       | Active/inactive         |
+### Register
 
-### Get Food Item
+```http
+POST /api/register
+```
 
-| **URL**   | `GET /api/food-items/{id}`         |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+| Field | Type | Required |
+| --- | --- | --- |
+| `name` | string | Yes |
+| `email` | string | Yes |
+| `password` | string | Yes |
+| `password_confirmation` | string | Yes |
 
-### Update Food Item
+### Login
 
-| **URL**   | `PUT /api/food-items/{id}`         |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+```http
+POST /api/login
+```
 
-### Delete Food Item
+### Logout
 
-| **URL**   | `DELETE /api/food-items/{id}`      |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+```http
+POST /api/logout
+Authorization: Bearer <token>
+```
+
+### Logged User
+
+```http
+GET /api/logged-user
+Authorization: Bearer <token>
+```
+
+### Update Profile
+
+```http
+POST /api/update-profile
+Authorization: Bearer <token>
+```
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `name` | string | Yes |
+| `phone` | string | No |
+| `address` | string | No |
+
+### Change Password
+
+```http
+POST /api/change-password
+Authorization: Bearer <token>
+```
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `current_password` | string | Yes |
+| `password` | string | Yes |
+| `password_confirmation` | string | Yes |
 
 ---
 
-## Places
+## Password Reset APIs
 
-Manage dining places / outlets.
+Send reset OTP:
 
-### List Places
+```http
+POST /api/forgot-password
+POST /api/send-reset-password-email
+```
 
-| **URL**   | `GET /api/places`                  |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+Body:
 
-#### Success Response
+```json
+{
+  "email": "admin@example.com"
+}
+```
+
+Reset password:
+
+```http
+POST /api/reset-password
+POST /api/reset-password/{otp}
+```
+
+Body:
+
+```json
+{
+  "email": "admin@example.com",
+  "otp": "1234",
+  "password": "newpassword",
+  "password_confirmation": "newpassword"
+}
+```
+
+---
+
+## Settings API
+
+```http
+GET /api/settings
+POST /api/settings
+POST /api/settings/update
+DELETE /api/settings/delete
+```
+
+Settings are useful for receipt branding.
+
+Create fields:
+
+| Field | Type | Required |
+| --- | --- | --- |
+| `name` | string | Yes |
+| `logo` | file | Yes |
+| `company` | string | Yes |
+| `address` | string | Yes |
+| `email` | string | Yes |
+| `phone` | string | Yes |
+| `message` | string | No |
+
+---
+
+## Reports API
+
+### Quick Report Today
+
+```http
+GET /api/daily-summary/quick-report
+```
+
+Used by web POS "Quick Report - Today".
+
+### Top 10 Deals Today
+
+```http
+GET /api/daily-summary/top-ten-deals-report
+```
+
+Used by web POS "Top 10 Deals - Today".
+
+### Sales Summary
+
+```http
+GET /api/daily-summary/report
+GET /api/daily-summary/reportdelivery
+GET /api/daily-summary/reportdining
+GET /api/daily-summary/reportonway
+```
+
+### Category Sales
+
+```http
+GET /api/daily-category-sales/report
+GET /api/daily-category-sales-by-item-quantity/report
+GET /api/daily-category-sales-by-item-quantity/reportcurrentdate
+```
+
+Common query parameters:
+
+```http
+?start_date=2026-09-19 00:00:00&end_date=2026-09-19 23:59:59&branch_id=1
+```
+
+---
+
+## Required API Additions for Full Web POS Mobile App
+
+Ask Claude/backend developer to add these API endpoints so the mobile app can match web POS exactly.
+
+### 1. POS Bootstrap API
+
+One call to load all mobile POS startup data, including discount champion/running offers, loyalty settings, and KDS stations:
+
+```http
+GET /api/pos/bootstrap
+Authorization: Bearer <token>
+```
+
+Suggested response:
+
+```json
+{
+  "foodItems": [],
+  "categories": [],
+  "places": [],
+  "kdsStations": [],
+  "loyalty": {
+    "is_active": true,
+    "points_per_currency": 0.1,
+    "currency_per_point": 1,
+    "min_redeem_points": 10,
+    "max_redeem_percent": 30
+  },
+  "campaigns": []
+}
+```
+
+Backend source to copy from: `App\Http\Controllers\Web\POSController@index`.
+
+Campaign object should include:
+
+```ts
+type DiscountCampaign = {
+  id: number;
+  name: string;
+  type: "amount" | "percentage";
+  value: number;
+  max_discount: number | null;
+  min_order_amount: number;
+  applies_to: "all" | "category" | "item";
+  target_ids: number[];
+  order_types: Array<"dining" | "delivery" | "on-way">;
+};
+```
+
+### 2. Customer Search API
+
+```http
+GET /api/customers/search?q=<query>
+```
+
+Backend source to copy from: `App\Http\Controllers\Web\CustomerController@search`.
+
+### 3. KDS Stations API
+
+```http
+GET /api/kds/stations
+```
+
+Response:
 
 ```json
 [
-  { "id": 1, "name": "Main Branch", "address": "..." }
+  {
+    "id": 1,
+    "name": "Grill",
+    "color": "#ef4444",
+    "branch_id": 1
+  }
 ]
 ```
 
-### Create Place
+### 4. Promo Quote API
 
-| **URL**   | `POST /api/places`                 |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+```http
+GET /api/orders/quote-promo?code=FLAT100&subtotal=1800&customer_id=1
+```
 
-### Get Place
+Backend source to copy from: `App\Http\Controllers\Web\OrderController@quotePromo`.
 
-| **URL**   | `GET /api/places/{id}`             |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+Response:
 
-### Update Place
+```json
+{
+  "code": "FLAT100",
+  "description": "Flat 100 off",
+  "discount": 100
+}
+```
 
-| **URL**   | `PUT /api/places/{id}`             |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+Mobile behavior:
 
-### Delete Place
+1. Call this endpoint when the cashier taps `Apply`.
+2. Show the returned discount below the promo field.
+3. Re-quote when subtotal or selected customer changes.
+4. Send `promo_code` during checkout, not the promo discount amount.
 
-| **URL**   | `DELETE /api/places/{id}`          |
-| --------- | ---------------------------------- |
-| **Auth**  | Check middleware                   |
+### 5. API Order Support for Promo and Loyalty
 
----
+The web order controller accepts:
 
-## Guest QR Ordering
+| Field | Type | Notes |
+| --- | --- | --- |
+| `promo_code` | string | Server calculates promo discount |
+| `redeem_points` | integer | Server calculates loyalty discount |
 
-Public endpoints for guest/QR-based ordering. No Sanctum auth — uses `session_token` in request body.
+The current API order controller validates only the core order fields. Add these fields to the API controller because the mobile app must support **Promo Code** and **Redeem Points** like web POS.
 
-### Scan QR Code
+API order response should include the calculated values:
 
-| **URL**   | `GET /api/guest/qr/{slug}`         |
-| --------- | ---------------------------------- |
-| **Auth**  | No (public)                        |
-| **Description** | Scans a QR code, creates a session, returns the menu for that place. |
-
-### Browse Menu
-
-| **URL**   | `GET /api/guest/menu`              |
-| --------- | ---------------------------------- |
-| **Auth**  | No (public)                        |
-| **Description** | Returns the full menu for browsing. |
-
-### Save Cart
-
-| **URL**   | `POST /api/guest/cart`             |
-| --------- | ---------------------------------- |
-| **Auth**  | No (public)                        |
-| **Body**  | Requires `session_token` in body   |
-| **Description** | Saves cart items for a guest session. |
-
-### Place Order (Guest)
-
-| **URL**   | `POST /api/guest/order`            |
-| --------- | ---------------------------------- |
-| **Auth**  | No (public)                        |
-| **Body**  | Requires `session_token` in body   |
-| **Description** | Places an order from the saved guest cart. |
-
-### Get Order Status
-
-| **URL**   | `GET /api/guest/order/{orderId}/status` |
-| --------- | --------------------------------------- |
-| **Auth**  | No (public)                             |
-| **Description** | Polls the status of a guest order. |
+```json
+{
+  "data": {
+    "id": 101,
+    "discount_amount": "100.00",
+    "promo_discount": "100.00",
+    "loyalty_points_redeemed": 50,
+    "loyalty_discount": "50.00",
+    "service_charges": "77.50",
+    "grand_total": "1627.50"
+  },
+  "receipt_url": "https://example.com/storage/receipts/101.png"
+}
+```
 
 ---
 
-## Authentication Summary
+## React Native API Client Example
 
-| Endpoint                        | Method | Auth Required |
-| -------------------------------- | ------ | ------------- |
-| `/api/login`                     | POST   | No            |
-| `/api/register`                  | POST   | No            |
-| `/api/logout`                    | POST   | Yes           |
-| `/api/logged-user`               | GET    | Yes           |
-| `/api/update-profile`            | POST   | Yes           |
-| `/api/change-password`           | POST   | Yes           |
-| `/api/orders`                    | POST   | Yes           |
-| `/api/orders`                    | GET    | Yes           |
-| `/api/orders/{id}`               | GET    | Yes           |
-| `/api/orders/{id}`               | PUT    | Yes           |
-| `/api/orders/{id}`               | DELETE | Yes           |
-| `/api/orders/{id}/receipt`       | GET/POST | Yes         |
-| `/api/customers`                 | CRUD   | Yes           |
-| `/api/food-categories`           | CRUD   | Yes           |
-| `/api/food-items`                | CRUD   | Yes           |
-| `/api/places`                    | CRUD   | Yes           |
-| `/api/guest/*`                   | Various | No          |
+```ts
+const API_BASE_URL = "http://127.0.0.1:8000/api";
+
+export async function apiFetch(path: string, options: RequestInit = {}) {
+  const token = await getStoredToken();
+
+  const headers: Record<string, string> = {
+    Accept: "application/json",
+    ...(options.body instanceof FormData
+      ? {}
+      : { "Content-Type": "application/json" }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options.headers as Record<string, string> | undefined),
+  };
+
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await res.json().catch(() => null);
+
+  if (!res.ok) {
+    const message =
+      data?.message ||
+      Object.values(data?.errors || {}).flat().join(" ") ||
+      "Request failed";
+    throw new Error(message);
+  }
+
+  return data;
+}
+```
+
+Place order:
+
+```ts
+await apiFetch("/orders", {
+  method: "POST",
+  body: JSON.stringify(payload),
+});
+```
 
 ---
 
-## Notes for RWCT Native App Integration
+## Suggested React Native Navigation
 
-1. **Token Storage**: Store the Sanctum token securely after login (e.g., Keychain on iOS, EncryptedSharedPreferences on Android).
-2. **Authorization Header**: Include `Authorization: Bearer <token>` on all authenticated requests.
-3. **Content-Type**: Always send `Content-Type: application/json` and `Accept: application/json`.
-4. **Order Creation**: The `POST /api/orders` endpoint performs stock deduction atomically inside a database transaction. If stock is insufficient, the entire operation fails and no stock is deducted.
-5. **Receipt**: After creating an order, the response includes a `receipt_url` pointing to the generated PNG receipt.
-6. **WhatsApp**: If the order has a customer with a contact number, the receipt is automatically sent via WhatsApp. To suppress this, omit or ensure the customer has no contact info.
-7. **Guest Ordering**: For QR-based self-ordering, use the `/api/guest/*` endpoints (no auth required).
-8. **Pagination**: List endpoints currently return all records. Implement pagination on the backend if data grows large.
-9. **API Base URL**: Configure via environment variable or app settings; default is `http://127.0.0.1:8000/api`.
+```txt
+AuthStack
+  Login
+  ForgotPassword
+  ResetPassword
+
+AppTabs
+  POS
+  Orders
+  Reports
+  Customers
+  Settings/Profile
+```
+
+Core POS components:
+
+```txt
+POSScreen
+  CategoryTabs
+  MenuSearch
+  MenuGrid
+  MenuItemCard
+  CartSummaryBar
+  CartBottomSheet
+  CustomerPicker
+  PlacePicker
+  KdsStationPicker
+  PromoCodeBox
+  DiscountChampionChips
+  RedeemPointsBox
+  TotalsPanel
+  ReceiptPreview
+```
+
+---
+
+## Build Checklist for Claude
+
+1. Create React Native app with TypeScript.
+2. Add auth storage and API client.
+3. Build login and password reset screens.
+4. Build POS screen and load categories/items/places/customers.
+5. Implement local cart and totals calculation.
+6. Implement customer selection and delivery customer validation.
+7. Implement KDS station picker per cart line.
+8. Implement discount champion/running offer chips.
+9. Implement promo code quote and apply flow.
+10. Implement redeem points with customer balance and loyalty limits.
+11. Submit `POST /api/orders`.
+12. After order success, show receipt screen immediately using `receipt_url`.
+13. Add orders list and order detail screens.
+14. Add reports screen using daily report APIs.
+15. Add offline/error states and pull-to-refresh.
+16. Add backend APIs for POS bootstrap, KDS stations, customer search, promo quote, loyalty, and campaigns before final mobile delivery.
+
+---
+
+## Current API Route List
+
+```php
+GET    /api/places
+POST   /api/places
+GET    /api/places/{id}
+PUT    /api/places/{id}
+DELETE /api/places/{id}
+
+GET    /api/users
+POST   /api/users
+PUT    /api/users/{id}
+DELETE /api/users/{id}
+
+POST   /api/register
+POST   /api/login
+POST   /api/forgot-password
+POST   /api/send-reset-password-email
+POST   /api/reset-password
+POST   /api/reset-password/{otp}
+POST   /api/logout
+GET    /api/logged-user
+POST   /api/update-profile
+POST   /api/change-password
+GET    /api/user
+
+GET    /api/customers
+POST   /api/customers
+GET    /api/customers/{id}
+PUT    /api/customers/{id}
+DELETE /api/customers/{id}
+
+GET    /api/food-categories
+POST   /api/food-categories
+GET    /api/food-categories/{id}
+PUT    /api/food-categories/{id}
+DELETE /api/food-categories/{id}
+
+GET    /api/food-items
+POST   /api/food-items
+GET    /api/food-items/{id}
+PUT    /api/food-items/{id}
+DELETE /api/food-items/{id}
+
+GET    /api/orders
+GET    /api/deletereport
+POST   /api/orders
+GET    /api/orders/{id}/receipt
+POST   /api/orders/{id}/receipt
+GET    /api/orders/{id}
+PUT    /api/orders/{id}
+DELETE /api/orders/{id}
+
+GET    /api/daily-summary/report
+GET    /api/daily-summary/reportonway
+GET    /api/daily-summary/reportdining
+GET    /api/daily-summary/reportdelivery
+GET    /api/daily-category-sales/report
+GET    /api/daily-category-sales-by-item-quantity/report
+GET    /api/daily-category-sales-by-item-quantity/reportcurrentdate
+GET    /api/daily-summary/quick-report
+GET    /api/daily-summary/top-ten-deals-report
+
+GET    /api/settings
+POST   /api/settings
+POST   /api/settings/update
+DELETE /api/settings/delete
+```
