@@ -40,6 +40,25 @@ class ReportController extends Controller
         return [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()];
     }
 
+    private function applyOrderDateRange($query, mixed $start, mixed $end, string $column = 'order_datetime'): void
+    {
+        $query->where(function ($q) use ($column, $start, $end) {
+            $q->whereBetween($column, [$start, $end])
+                // Older mobile/API orders were saved with UTC order_datetime
+                // while created_at used the app timezone. Keep those existing
+                // orders visible on the local business day reports.
+                ->orWhereBetween('created_at', [$start, $end]);
+        });
+    }
+
+    private function applyJoinedOrderDateRange($query, mixed $start, mixed $end): void
+    {
+        $query->where(function ($q) use ($start, $end) {
+            $q->whereBetween('orders.order_datetime', [$start, $end])
+                ->orWhereBetween('orders.created_at', [$start, $end]);
+        });
+    }
+
     public function dailySummaryReport(Request $request): JsonResponse
     {
         $branchId = $this->branchId($request);
@@ -49,13 +68,13 @@ class ReportController extends Controller
         // Get sum of grand_total for each type for today
         $ordersByType = Order::select('type', DB::raw('SUM(grand_total) as grand_total'))
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->groupBy('type')
             ->get();
 
         // Get total grand_total for all orders today
         $totalGrandTotal = Order::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->sum('grand_total');
 
         // Prepare the response data
@@ -80,19 +99,19 @@ class ReportController extends Controller
             ->select('id', 'discount_amount', 'subtotal', 'grand_total', 'customer_id', 'type', 'service_charges')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->where('type', 'delivery')
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->get();
 
         $ordersByType = Order::select('type', DB::raw('SUM(grand_total) as grand_total'))
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->where('type', 'delivery')
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->groupBy('type')
             ->get();
 
         $totalGrandTotal = Order::where('type', 'delivery')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->sum('grand_total');
 
         return response()->json([
@@ -112,19 +131,19 @@ class ReportController extends Controller
             ->select('id', 'discount_amount', 'order_datetime', 'subtotal', 'grand_total', 'customer_id', 'type', 'service_charges')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->where('type', 'dining')
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->get();
 
         $ordersByType = Order::select('type', DB::raw('SUM(grand_total) as grand_total'))
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->where('type', 'dining')
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->groupBy('type')
             ->get();
 
         $totalGrandTotal = Order::where('type', 'dining')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->sum('grand_total');
 
         return response()->json([
@@ -145,19 +164,19 @@ class ReportController extends Controller
             ->select('id', 'discount_amount', 'subtotal', 'grand_total', 'customer_id', 'type', 'service_charges')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->where('type', 'on-way')
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->get();
 
         $ordersByType = Order::select('type', DB::raw('SUM(grand_total) as grand_total'))
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->where('type', 'on-way')
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->groupBy('type')
             ->get();
 
         $totalGrandTotal = Order::where('type', 'on-way')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->sum('grand_total');
 
         return response()->json([
@@ -183,7 +202,7 @@ class ReportController extends Controller
             ->join('food_categories', 'order_items.category_id', '=', 'food_categories.id') // Join with food_categories
             ->join('orders', 'order_items.order_id', '=', 'orders.id') // Join with orders table
             ->when($branchId, fn ($q) => $q->where('orders.branch_id', $branchId))
-            ->whereBetween('orders.order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyJoinedOrderDateRange($q, $start, $end))
             ->groupBy('order_items.category_id', 'food_categories.name') // Group by category_id and category_name
             ->get();
 
@@ -218,7 +237,7 @@ class ReportController extends Controller
             DB::raw('SUM(discount_amount) as discount_amount')
         )
             ->whereHas('order', function ($q) use ($start, $end, $branchId) {
-                $q->whereBetween('order_datetime', [$start, $end]);
+                $this->applyOrderDateRange($q, $start, $end);
                 $q->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId));
             })
             ->groupBy('fooditems_id', 'category_id')
@@ -260,8 +279,8 @@ class ReportController extends Controller
         // 3. Convert to indexed array
         $finalResult = array_values($groupedByCategory);
 
-        // 4. Get total service charge for today (sargable range so the created_at index is used)
-        $totalServiceCharge = Order::whereBetween('created_at', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
+        // 4. Get total service charge for the report range.
+        $totalServiceCharge = Order::where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->sum('service_charges');
 
@@ -282,7 +301,7 @@ class ReportController extends Controller
 
         $orderItems = OrderItem::with(['item:id,name', 'foodCategory:id,name'])
             ->whereHas('order', function ($q) use ($start, $end, $branchId) {
-                $q->whereBetween('order_datetime', [$start, $end]);
+                $this->applyOrderDateRange($q, $start, $end);
                 $q->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId));
             })
             ->select(
@@ -334,15 +353,14 @@ class ReportController extends Controller
         // Convert the grouped data back into an array (optional)
         $finalResult = array_values($groupedByCategory);
 
-        $today = Carbon::today();
-        // 2. Get total service charge for today (sargable range so the order_datetime index is used)
-        $totalServiceCharge = Order::whereBetween('order_datetime', [$today->copy()->startOfDay(), $today->copy()->endOfDay()])
+        // 2. Get total service charge for the report range.
+        $totalServiceCharge = Order::where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
             ->sum('service_charges');
         // 3. Append service charge to the final result
 
         $totalGrandTotal = Order::when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->sum('grand_total');
 
         $response = [
@@ -364,7 +382,7 @@ class ReportController extends Controller
 
         $orders = Order::with('customer')->
         when($branchId, fn ($q) => $q->where('branch_id', $branchId))->
-        whereBetween('order_datetime', [$start, $end])
+        where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->get();
 
         return response()->json($orders, 200);
@@ -378,7 +396,7 @@ class ReportController extends Controller
 
         $orders = Order::with('customer')
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [$start, $end])
+            ->where(fn ($q) => $this->applyOrderDateRange($q, $start, $end))
             ->orderBy('order_datetime', 'desc') // optional: sort by latest first
             ->take(10)
             ->get();

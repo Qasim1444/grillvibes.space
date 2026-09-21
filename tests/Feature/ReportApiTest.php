@@ -22,7 +22,13 @@ class ReportApiTest extends TestCase
         Order::factory()->create(['branch_id' => $branch->id, 'order_datetime' => now(), 'type' => 'delivery', 'grand_total' => 100]);
         Order::factory()->create(['branch_id' => $branch->id, 'order_datetime' => now(), 'type' => 'dining', 'grand_total' => 50]);
         // An old order that must NOT be counted in today's totals.
-        Order::factory()->create(['branch_id' => $branch->id, 'order_datetime' => now()->subMonths(2), 'grand_total' => 999]);
+        Order::factory()->create([
+            'branch_id' => $branch->id,
+            'order_datetime' => now()->subMonths(2),
+            'grand_total' => 999,
+            'created_at' => now()->subMonths(2),
+            'updated_at' => now()->subMonths(2),
+        ]);
 
         $response = $this->getJson('/api/daily-summary/report?branch_id='.$branch->id)->assertStatus(200);
 
@@ -65,7 +71,12 @@ class ReportApiTest extends TestCase
         $branch = Branch::create(['name' => 'Main Outlet', 'status' => true]);
 
         Order::factory(2)->create(['branch_id' => $branch->id, 'order_datetime' => now()]);
-        Order::factory()->create(['branch_id' => $branch->id, 'order_datetime' => now()->subMonths(2)]);
+        Order::factory()->create([
+            'branch_id' => $branch->id,
+            'order_datetime' => now()->subMonths(2),
+            'created_at' => now()->subMonths(2),
+            'updated_at' => now()->subMonths(2),
+        ]);
 
         $this->getJson('/api/daily-summary/quick-report?branch_id='.$branch->id)
             ->assertStatus(200)
@@ -127,5 +138,57 @@ class ReportApiTest extends TestCase
         $this->getJson('/api/daily-category-sales-by-item-quantity/report?'.$params)
             ->assertStatus(200)
             ->assertJsonFragment(['item_name' => 'Mobile Burger']);
+    }
+
+    public function test_reports_include_existing_mobile_orders_shifted_to_created_local_date(): void
+    {
+        $branch = Branch::create(['name' => 'Mobile Outlet', 'status' => true]);
+        $place = Place::factory()->create(['branch_id' => $branch->id, 'status' => true]);
+        $category = FoodCategory::factory()->create(['name' => 'BBQ']);
+        $item = FoodItem::factory()->create(['foodcategory_id' => $category->id, 'name' => 'Shifted Tikka']);
+
+        $order = Order::factory()->create([
+            'branch_id' => $branch->id,
+            'place_id' => $place->id,
+            'order_datetime' => '2026-09-20 19:30:00',
+            'type' => 'dining',
+            'grand_total' => 650,
+            'service_charges' => 0,
+            'created_at' => '2026-09-21 00:30:00',
+            'updated_at' => '2026-09-21 00:30:00',
+        ]);
+
+        OrderItem::factory()->create([
+            'order_id' => $order->id,
+            'fooditems_id' => $item->id,
+            'category_id' => $category->id,
+            'quantity' => 1,
+            'sub_total' => 650,
+            'discount_amount' => 0,
+            'created_at' => '2026-09-21 00:30:00',
+            'updated_at' => '2026-09-21 00:30:00',
+        ]);
+
+        $params = http_build_query([
+            'start_date' => '2026-09-21',
+            'end_date' => '2026-09-21',
+            'branch_id' => $branch->id,
+        ]);
+
+        $this->getJson('/api/daily-summary/report?'.$params)
+            ->assertStatus(200)
+            ->assertJsonPath('totalGrandTotal', 650);
+
+        $this->getJson('/api/daily-summary/quick-report?'.$params)
+            ->assertStatus(200)
+            ->assertJsonFragment(['id' => $order->id]);
+
+        $this->getJson('/api/daily-summary/top-ten-deals-report?'.$params)
+            ->assertStatus(200)
+            ->assertJsonFragment(['id' => $order->id]);
+
+        $this->getJson('/api/daily-category-sales-by-item-quantity/reportcurrentdate?'.$params)
+            ->assertStatus(200)
+            ->assertJsonFragment(['item_name' => 'Shifted Tikka']);
     }
 }

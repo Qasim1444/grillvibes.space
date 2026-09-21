@@ -498,7 +498,12 @@ const deletedOrders = computed(() => props.reports?.deletedOrders ?? []);
 const ordersLoading = false;
 const catsLoading = false;
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => {
+  const date = new Date();
+  const pad = (value) => String(value).padStart(2, "0");
+
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+};
 
 const rangeLabel = computed(() =>
   range.value.start_date === range.value.end_date
