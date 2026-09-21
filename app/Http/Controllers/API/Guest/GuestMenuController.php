@@ -169,6 +169,7 @@ class GuestMenuController extends Controller
                 'service_charges_percentage'  => 0,
                 'grand_total'                 => round($subtotal, 2),
                 'place_id'                    => $session->place_id,
+                'branch_id'                   => $this->branchIdForPlace($session->place_id),
             ]);
 
             foreach ($cart as $line) {
@@ -362,6 +363,11 @@ class GuestMenuController extends Controller
             ]);
 
         return ['categories' => $categories, 'items' => $items];
+    }
+
+    private function branchIdForPlace(?int $placeId): ?int
+    {
+        return $placeId ? Place::whereKey($placeId)->value('branch_id') : null;
     }
 
     private function resolveSession(?string $token): QrSession

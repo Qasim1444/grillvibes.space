@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\Order;
+use App\Models\Place;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -41,6 +42,7 @@ class OrderApiTest extends TestCase
         $customer = Customer::factory()->create();
         $category = FoodCategory::factory()->create();
         $item = FoodItem::factory()->create(['foodcategory_id' => $category->id]);
+        $place = Place::factory()->create();
         $order = Order::factory()->create(['customer_id' => $customer->id]);
 
         $payload = [
@@ -56,7 +58,7 @@ class OrderApiTest extends TestCase
             'service_charges' => 5,
             'service_charges_percentage' => 5,
             'grand_total' => 95,
-            'place_id' => 1,
+            'place_id' => $place->id,
             'order_items' => [
                 [
                     'fooditems_id' => $item->id,

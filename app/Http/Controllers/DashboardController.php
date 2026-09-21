@@ -88,8 +88,8 @@ class DashboardController extends Controller
         $categorySalesData = $reports->dailyCategorySalesReport($rangeRequest)->getData(true);
         $itemQtyData = $reports->dailyCategorySalesByItemQuantityReport($rangeRequest)->getData(true);
         $itemQtyCurrentData = $reports->dailyCategorySalesByItemQuantityReportcurrentdate($rangeRequest)->getData(true);
-        $quickData = $reports->dailySummaryQuickReport()->getData(true);
-        $topTenData = $reports->dailySummaryTopTenReport()->getData(true);
+        $quickData = $reports->dailySummaryQuickReport($rangeRequest)->getData(true);
+        $topTenData = $reports->dailySummaryTopTenReport($rangeRequest)->getData(true);
         $deletedData = $orders->deletereport()->getData(true);
 
         return Inertia::render('Dashboard', [
