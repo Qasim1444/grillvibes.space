@@ -22,13 +22,9 @@ class FoodCategoryController extends Controller
 
         // Paginate + filter server-side (mirrors the Customers page) so the table
         // requests one slice at a time instead of loading every category.
-        $search = trim((string) $request->query('search', ''));
-
         $categories = FoodCategory::query()
-            ->when($search !== '', fn ($q) =>
-            $q->where('name', 'like', "%{$search}%")
-            )
-            ->orderBy('created_at', 'asc')
+            ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
+            ->orderBy('name')
             ->paginate(10)
             ->withQueryString();
 
