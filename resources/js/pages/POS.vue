@@ -2,12 +2,6 @@
   <div class="page pos">
     <PageHeader title="Point of Sale" subtitle="Build an order and send it to the kitchen.">
       <template #actions>
-        <button class="ui-btn ui-btn--ghost" @click="openQuickReport">
-          <span class="btn-icon">📋</span> Quick Report — Today
-        </button>
-        <button class="ui-btn ui-btn--ghost" @click="openTopTen">
-          <span class="btn-icon">🏆</span> Top 10 Deals — Today
-        </button>
         <button class="ui-btn ui-btn--ghost" @click="goAdmin">
           <span class="btn-icon">⚙</span> Admin
         </button>
@@ -17,66 +11,6 @@
         </button>
       </template>
     </PageHeader>
-
-    <!-- ── Quick Report — Today ─────────────────────────────── -->
-    <Modal v-model="showQuickReport" title="Quick Report — Today" width="720px">
-      <div class="report-modal">
-        <p v-if="reportLoading" class="report-modal__state">Loading…</p>
-        <p v-else-if="reportError" class="report-modal__state report-modal__state--error">{{ reportError }}</p>
-        <p v-else-if="!quickReport.length" class="report-modal__state">No orders today.</p>
-        <table v-else class="report-table">
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>Customer</th>
-              <th>Type</th>
-              <th style="text-align: right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="o in quickReport" :key="o.id">
-              <td>#{{ o.id }}</td>
-              <td>{{ o.customer?.name || "Guest" }}</td>
-              <td>{{ typeLabel(o.type) }}</td>
-              <td class="report-table__money">{{ money(o.grand_total) }}</td>
-            </tr>
-          </tbody>
-          <tfoot>
-            <tr>
-              <th colspan="3">Total · {{ quickReport.length }} order(s)</th>
-              <th class="report-table__money">{{ money(reportTotal(quickReport)) }}</th>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-    </Modal>
-
-    <!-- ── Top 10 Deals — Today ─────────────────────────────── -->
-    <Modal v-model="showTopTen" title="Top 10 Deals — Today" width="640px">
-      <div class="report-modal">
-        <p v-if="reportLoading" class="report-modal__state">Loading…</p>
-        <p v-else-if="reportError" class="report-modal__state report-modal__state--error">{{ reportError }}</p>
-        <p v-else-if="!topTen.length" class="report-modal__state">No orders today.</p>
-        <table v-else class="report-table">
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>Customer</th>
-              <th>Type</th>
-              <th style="text-align: right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="o in topTen" :key="o.id">
-              <td>#{{ o.id }}</td>
-              <td>{{ o.customer?.name || "Guest" }}</td>
-              <td>{{ typeLabel(o.type) }}</td>
-              <td class="report-table__money">{{ money(o.grand_total) }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </Modal>
 
     <Transition name="slide-fade">
       <div v-if="loadError" class="ui-alert ui-alert--danger">
@@ -465,20 +399,16 @@ import { ref, computed, watch } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import PageHeader from "../components/ui/PageHeader.vue";
 import FormField from "../components/ui/FormField.vue";
-import Modal from "../components/ui/Modal.vue";
 import CustomerPicker from "../components/ui/CustomerPicker.vue";
 
 // The POS page has no admin chrome — it renders standalone (no AdminLayout).
 // Menu items, categories and places arrive as page props. Customers are NOT
 // shipped (the table can hold 100k+ rows); the customer field resolves matches
-// on demand via the CustomerPicker (/customers/search). The two "today" reports
-// are optional props, fetched only when their modal opens.
+// on demand via the CustomerPicker (/customers/search).
 const props = defineProps({
   foodItems: { type: Array, default: () => [] },
   categories: { type: Array, default: () => [] },
   places: { type: Array, default: () => [] },
-  quickReport: { type: Array, default: null },
-  topTen: { type: Array, default: null },
   // Loyalty rates + live discount campaigns, used only to preview what a
   // redemption or an offer is worth. Both are re-priced server-side at checkout.
   loyalty: { type: Object, default: () => ({}) },
@@ -488,52 +418,6 @@ const props = defineProps({
 
 const page = usePage();
 const goAdmin = () => router.visit("/");
-
-// ── Today's reports (shown in modals) ──────────────────────────────────────
-const TYPE_LABELS = { delivery: "Delivery", dining: "Dining", "on-way": "On the way" };
-const typeLabel = (t) => TYPE_LABELS[t] || t || "—";
-
-const showQuickReport = ref(false);
-const showTopTen = ref(false);
-const reportLoading = ref(false);
-const reportError = ref("");
-
-// The reports are Inertia::optional props — resolved only on partial reloads.
-const quickReport = computed(() => props.quickReport ?? []);
-const topTen = computed(() => props.topTen ?? []);
-
-const reportTotal = (rows) =>
-  rows.reduce((sum, o) => sum + Number(o.grand_total || 0), 0);
-
-const openQuickReport = () => {
-  showQuickReport.value = true;
-  reportLoading.value = true;
-  reportError.value = "";
-  router.reload({
-    only: ["quickReport"],
-    onError: () => {
-      reportError.value = "Could not load the quick report. Please try again.";
-    },
-    onFinish: () => {
-      reportLoading.value = false;
-    },
-  });
-};
-
-const openTopTen = () => {
-  showTopTen.value = true;
-  reportLoading.value = true;
-  reportError.value = "";
-  router.reload({
-    only: ["topTen"],
-    onError: () => {
-      reportError.value = "Could not load the top deals report. Please try again.";
-    },
-    onFinish: () => {
-      reportLoading.value = false;
-    },
-  });
-};
 
 const money = (v) => `Rs ${Number(v || 0).toFixed(2)}`;
 const num = (v) => {
@@ -1665,51 +1549,6 @@ const placeOrder = () => {
 .alert-icon {
   font-size: 16px;
   flex-shrink: 0;
-}
-
-/* ── Report modals ──────────────────────────────────────────────────────── */
-.report-modal__state {
-  text-align: center;
-  padding: 32px 12px;
-  color: var(--muted, #64748b);
-  font-size: 14px;
-}
-
-.report-modal__state--error {
-  color: var(--danger, #dc2626);
-}
-
-.report-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-
-.report-table th,
-.report-table td {
-  padding: 10px 12px;
-  text-align: left;
-  border-bottom: 1px solid var(--border, #f1f5f9);
-}
-
-.report-table thead th {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--muted, #64748b);
-}
-
-.report-table tfoot th {
-  font-weight: 700;
-  border-top: 2px solid var(--border, #e2e8f0);
-  border-bottom: none;
-}
-
-.report-table__money {
-  text-align: right;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ── Transitions ────────────────────────────────────────────────────────── */

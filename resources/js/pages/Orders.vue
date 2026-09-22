@@ -42,6 +42,7 @@
 
       <template #actions="{ row }">
         <button class="ui-btn ui-btn--ghost ui-btn--sm" @click="viewOrder(row)">View</button>
+        <button class="ui-btn ui-btn--ghost ui-btn--sm" @click="openReceipt(row.id)">Receipt</button>
         <button v-if="can('orders.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="editOrder(row)">Edit</button>
         <button v-if="can('orders.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="deleteOrder(row.id)">Delete</button>
       </template>
@@ -105,6 +106,7 @@
 
       <template #footer>
         <button class="ui-btn ui-btn--ghost" @click="showView = false">Close</button>
+        <button class="ui-btn ui-btn--ghost" @click="openReceipt(viewing.id)">Receipt</button>
         <button v-if="can('orders.update')" class="ui-btn ui-btn--primary" @click="editOrder(viewing)">Edit</button>
       </template>
     </Modal>
@@ -326,6 +328,11 @@ const placeName = (id) => places.value.find((p) => p.id === id)?.name || "—";
 
 // A partial reload refreshes the current page + aggregates without a full nav.
 const refresh = () => router.reload({ only: ["orders", "stats"] });
+
+const openReceipt = (id) => {
+  if (!id) return;
+  window.open(`/orders/${id}/receipt`, "_blank", "noopener,noreferrer");
+};
 
 // ── View ───────────────────────────────────────────────────────────────────
 const showView = ref(false);
