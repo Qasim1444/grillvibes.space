@@ -25,7 +25,7 @@ class FoodCategoryController extends Controller
         $categories = FoodCategory::query()
             ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
             ->orderBy('name')
-            ->paginate(10)
+            ->orderByDesc('created_at')
             ->withQueryString();
 
         return Inertia::render('FoodCategories', [
