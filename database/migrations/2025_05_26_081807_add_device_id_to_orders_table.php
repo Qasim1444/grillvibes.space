@@ -1,9 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
-
 return new class extends Migration
 {
     /**
@@ -11,14 +8,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->unsignedBigInteger('device_id')->nullable()->after('customer_id');
-
-            $table->foreign('device_id')
-                ->references('id')
-                ->on('whatsapps')
-                ->onDelete('cascade');
-        });
+        // Order device tracking was removed. Kept as a no-op so existing
+        // migration history remains valid while fresh databases skip the column.
     }
 
     /**
@@ -26,8 +17,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('orders', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };

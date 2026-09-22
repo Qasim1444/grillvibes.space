@@ -9,7 +9,6 @@ use App\Models\KdsStation;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\Place;
-use App\Models\Whatsapp;
 use App\Services\LoyaltyService;
 use App\Services\PromoService;
 use App\Services\ReceiptGenerator;
@@ -305,16 +304,11 @@ class OrderController extends Controller
     /**
      * Normalise optional foreign keys. `customer_id` is validated with
      * `exists` (skipped when empty), but an empty string would be rejected by a
-     * bigint column — coerce it to null. `device_id` falls back to the first
-     * registered WhatsApp device, matching the old API controller.
+     * bigint column — coerce it to null.
      */
     private function normalize(array $data): array
     {
         $data['customer_id'] = empty($data['customer_id']) ? null : $data['customer_id'];
-
-        if (empty($data['device_id'])) {
-            $data['device_id'] = Whatsapp::query()->value('id');
-        }
 
         return $data;
     }
@@ -358,7 +352,7 @@ class OrderController extends Controller
      */
     private function generateAndSendReceipt(Order $order): void
     {
-        $order->load('orderItems.item', 'customer', 'sender');
+        $order->load('orderItems.item', 'customer');
 
         $receipt = app(ReceiptGenerator::class)->generate($order);
 
@@ -389,7 +383,6 @@ class OrderController extends Controller
     private function rules(): array
     {
         return [
-            'device_id' => 'nullable|exists:whatsapps,id',
             'customer_id' => 'required_unless:type,dining,on-way|exists:customers,id',
             'order_datetime' => 'required|date',
             'status' => 'required|string|max:255',

@@ -12,7 +12,6 @@ class Order extends Model
 
     protected $fillable = [
         'customer_id',
-        'device_id',
         'order_datetime',
         'status',
         'paid',
@@ -60,11 +59,6 @@ class Order extends Model
         }
 
         return round((float) $this->grand_total - (float) $this->cogs_total, 2);
-    }
-
-    public function sender()
-    {
-        return $this->belongsTo(Whatsapp::class, 'device_id');
     }
 
     public function customer()

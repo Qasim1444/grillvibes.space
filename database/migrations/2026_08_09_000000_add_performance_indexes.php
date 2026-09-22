@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Schema;
  * checks, WhatsApp call filtering, soft-delete predicates).
  *
  * Foreign-key columns are intentionally skipped where MySQL/InnoDB already
- * auto-creates an index for the constraint (orders.customer_id, orders.device_id,
+ * auto-creates an index for the constraint (orders.customer_id,
  * order_items.order_id/fooditems_id/category_id, food_items.foodcategory_id,
  * media.order_id), as are columns that
  * already carry an explicit index/unique (customers.contact/email,

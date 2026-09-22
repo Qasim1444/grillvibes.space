@@ -27,7 +27,6 @@ class OrderFactory extends Factory
         return [
             'place_id' => null,
             'customer_id' => Customer::factory(),
-            'device_id' => null,
             'order_datetime' => $this->faker->dateTimeBetween('-1 month', 'now'),
             'status' => $this->faker->randomElement(['pending', 'completed']),
             'paid' => $this->faker->boolean(),

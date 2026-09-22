@@ -103,7 +103,7 @@ class ReceiptGenerator
      */
     public function generate(Order $order): array
     {
-        $order->loadMissing('orderItems.item', 'customer', 'sender');
+        $order->loadMissing('orderItems.item', 'customer');
 
         $filename = 'receipt_'.$order->id.'_'.time().'.png';
         $relative = 'receipts/'.$filename;

@@ -8,7 +8,6 @@ use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Place;
-use App\Models\Whatsapp;
 use App\Services\ReceiptGenerator;
 use App\Services\StockConsumptionService;
 use App\Support\CurrentBranch;
@@ -31,7 +30,6 @@ class OrderController extends Controller
     protected function validationRules(): array
     {
         return [
-            'device_id' => 'nullable|exists:whatsapps,id',
             'customer_id' => 'required_unless:type,dining,on-way|exists:customers,id',
             'order_datetime' => 'required|date',
             'status' => 'required|string|max:255',
@@ -88,7 +86,7 @@ class OrderController extends Controller
         });
 
         // Load relationships for receipt generation
-        $order->load('orderItems.item', 'customer', 'sender');
+        $order->load('orderItems.item', 'customer');
 
         // Generate the receipt as a PNG using PHP GD (no Node/Puppeteer needed).
         $receipt = app(ReceiptGenerator::class)->generate($order);
@@ -150,7 +148,7 @@ class OrderController extends Controller
      */
     public function receipt(Request $request, $id): JsonResponse
     {
-        $order = $this->model::with('orderItems.item', 'customer', 'sender')->findOrFail($id);
+        $order = $this->model::with('orderItems.item', 'customer')->findOrFail($id);
 
         $receipt = app(ReceiptGenerator::class)->generate($order);
 
@@ -251,11 +249,6 @@ class OrderController extends Controller
 
     private function normalizeOrderData(array $data): array
     {
-        // If device_id is not set, assign the first device id from whatsapps table.
-        if (empty($data['device_id'])) {
-            $data['device_id'] = Whatsapp::query()->value('id');
-        }
-
         // Mobile apps commonly send ISO/UTC timestamps via new Date().toISOString().
         // Reports use the restaurant's local business date, so store the local time.
         $data['order_datetime'] = Carbon::parse($data['order_datetime'])

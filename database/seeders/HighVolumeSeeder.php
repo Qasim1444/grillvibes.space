@@ -10,7 +10,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Place;
 use App\Models\Setting;
-use App\Models\Whatsapp;
 use App\Models\WhatsAppCall;
 use App\Models\WhatsAppMessage;
 use Illuminate\Database\Seeder;
@@ -69,11 +68,11 @@ class HighVolumeSeeder extends Seeder
 
         $this->command?->info("Seeding high-volume dataset ({$counts['customers']} customers, {$counts['orders']} orders)…");
 
-        [$placeIds, $deviceIds, $categoryIds] = $this->seedReferenceData();
+        [$placeIds, $categoryIds] = $this->seedReferenceData();
 
         $customerIds = $this->seedCustomers($counts['customers']);
         $itemCategory = $this->seedFoodItems($counts['food_items'], $categoryIds);
-        $orderIds = $this->seedOrders($counts['orders'], $customerIds, $placeIds, $deviceIds);
+        $orderIds = $this->seedOrders($counts['orders'], $customerIds, $placeIds);
 
         $this->seedOrderItems($orderIds, $itemCategory);
         $this->seedMedia($orderIds, 0.3);
@@ -104,17 +103,16 @@ class HighVolumeSeeder extends Seeder
      * Small reference tables that everything else points at. Created with
      * Eloquent (counts are tiny, and their factories use unique() slugs).
      *
-     * @return array{0: array<int>, 1: array<int>, 2: array<int>}
+     * @return array{0: array<int>, 1: array<int>}
      */
     private function seedReferenceData(): array
     {
         $placeIds = Place::factory(12)->create()->pluck('id')->all();
-        $deviceIds = Whatsapp::factory(8)->create()->pluck('id')->all();
         $categoryIds = FoodCategory::factory(30)->create()->pluck('id')->all();
 
-        $this->command?->info('  reference data ready (places, devices, categories).');
+        $this->command?->info('  reference data ready (places, categories).');
 
-        return [$placeIds, $deviceIds, $categoryIds];
+        return [$placeIds, $categoryIds];
     }
 
     /**
@@ -161,15 +159,13 @@ class HighVolumeSeeder extends Seeder
     /**
      * @param  array<int>  $customerIds
      * @param  array<int>  $placeIds
-     * @param  array<int>  $deviceIds
      * @return array<int> the new order ids
      */
-    private function seedOrders(int $count, array $customerIds, array $placeIds, array $deviceIds): array
+    private function seedOrders(int $count, array $customerIds, array $placeIds): array
     {
         $ids = $this->seedReturningIds((new Order)->getTable(), $count, fn () => Order::factory()->make([
             'customer_id' => $customerIds[array_rand($customerIds)],
             'place_id' => $placeIds[array_rand($placeIds)],
-            'device_id' => $deviceIds[array_rand($deviceIds)],
         ])->getAttributes());
 
         $this->command?->info('  orders: '.count($ids));

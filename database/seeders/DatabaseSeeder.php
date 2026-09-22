@@ -10,7 +10,6 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Place;
 use App\Models\Setting;
-use App\Models\Whatsapp;
 use App\Models\WhatsAppCall;
 use App\Models\WhatsAppMessage;
 use Illuminate\Database\Seeder;
@@ -86,9 +85,6 @@ class DatabaseSeeder extends Seeder
             // Places
             $places = Place::factory(3)->create();
 
-            // WhatsApp devices
-            $devices = Whatsapp::factory(2)->create();
-
             // Food categories
             $categories = FoodCategory::factory(8)->create();
 
@@ -105,7 +101,6 @@ class DatabaseSeeder extends Seeder
                 ->recycle($customers)
                 ->create([
                     'place_id' => fn () => $places->random()->id,
-                    'device_id' => fn () => $devices->random()->id,
                 ]);
 
             // Order items

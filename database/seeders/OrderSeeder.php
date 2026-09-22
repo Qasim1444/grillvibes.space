@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Place;
-use App\Models\Whatsapp;
 use Illuminate\Database\Seeder;
 
 class OrderSeeder extends Seeder
@@ -22,13 +21,11 @@ class OrderSeeder extends Seeder
         }
 
         $places = Place::all();
-        $devices = Whatsapp::all();
 
         Order::factory(10)
             ->recycle($customers)
             ->create([
-                // device_id / place_id are real ids (or null) — never a raw uuid.
-                'device_id' => fn () => $devices->isNotEmpty() ? $devices->random()->id : null,
+                // place_id is a real id (or null) — never a raw uuid.
                 'place_id' => fn () => $places->isNotEmpty() ? $places->random()->id : null,
             ]);
     }
