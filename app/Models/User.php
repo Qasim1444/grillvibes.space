@@ -36,6 +36,12 @@ class User extends Authenticatable
         'email',
         'phone',
         'address',
+        'vehicle_type',
+        'vehicle_number',
+        'is_available',
+        'last_lat',
+        'last_lng',
+        'last_location_at',
         'password',
         'otp',
         // Employee (HR) attributes
@@ -73,6 +79,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_employee' => 'boolean',
+            'is_available' => 'boolean',
+            'last_lat' => 'decimal:7',
+            'last_lng' => 'decimal:7',
+            'last_location_at' => 'datetime',
             'joining_date' => 'date',
             'leaving_date' => 'date',
             'date_of_birth' => 'date',
@@ -139,5 +149,10 @@ class User extends Authenticatable
     public function payslips(): HasMany
     {
         return $this->hasMany(Payslip::class);
+    }
+
+    public function assignedDeliveryOrders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'rider_id');
     }
 }

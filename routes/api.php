@@ -8,6 +8,8 @@ use App\Http\Controllers\API\FoodCategoryController;
 use App\Http\Controllers\API\FoodItemController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PasswordResetController;
+use App\Http\Controllers\API\RiderLocationController;
+use App\Http\Controllers\API\RiderOrderController;
 use App\Http\Controllers\API\WhatsAppChatController;
 use App\Http\Controllers\API\Guest\GuestMenuController;
 use App\Http\Controllers\PlaceController;
@@ -41,6 +43,27 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-profile', [AuthController::class, 'update_profile']); // Update own profile
     Route::post('/change-password', [AuthController::class, 'change_password']); // User change password
 
+    Route::prefix('rider')->group(function () {
+        Route::get('/home', [RiderOrderController::class, 'home']);
+        Route::get('/orders', [RiderOrderController::class, 'index']);
+        Route::get('/history', [RiderOrderController::class, 'history']);
+        Route::get('/earnings', [RiderOrderController::class, 'earnings']);
+        Route::get('/profile', [RiderOrderController::class, 'profile']);
+        Route::post('/profile', [RiderOrderController::class, 'updateProfile']);
+        Route::get('/settings', [RiderOrderController::class, 'settings']);
+        Route::get('/notifications', [RiderOrderController::class, 'notifications']);
+        Route::get('/available-riders', [RiderOrderController::class, 'availableRiders']);
+        Route::post('/location', [RiderLocationController::class, 'update']);
+        Route::post('/orders/{order}/assign', [RiderOrderController::class, 'assign']);
+        Route::get('/orders/{order}', [RiderOrderController::class, 'show']);
+        Route::get('/orders/{order}/tracking', [RiderOrderController::class, 'tracking']);
+        Route::post('/orders/{order}/accept', [RiderOrderController::class, 'accept']);
+        Route::post('/orders/{order}/reject', [RiderOrderController::class, 'reject']);
+        Route::post('/orders/{order}/picked-up', [RiderOrderController::class, 'pickedUp']);
+        Route::post('/orders/{order}/on-way', [RiderOrderController::class, 'onWay']);
+        Route::post('/orders/{order}/delivered', [RiderOrderController::class, 'delivered']);
+    });
+
 });
 
 Route::get('/user', function (Request $request) {
@@ -65,24 +88,30 @@ Route::get('food-items/{id}', [FoodItemController::class, 'show']);
 Route::put('food-items/{id}', [FoodItemController::class, 'update']);
 Route::delete('food-items/{id}', [FoodItemController::class, 'destroy']);
 
-Route::get('orders', [OrderController::class, 'index']);
-Route::get('deletereport', [OrderController::class, 'deletereport']);
-Route::post('orders', [OrderController::class, 'store']);
-Route::match(['get', 'post'], 'orders/{id}/receipt', [OrderController::class, 'receipt']);
-Route::get('orders/{id}', [OrderController::class, 'show']);
-Route::put('orders/{id}', [OrderController::class, 'update']);
-Route::delete('orders/{id}', [OrderController::class, 'destroy']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('orders', [OrderController::class, 'index'])->middleware('can.access:orders.view,pos.view');
+    Route::get('deletereport', [OrderController::class, 'deletereport'])->middleware('can.access:orders.view');
+    Route::post('orders', [OrderController::class, 'store'])->middleware('can.access:orders.create,pos.view');
+    Route::match(['get', 'post'], 'orders/{id}/receipt', [OrderController::class, 'receipt'])->middleware('can.access:orders.view,pos.view');
+    Route::get('orders/{id}', [OrderController::class, 'show'])->middleware('can.access:orders.view,pos.view');
+    Route::put('orders/{id}', [OrderController::class, 'update'])->middleware('can.access:orders.update');
+    Route::delete('orders/{id}', [OrderController::class, 'destroy'])->middleware('can.access:orders.delete');
+});
 
-Route::get('daily-summary/report', [ReportController::class, 'dailySummaryReport']);
-Route::get('daily-summary/reportonway', [ReportController::class, 'dailySummaryReportonway']);
-Route::get('daily-summary/reportdining', [ReportController::class, 'dailySummaryReportdining']);
-Route::get('daily-summary/reportdelivery', [ReportController::class, 'dailySummaryReportdelivery']);
-Route::get('daily-category-sales/report', [ReportController::class, 'dailyCategorySalesReport']);
-Route::get('daily-category-sales-by-item-quantity/report', [ReportController::class, 'dailyCategorySalesByItemQuantityReport']);
-Route::get('daily-category-sales-by-item-quantity/reportcurrentdate', [ReportController::class, 'dailyCategorySalesByItemQuantityReportcurrentdate']);
+Route::middleware(['auth:sanctum', 'can.access:dashboard.view'])->group(function () {
+    Route::get('daily-summary/report', [ReportController::class, 'dailySummaryReport']);
+    Route::get('daily-summary/reportonway', [ReportController::class, 'dailySummaryReportonway']);
+    Route::get('daily-summary/reportdining', [ReportController::class, 'dailySummaryReportdining']);
+    Route::get('daily-summary/reportdelivery', [ReportController::class, 'dailySummaryReportdelivery']);
+    Route::get('daily-category-sales/report', [ReportController::class, 'dailyCategorySalesReport']);
+    Route::get('daily-category-sales-by-item-quantity/report', [ReportController::class, 'dailyCategorySalesByItemQuantityReport']);
+    Route::get('daily-category-sales-by-item-quantity/reportcurrentdate', [ReportController::class, 'dailyCategorySalesByItemQuantityReportcurrentdate']);
+});
 
-Route::get('daily-summary/quick-report', [ReportController::class, 'dailySummaryQuickReport']);
-Route::get('daily-summary/top-ten-deals-report', [ReportController::class, 'dailySummaryTopTenReport']);
+Route::middleware(['auth:sanctum', 'can.access:dashboard.view,pos.view'])->group(function () {
+    Route::get('daily-summary/quick-report', [ReportController::class, 'dailySummaryQuickReport']);
+    Route::get('daily-summary/top-ten-deals-report', [ReportController::class, 'dailySummaryTopTenReport']);
+});
 
 // Get all settings
 Route::get('/settings', [SettingController::class, 'index']);
@@ -95,14 +124,17 @@ Route::post('/generate-whatsapp-qr', [whatsappapi::class, 'generateQr']);
 Route::post('/whatsapp/logout-device', [whatsappapi::class, 'logoutDevice']);
 
 // WhatsApp chat proxy (browser -> Laravel -> WhatsApp API v2 server)
-Route::get('/whatsapp/status', [WhatsAppChatController::class, 'status']);
-Route::get('/whatsapp/conversations', [WhatsAppChatController::class, 'conversations']);
-Route::get('/whatsapp/messages/{number}', [WhatsAppChatController::class, 'messages']);
-Route::post('/whatsapp/send-message', [WhatsAppChatController::class, 'sendMessage']);
-Route::post('/whatsapp/send-image', [WhatsAppChatController::class, 'sendImage']);
-Route::post('/whatsapp/send-media', [WhatsAppChatController::class, 'sendMedia']);
-Route::get('/whatsapp/calls', [WhatsAppChatController::class, 'calls']);
-Route::post('/whatsapp/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);
+Route::middleware(['auth:sanctum', 'can.access:customers.view'])->group(function () {
+    Route::get('/whatsapp/status', [WhatsAppChatController::class, 'status']);
+    Route::get('/whatsapp/conversations', [WhatsAppChatController::class, 'conversations']);
+    Route::get('/whatsapp/messages/{number}', [WhatsAppChatController::class, 'messages']);
+    Route::post('/whatsapp/send-message', [WhatsAppChatController::class, 'sendMessage']);
+    Route::post('/whatsapp/send-image', [WhatsAppChatController::class, 'sendImage']);
+    Route::post('/whatsapp/send-media', [WhatsAppChatController::class, 'sendMedia']);
+    Route::get('/whatsapp/calls', [WhatsAppChatController::class, 'calls']);
+    Route::post('/whatsapp/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);
+    Route::post('/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);
+});
 
 // ── Guest / QR — public, no auth ─────────────────────────────────────────────
 // These routes serve the guest-facing QR menu ordering flow.

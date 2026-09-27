@@ -308,6 +308,13 @@
             <span class="call-list__time">{{ formatMessageTime(callTime(c)) }}</span>
           </span>
           <span class="ui-badge" :class="callStatusClass(c.status)">{{ c.status || "—" }}</span>
+          <button
+            v-if="canRejectCall(c)"
+            class="ui-btn ui-btn--danger ui-btn--sm"
+            @click="rejectCall(c)"
+          >
+            Reject
+          </button>
         </li>
       </ul>
 
@@ -525,12 +532,7 @@ const rejectIncomingCall = async () => {
   const call = incomingCall.value;
   showCall.value = false;
   if (!call) return;
-  handledCallIds.add(call.id);
-  try {
-    await whatsapp.rejectCall(call.id, { callerJid: call.callerJid });
-  } catch (err) {
-    // Silent — best effort.
-  }
+  await rejectCall(call);
   incomingCall.value = null;
 };
 
@@ -660,6 +662,26 @@ const callStatusClass = (s) => {
   if (["rejected", "missed", "declined"].includes(v)) return "ui-badge--muted";
   if (["accepted", "answered"].includes(v)) return "ui-badge--success";
   return "ui-badge--muted";
+};
+
+const callId = (call) => call?.id || call?.callId;
+const canRejectCall = (call) => {
+  const status = String(call?.status || "").toLowerCase();
+  return !!callId(call) && ["ringing", "offer"].includes(status);
+};
+
+const rejectCall = async (call) => {
+  const id = callId(call);
+  if (!id) return;
+  handledCallIds.add(id);
+  try {
+    await whatsapp.rejectCall(id, { callerJid: call.callerJid || call.from });
+    allCalls.value = allCalls.value.map((c) =>
+      callId(c) === id ? { ...c, status: "rejected" } : c
+    );
+  } catch (err) {
+    // Silent — best effort.
+  }
 };
 
 const callsForNumber = (contact) => {

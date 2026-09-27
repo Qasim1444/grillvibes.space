@@ -12,8 +12,19 @@ class Order extends Model
 
     protected $fillable = [
         'customer_id',
+        'rider_id',
         'order_datetime',
         'status',
+        'delivery_status',
+        'assigned_at',
+        'accepted_at',
+        'picked_up_at',
+        'on_way_at',
+        'delivered_at',
+        'delivery_notes',
+        'delivery_rejection_reason',
+        'delivery_proof_path',
+        'cash_collected',
         'paid',
         'type',
         'qty',
@@ -38,6 +49,11 @@ class Order extends Model
 
     protected $casts = [
         'order_datetime' => 'datetime',
+        'assigned_at' => 'datetime',
+        'accepted_at' => 'datetime',
+        'picked_up_at' => 'datetime',
+        'on_way_at' => 'datetime',
+        'delivered_at' => 'datetime',
         'paid' => 'boolean',
         'discount_amount' => 'decimal:2',
         'service_charges' => 'decimal:2',
@@ -48,6 +64,7 @@ class Order extends Model
         'loyalty_points_redeemed' => 'integer',
         'loyalty_points_earned' => 'integer',
         'cogs_total' => 'decimal:2',
+        'cash_collected' => 'decimal:2',
         'stock_consumed_at' => 'datetime',
     ];
 
@@ -64,6 +81,11 @@ class Order extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function rider()
+    {
+        return $this->belongsTo(User::class, 'rider_id');
     }
 
     /** The outlet this sale belongs to (drives reports, KDS routing, stock). */

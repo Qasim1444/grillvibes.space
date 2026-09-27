@@ -391,6 +391,87 @@
         </div>
       </div>
     </div>
+
+    <section class="pos-report-actions ui-card">
+      <div>
+        <h2>POS Reports</h2>
+        <p>Open today’s quick report or top deals without leaving POS.</p>
+      </div>
+      <div class="pos-report-actions__buttons">
+        <button class="ui-btn ui-btn--ghost" type="button" @click="showQuickReport = true">
+          Quick Report — Today
+          <span class="pos-report-count">{{ quickReport.length }}</span>
+        </button>
+        <button class="ui-btn ui-btn--ghost" type="button" @click="showTopTen = true">
+          Top 10 Deals — Today
+          <span class="pos-report-count">{{ topTen.length }}</span>
+        </button>
+      </div>
+    </section>
+
+    <Modal v-model="showQuickReport" title="Quick Report — Today" width="820px">
+      <div class="pos-report-card">
+        <div class="pos-report-table-wrap">
+          <table class="pos-report-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!quickReport.length">
+                <td colspan="5" class="pos-report-empty">No orders today.</td>
+              </tr>
+              <tr v-for="order in quickReport" :key="`quick-${order.id}`">
+                <td>#{{ order.id }}</td>
+                <td>{{ order.customer?.name || "Guest" }}</td>
+                <td>{{ orderType(order.type) }}</td>
+                <td><span class="pos-status">{{ statusLabel(order.status) }}</span></td>
+                <td class="pos-report-money">{{ money(order.grand_total) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <template #footer>
+        <button class="ui-btn ui-btn--ghost" type="button" @click="showQuickReport = false">Close</button>
+      </template>
+    </Modal>
+
+    <Modal v-model="showTopTen" title="Top 10 Deals — Today" width="760px">
+      <div class="pos-report-card">
+        <div class="pos-report-table-wrap">
+          <table class="pos-report-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!topTen.length">
+                <td colspan="4" class="pos-report-empty">No top deals today.</td>
+              </tr>
+              <tr v-for="order in topTen" :key="`top-${order.id}`">
+                <td>#{{ order.id }}</td>
+                <td>{{ order.customer?.name || "Guest" }}</td>
+                <td>{{ orderType(order.type) }}</td>
+                <td class="pos-report-money">{{ money(order.grand_total) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <template #footer>
+        <button class="ui-btn ui-btn--ghost" type="button" @click="showTopTen = false">Close</button>
+      </template>
+    </Modal>
   </div>
 </template>
 
@@ -400,6 +481,7 @@ import { router, usePage } from "@inertiajs/vue3";
 import PageHeader from "../components/ui/PageHeader.vue";
 import FormField from "../components/ui/FormField.vue";
 import CustomerPicker from "../components/ui/CustomerPicker.vue";
+import Modal from "../components/ui/Modal.vue";
 
 // The POS page has no admin chrome — it renders standalone (no AdminLayout).
 // Menu items, categories and places arrive as page props. Customers are NOT
@@ -414,12 +496,19 @@ const props = defineProps({
   loyalty: { type: Object, default: () => ({}) },
   campaigns: { type: Array, default: () => [] },
   kdsStations: { type: Array, default: () => [] },
+  quickReport: { type: Array, default: () => [] },
+  topTen: { type: Array, default: () => [] },
 });
 
 const page = usePage();
 const goAdmin = () => router.visit("/");
 
 const money = (v) => `Rs ${Number(v || 0).toFixed(2)}`;
+const orderType = (value) => ({ dining: "Dining", delivery: "Delivery", "on-way": "Takeaway" }[value] || value || "—");
+const statusLabel = (value) =>
+  String(value || "—")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
 const num = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
@@ -446,12 +535,16 @@ const getFoodEmoji = (name) => {
 const items = computed(() => props.foodItems);
 const categories = computed(() => props.categories);
 const places = computed(() => props.places);
+const quickReport = computed(() => props.quickReport);
+const topTen = computed(() => props.topTen);
 // Props arrive with the page, so there's never a loading state after mount.
 const itemsLoading = ref(false);
 const loadError = ref("");
 const saveError = ref("");
 const successMsg = ref("");
 const saving = ref(false);
+const showQuickReport = ref(false);
+const showTopTen = ref(false);
 
 const search = ref("");
 const activeCat = ref(null);
@@ -854,6 +947,96 @@ const placeOrder = () => {
   gap: 24px;
   align-items: start;
   max-width: 1600px;
+}
+
+.pos-report-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 16px 18px;
+  margin-top: 24px;
+  max-width: 1600px;
+}
+
+.pos-report-actions h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.pos-report-actions p {
+  margin: 3px 0 0;
+  color: var(--text-soft);
+  font-size: 0.82rem;
+}
+
+.pos-report-actions__buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pos-report-count {
+  display: inline-flex;
+  min-width: 22px;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.pos-report-card {
+  overflow: hidden;
+}
+
+.pos-report-table-wrap {
+  overflow-x: auto;
+}
+
+.pos-report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+}
+
+.pos-report-table th,
+.pos-report-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.pos-report-table th {
+  color: var(--text-soft);
+  font-weight: 700;
+}
+
+.pos-report-money {
+  text-align: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.pos-status {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.pos-report-empty {
+  color: var(--text-soft);
+  text-align: center;
 }
 
 /* ── Menu Card ──────────────────────────────────────────────────────────── */
@@ -1603,6 +1786,11 @@ const placeOrder = () => {
 @media (max-width: 1100px) {
   .pos-layout {
     grid-template-columns: 1fr;
+  }
+
+  .pos-report-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .pos-cart-card {

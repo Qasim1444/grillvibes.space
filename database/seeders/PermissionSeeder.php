@@ -40,6 +40,7 @@ class PermissionSeeder extends Seeder
             ],
             'People' => [
                 'users' => ['Users', ['view', 'create', 'update', 'delete']],
+                'riders' => ['Riders', ['view', 'create', 'update', 'delete']],
                 'customers' => ['Customers', ['view', 'create', 'update', 'delete']],
                 'roles' => ['Roles & Permissions', ['view', 'create', 'update', 'delete']],
             ],

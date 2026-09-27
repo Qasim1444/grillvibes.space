@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Web;
 
+use App\Http\Controllers\API\Admin\ReportController;
 use App\Http\Controllers\Controller;
 use App\Models\DiscountCampaign;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\KdsStation;
 use App\Models\LoyaltySetting;
-use App\Models\Order;
 use App\Models\Place;
 use App\Support\CurrentBranch;
-use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +30,10 @@ class POSController extends Controller
     public function index(): Response
     {
         $branchId = CurrentBranch::id();
+        $reportController = new ReportController;
+        $reportRequest = new Request([
+            'branch_id' => $branchId,
+        ]);
 
         return Inertia::render('POS', [
             'foodItems' => FoodItem::where('status', 1)
@@ -56,9 +60,8 @@ class POSController extends Controller
             // stays a deliberate act with a person behind it.
             'campaigns' => DiscountCampaign::live()
                 ->get(['id', 'name', 'type', 'value', 'max_discount', 'min_order_amount', 'applies_to', 'target_ids', 'order_types']),
-            // On-demand "today" reports — only resolved on partial reloads.
-            'quickReport' => Inertia::optional(fn () => $this->todaysOrders()),
-            'topTen' => Inertia::optional(fn () => $this->todaysOrders(10)),
+            'quickReport' => $reportController->dailySummaryQuickReport($reportRequest)->getData(true),
+            'topTen' => $reportController->dailySummaryTopTenReport($reportRequest)->getData(true),
         ]);
     }
 
@@ -79,17 +82,4 @@ class POSController extends Controller
         ];
     }
 
-    /**
-     * Today's orders with their customer, newest first. An optional $limit
-     * powers the "Top 10 Deals" view.
-     */
-    private function todaysOrders(?int $limit = null)
-    {
-        return Order::with('customer:id,name')
-            ->when(CurrentBranch::id(), fn ($q, $branchId) => $q->where('branch_id', $branchId))
-            ->whereBetween('order_datetime', [Carbon::today()->startOfDay(), Carbon::today()->endOfDay()])
-            ->orderByDesc('order_datetime')
-            ->when($limit, fn ($q) => $q->take($limit))
-            ->get();
-    }
 }

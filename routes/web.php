@@ -40,6 +40,7 @@ use App\Http\Controllers\Web\Procurement\PurchaseOrderController;
 use App\Http\Controllers\Web\Procurement\VendorController;
 use App\Http\Controllers\Web\Reports\FoodCostReportController;
 use App\Http\Controllers\Web\Reservations\ReservationController;
+use App\Http\Controllers\Web\RiderController;
 use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SettingController;
 use App\Http\Controllers\Web\UserController;
@@ -163,6 +164,20 @@ Route::middleware('auth')->group(function () {
         ->middleware('can.access:users.delete')->name('users.destroy');
     Route::post('/users/{id}/assign-roles', [UserController::class, 'assignRoles'])
         ->middleware('can.access:users.update')->name('users.assign-roles');
+
+    // Riders — delivery staff and order assignment for the rider mobile app.
+    Route::get('/riders', [RiderController::class, 'index'])
+        ->middleware('can.access:riders.view')->name('riders.index');
+    Route::post('/riders', [RiderController::class, 'store'])
+        ->middleware('can.access:riders.create')->name('riders.store');
+    Route::put('/riders/{id}', [RiderController::class, 'update'])
+        ->middleware('can.access:riders.update')->name('riders.update');
+    Route::delete('/riders/{id}', [RiderController::class, 'destroy'])
+        ->middleware('can.access:riders.delete')->name('riders.destroy');
+    Route::post('/riders/orders/{order}/assign', [RiderController::class, 'assign'])
+        ->middleware('can.access:riders.update,orders.update')->name('riders.orders.assign');
+    Route::put('/riders/orders/{order}/status', [RiderController::class, 'status'])
+        ->middleware('can.access:riders.update,orders.update')->name('riders.orders.status');
 
     // Roles & permissions (the matrix that drives every guard above)
     Route::get('/roles', [RoleController::class, 'index'])

@@ -196,6 +196,7 @@ const groups = [
     title: "People",
     items: [
       { to: "/users", label: "Users", icon: icon.users, permission: "users.view" },
+      { to: "/riders", label: "Riders", icon: icon.truck, permission: "riders.view" },
       { to: "/customers", label: "Customers", icon: icon.customer, permission: "customers.view" },
       { to: "/roles", label: "Roles & Permissions", icon: icon.shield, permission: "roles.view" },
     ],

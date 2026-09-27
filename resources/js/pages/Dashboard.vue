@@ -167,6 +167,113 @@
       />
     </div>
 
+    <h2 class="report-heading">Delivery Rider Dashboard</h2>
+    <p class="report-heading__sub">Active deliveries and rider earnings for {{ rangeLabel }}</p>
+
+    <div class="stat-grid">
+      <StatCard
+        label="Delivery Orders"
+        :value="deliveryDashboard.summary.total_delivery_orders"
+        hint="Selected range"
+        color="var(--brand)"
+        tint="var(--brand-soft)"
+      />
+      <StatCard
+        label="Active Deliveries"
+        :value="deliveryDashboard.summary.active_deliveries"
+        hint="Assigned to on way"
+        color="var(--info)"
+        tint="var(--info-soft)"
+      />
+      <StatCard
+        label="Delivered"
+        :value="deliveryDashboard.summary.delivered_orders"
+        hint="Completed deliveries"
+        color="var(--success)"
+        tint="var(--success-soft)"
+      />
+      <StatCard
+        label="Rider Earnings"
+        :value="money(deliveryDashboard.summary.rider_earnings_total)"
+        hint="10% of delivered sales"
+        color="var(--warning)"
+        tint="var(--warning-soft)"
+      />
+    </div>
+
+    <div class="dash-grid">
+      <div class="ui-card">
+        <div class="ui-card-header">
+          Active Delivery Orders
+          <Link href="/riders">Manage riders</Link>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Rider</th>
+                <th>Delivery</th>
+                <th style="text-align: right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!deliveryDashboard.active_orders.length">
+                <td colspan="5" class="data-table__empty">No active deliveries.</td>
+              </tr>
+              <tr v-for="o in deliveryDashboard.active_orders" :key="o.id">
+                <td>{{ o.order_code || `#${o.id}` }}</td>
+                <td>
+                  <strong>{{ o.customer?.name || "Guest" }}</strong>
+                  <small class="cell-sub">{{ o.customer?.address || "No address" }}</small>
+                </td>
+                <td>
+                  <span>{{ o.rider?.name || "Unassigned" }}</span>
+                  <small v-if="o.rider?.last_location_at" class="cell-sub">GPS {{ dateTime(o.rider.last_location_at) }}</small>
+                </td>
+                <td><span class="ui-badge" :class="deliveryStatusClass(o.delivery_status)">{{ deliveryStatusLabel(o.delivery_status) }}</span></td>
+                <td class="money" style="text-align: right">{{ money(o.grand_total) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="ui-card">
+        <div class="ui-card-header">
+          Rider Earnings
+          <span class="report-chip">{{ money(deliveryDashboard.summary.delivery_sales_total) }} delivered sales</span>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Rider</th>
+                <th style="text-align: right">Active</th>
+                <th style="text-align: right">Delivered</th>
+                <th style="text-align: right">Earning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-if="!deliveryDashboard.riders.length">
+                <td colspan="4" class="data-table__empty">No rider earnings in this range.</td>
+              </tr>
+              <tr v-for="r in deliveryDashboard.riders" :key="r.id">
+                <td>
+                  <strong>{{ r.name }}</strong>
+                  <small class="cell-sub">{{ r.vehicle || r.phone || "No vehicle" }}</small>
+                </td>
+                <td style="text-align: right">{{ r.active_deliveries_count }}</td>
+                <td style="text-align: right">{{ r.delivered_count }}</td>
+                <td class="money" style="text-align: right">{{ money(r.earnings_total) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <div class="dash-grid">
       <!-- Sales by type breakdown -->
       <div class="ui-card">
@@ -448,6 +555,18 @@ const statusClass = (s) => {
   return "ui-badge--muted";
 };
 
+const deliveryStatusLabel = (value) =>
+  String(value || "unassigned")
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+
+const deliveryStatusClass = (value) => {
+  if (value === "delivered") return "ui-badge--success";
+  if (["assigned", "accepted", "picked_up", "on_way"].includes(value)) return "ui-badge--info";
+  if (["rejected", "failed", "cancelled"].includes(value)) return "ui-badge--danger";
+  return "ui-badge--muted";
+};
+
 const dateTime = (v) => (v ? new Date(v).toLocaleString() : "—");
 
 // ── Counts / lists (straight from props) ─────────────────────────────────────
@@ -493,6 +612,17 @@ const itemQtyCurrent = computed(() => ({
 const quickReport = computed(() => props.reports?.quickReport ?? []);
 const topTen = computed(() => props.reports?.topTen ?? []);
 const deletedOrders = computed(() => props.reports?.deletedOrders ?? []);
+const deliveryDashboard = computed(() => ({
+  summary: {
+    total_delivery_orders: Number(props.reports?.deliveryDashboard?.summary?.total_delivery_orders ?? 0),
+    active_deliveries: Number(props.reports?.deliveryDashboard?.summary?.active_deliveries ?? 0),
+    delivered_orders: Number(props.reports?.deliveryDashboard?.summary?.delivered_orders ?? 0),
+    delivery_sales_total: Number(props.reports?.deliveryDashboard?.summary?.delivery_sales_total ?? 0),
+    rider_earnings_total: Number(props.reports?.deliveryDashboard?.summary?.rider_earnings_total ?? 0),
+  },
+  active_orders: props.reports?.deliveryDashboard?.active_orders ?? [],
+  riders: props.reports?.deliveryDashboard?.riders ?? [],
+}));
 
 // Recent-orders / categories are server-rendered, so there is no client load state.
 const ordersLoading = false;
@@ -516,7 +646,7 @@ const rangeLabel = computed(() =>
 const loadReports = () => {
   reportsLoading.value = true;
   router.get(
-    "/",
+    "/dashboard",
     { start_date: range.value.start_date, end_date: range.value.end_date },
     {
       preserveState: true,
@@ -591,6 +721,30 @@ const exportData = () => {
       ["Delivery", money(delivery.value.totalGrandTotal)],
       ["On the way", money(onway.value.totalGrandTotal)],
     ]
+  );
+
+  section(
+    "Delivery Rider Dashboard",
+    ["Metric", "Value"],
+    [
+      ["Delivery Orders", deliveryDashboard.value.summary.total_delivery_orders],
+      ["Active Deliveries", deliveryDashboard.value.summary.active_deliveries],
+      ["Delivered", deliveryDashboard.value.summary.delivered_orders],
+      ["Delivery Sales", money(deliveryDashboard.value.summary.delivery_sales_total)],
+      ["Rider Earnings", money(deliveryDashboard.value.summary.rider_earnings_total)],
+    ]
+  );
+
+  section(
+    "Rider Earnings",
+    ["Rider", "Active", "Delivered", "Delivered Sales", "Earning"],
+    deliveryDashboard.value.riders.map((r) => [
+      r.name,
+      r.active_deliveries_count,
+      r.delivered_count,
+      money(r.delivered_sales_total),
+      money(r.earnings_total),
+    ])
   );
 
   // Category sales.
@@ -734,6 +888,13 @@ const exportData = () => {
 
 .report-cell--indent {
   padding-left: 28px;
+  color: var(--text-muted);
+}
+
+.cell-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
   color: var(--text-muted);
 }
 

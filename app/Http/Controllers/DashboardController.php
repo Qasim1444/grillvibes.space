@@ -13,11 +13,14 @@ use App\Models\User;
 use App\Support\CurrentBranch;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    private const RIDER_EARNING_RATE = 0.10;
+
     public function index(Request $request): Response
     {
         // Date range for the report blocks. Default to today. The report SQL
@@ -91,6 +94,7 @@ class DashboardController extends Controller
         $quickData = $reports->dailySummaryQuickReport($rangeRequest)->getData(true);
         $topTenData = $reports->dailySummaryTopTenReport($rangeRequest)->getData(true);
         $deletedData = $orders->deletereport()->getData(true);
+        $deliveryDashboard = $this->deliveryDashboard($startDate, $endDate, $branchId);
 
         return Inertia::render('Dashboard', [
             'counts' => $counts,
@@ -129,7 +133,92 @@ class DashboardController extends Controller
                 'quickReport' => $quickData ?? [],
                 'topTen' => $topTenData ?? [],
                 'deletedOrders' => $deletedData['data'] ?? [],
+                'deliveryDashboard' => $deliveryDashboard,
             ],
         ]);
+    }
+
+    private function deliveryDashboard(string $startDate, string $endDate, ?int $branchId): array
+    {
+        $rangeStart = $startDate.' 00:00:00';
+        $rangeEnd = $endDate.' 23:59:59';
+
+        $base = Order::query()
+            ->where('type', 'delivery')
+            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId));
+
+        $rangeOrders = (clone $base)->whereBetween('order_datetime', [$rangeStart, $rangeEnd]);
+        $deliveredOrders = (clone $base)
+            ->where('delivery_status', 'delivered')
+            ->whereBetween(DB::raw('COALESCE(delivered_at, order_datetime)'), [$rangeStart, $rangeEnd]);
+
+        $activeDeliveriesCount = (clone $base)
+            ->whereIn('delivery_status', ['assigned', 'accepted', 'picked_up', 'on_way'])
+            ->count();
+
+        $activeOrders = (clone $base)
+            ->with('customer:id,name,contact,address', 'rider:id,name,phone,last_lat,last_lng,last_location_at')
+            ->whereIn('delivery_status', ['assigned', 'accepted', 'picked_up', 'on_way'])
+            ->latest('order_datetime')
+            ->limit(10)
+            ->get();
+
+        $riderRows = User::query()
+            ->select('users.id', 'users.name', 'users.phone', 'users.vehicle_type', 'users.vehicle_number')
+            ->whereHas('roles', fn ($q) => $q->where('slug', 'rider'))
+            ->withCount([
+                'assignedDeliveryOrders as active_deliveries_count' => fn ($q) => $q
+                    ->where('type', 'delivery')
+                    ->whereIn('delivery_status', ['assigned', 'accepted', 'picked_up', 'on_way'])
+                    ->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)),
+                'assignedDeliveryOrders as delivered_count' => fn ($q) => $q
+                    ->where('type', 'delivery')
+                    ->where('delivery_status', 'delivered')
+                    ->whereBetween(DB::raw('COALESCE(delivered_at, order_datetime)'), [$rangeStart, $rangeEnd])
+                    ->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)),
+            ])
+            ->withSum([
+                'assignedDeliveryOrders as delivered_sales_total' => fn ($q) => $q
+                    ->where('type', 'delivery')
+                    ->where('delivery_status', 'delivered')
+                    ->whereBetween(DB::raw('COALESCE(delivered_at, order_datetime)'), [$rangeStart, $rangeEnd])
+                    ->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)),
+            ], 'grand_total')
+            ->orderByDesc('delivered_count')
+            ->orderBy('name')
+            ->limit(8)
+            ->get()
+            ->map(fn (User $rider) => [
+                'id' => $rider->id,
+                'name' => $rider->name,
+                'phone' => $rider->phone,
+                'vehicle' => trim(collect([$rider->vehicle_type, $rider->vehicle_number])->filter()->join(' · ')),
+                'active_deliveries_count' => (int) $rider->active_deliveries_count,
+                'delivered_count' => (int) $rider->delivered_count,
+                'delivered_sales_total' => (float) ($rider->delivered_sales_total ?? 0),
+                'earnings_total' => round((float) ($rider->delivered_sales_total ?? 0) * self::RIDER_EARNING_RATE, 2),
+            ]);
+
+        $deliveredTotal = (float) (clone $deliveredOrders)->sum('grand_total');
+
+        return [
+            'summary' => [
+                'total_delivery_orders' => (clone $rangeOrders)->count(),
+                'active_deliveries' => $activeDeliveriesCount,
+                'delivered_orders' => (clone $deliveredOrders)->count(),
+                'delivery_sales_total' => $deliveredTotal,
+                'rider_earnings_total' => round($deliveredTotal * self::RIDER_EARNING_RATE, 2),
+            ],
+            'active_orders' => $activeOrders->map(fn (Order $order) => [
+                'id' => $order->id,
+                'order_code' => '#GRV-'.str_pad((string) $order->id, 4, '0', STR_PAD_LEFT),
+                'customer' => $order->customer,
+                'rider' => $order->rider,
+                'delivery_status' => $order->delivery_status,
+                'grand_total' => (float) $order->grand_total,
+                'order_datetime' => optional($order->order_datetime)->toDateTimeString(),
+            ]),
+            'riders' => $riderRows,
+        ];
     }
 }
