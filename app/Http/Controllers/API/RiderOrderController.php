@@ -34,8 +34,20 @@ class RiderOrderController extends Controller
             ->with(['customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude'])
             ->withCount('orderItems as items_count')
             ->where('type', 'delivery')
-            ->where('rider_id', $request->user()->id)
-            ->whereIn('delivery_status', self::ACTIVE_STATUSES)
+            ->where(function ($query) use ($request) {
+                $query->where('rider_id', $request->user()->id)
+                    ->orWhere(function ($query) {
+                        $query->whereNull('rider_id')
+                            ->where(function ($query) {
+                                $query->whereNull('delivery_status')
+                                    ->orWhereIn('delivery_status', ['unassigned', 'assigned']);
+                            });
+                    });
+            })
+            ->where(function ($query) {
+                $query->whereNull('delivery_status')
+                    ->orWhereIn('delivery_status', array_merge(self::ACTIVE_STATUSES, ['unassigned']));
+            })
             ->when($request->filled('status'), fn ($q) => $q->where('delivery_status', $request->query('status')))
             ->when($request->filled('date'), fn ($q) => $q->whereDate('order_datetime', $request->query('date')))
             ->latest('order_datetime')
@@ -55,12 +67,24 @@ class RiderOrderController extends Controller
             ->with(['customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude'])
             ->withCount('orderItems as items_count')
             ->where('type', 'delivery')
-            ->where('rider_id', $request->user()->id)
-            ->whereIn('delivery_status', self::ACTIVE_STATUSES)
+            ->where(function ($query) use ($request) {
+                $query->where('rider_id', $request->user()->id)
+                    ->orWhere(function ($query) {
+                        $query->whereNull('rider_id')
+                            ->where(function ($query) {
+                                $query->whereNull('delivery_status')
+                                    ->orWhereIn('delivery_status', ['unassigned', 'assigned']);
+                            });
+                    });
+            })
+            ->where(function ($query) {
+                $query->whereNull('delivery_status')
+                    ->orWhereIn('delivery_status', array_merge(self::ACTIVE_STATUSES, ['unassigned']));
+            })
             ->latest('order_datetime')
             ->get();
 
-        $newOrders = $orders->where('delivery_status', 'assigned')->values();
+        $newOrders = $orders->filter(fn (Order $order) => $order->delivery_status === null || in_array($order->delivery_status, ['unassigned', 'assigned'], true))->values();
         $myOrders = $orders->whereIn('delivery_status', ['accepted', 'picked_up', 'on_way'])->values();
 
         return response()->json([
@@ -104,7 +128,7 @@ class RiderOrderController extends Controller
 
     public function show(Request $request, Order $order): JsonResponse
     {
-        $this->authorizeRiderOrder($request, $order);
+        $this->authorizeRiderOrder($request, $order, true);
 
         return response()->json([
             'status' => 'success',
@@ -152,11 +176,13 @@ class RiderOrderController extends Controller
 
     public function accept(Request $request, Order $order): JsonResponse
     {
-        $this->authorizeRiderOrder($request, $order);
-        $this->assertDeliveryStatus($order, ['assigned']);
+        $this->authorizeRiderOrder($request, $order, true);
+        $this->assertDeliveryStatus($order, [null, 'unassigned', 'assigned']);
 
         $order->update([
+            'rider_id' => $request->user()->id,
             'delivery_status' => 'accepted',
+            'assigned_at' => $order->assigned_at ?? now(),
             'accepted_at' => now(),
             'delivery_rejection_reason' => null,
         ]);
@@ -349,6 +375,24 @@ class RiderOrderController extends Controller
         ]);
     }
 
+    public function updatePushToken(Request $request): JsonResponse
+    {
+        $this->authorizeRider($request);
+
+        $data = $request->validate([
+            'expo_push_token' => ['required', 'string', 'max:255'],
+        ]);
+
+        $request->user()->forceFill([
+            'expo_push_token' => $data['expo_push_token'],
+        ])->save();
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Push notification token saved.',
+        ]);
+    }
+
     public function settings(Request $request): JsonResponse
     {
         $this->authorizeRider($request);
@@ -430,7 +474,9 @@ class RiderOrderController extends Controller
             'type' => $order->type,
             'status' => $order->status,
             'delivery_status' => $order->delivery_status,
-            'delivery_status_label' => Str::of($order->delivery_status ?? 'unassigned')->replace('_', ' ')->title()->toString(),
+            'delivery_status_label' => in_array($order->delivery_status, [null, 'unassigned'], true)
+                ? 'Available'
+                : Str::of($order->delivery_status ?? 'unassigned')->replace('_', ' ')->title()->toString(),
             'paid' => (bool) $order->paid,
             'payment_label' => $order->paid ? 'Paid' : 'Cash on Delivery',
             'grand_total' => (float) $order->grand_total,
@@ -523,6 +569,7 @@ class RiderOrderController extends Controller
             'last_lat' => $this->floatOrNull($user->last_lat),
             'last_lng' => $this->floatOrNull($user->last_lng),
             'last_location_at' => $this->dateTime($user->last_location_at),
+            'notifications_enabled' => filled($user->expo_push_token),
         ];
     }
 
@@ -573,6 +620,7 @@ class RiderOrderController extends Controller
     private function allowedActions(Order $order): array
     {
         return match ($order->delivery_status) {
+            null, 'unassigned' => ['accept'],
             'assigned' => ['accept', 'reject'],
             'accepted' => ['picked_up'],
             'picked_up' => ['on_way'],
@@ -808,12 +856,16 @@ class RiderOrderController extends Controller
         }
     }
 
-    private function authorizeRiderOrder(Request $request, Order $order): void
+    private function authorizeRiderOrder(Request $request, Order $order, bool $allowUnassigned = false): void
     {
         $this->authorizeRider($request);
 
         if ($order->type !== 'delivery') {
             abort(404);
+        }
+
+        if ($allowUnassigned && $order->rider_id === null && in_array($order->delivery_status, [null, 'unassigned', 'assigned'], true)) {
+            return;
         }
 
         if (! $request->user()->isSuperAdmin() && (int) $order->rider_id !== (int) $request->user()->id) {

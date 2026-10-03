@@ -120,12 +120,25 @@ class AuthController extends Controller
     {
 
         $request->validate([
-            'email' => 'required|email',
+            'login' => 'nullable|string',
+            'email' => 'nullable|string',
             'password' => 'required',
         ]);
-        $user = User::where('email', $request->email)->first();
+
+        $login = $request->input('login', $request->input('email'));
+        if (! $login) {
+            return response([
+                'message' => 'Email or phone is required.',
+                'status' => 'failed',
+            ], 422);
+        }
+
+        $user = User::where('email', $login)
+            ->orWhere('phone', $login)
+            ->first();
+
         if ($user && Hash::check($request->password, $user->password)) {
-            $token = $user->createToken($request->email)->plainTextToken;
+            $token = $user->createToken($user->email ?? $user->phone ?? 'rider')->plainTextToken;
 
             return response([
                 'token' => $token,

@@ -42,6 +42,7 @@ class User extends Authenticatable
         'last_lat',
         'last_lng',
         'last_location_at',
+        'expo_push_token',
         'password',
         'otp',
         // Employee (HR) attributes

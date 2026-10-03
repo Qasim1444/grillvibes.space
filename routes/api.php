@@ -50,6 +50,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/earnings', [RiderOrderController::class, 'earnings']);
         Route::get('/profile', [RiderOrderController::class, 'profile']);
         Route::post('/profile', [RiderOrderController::class, 'updateProfile']);
+        Route::post('/push-token', [RiderOrderController::class, 'updatePushToken']);
         Route::get('/settings', [RiderOrderController::class, 'settings']);
         Route::get('/notifications', [RiderOrderController::class, 'notifications']);
         Route::get('/available-riders', [RiderOrderController::class, 'availableRiders']);
