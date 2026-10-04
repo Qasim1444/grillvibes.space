@@ -47,6 +47,8 @@ class OrderController extends Controller
                 'regex:/^\d+(\.\d{1,2})?$/',
             ],
             'grand_total' => 'required|numeric|min:0',
+            'delivery_latitude' => 'nullable|numeric|between:-90,90',
+            'delivery_longitude' => 'nullable|numeric|between:-180,180',
             'place_id' => 'required|exists:places,id',
             'order_items' => 'required|array',
             'order_items.*.fooditems_id' => 'required|exists:food_items,id',

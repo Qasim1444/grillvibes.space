@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -294,19 +295,98 @@ class RiderOrderController extends Controller
                     'id' => $request->user()->id,
                     'name' => $request->user()->name,
                     'phone' => $request->user()->phone,
-                    'lat' => $this->floatOrNull($request->user()->last_lat),
-                    'lng' => $this->floatOrNull($request->user()->last_lng),
-                    'last_location_at' => $this->dateTime($request->user()->last_location_at),
+                    'lat' => $this->floatOrNull($request->user()->current_latitude ?? $request->user()->last_lat),
+                    'lng' => $this->floatOrNull($request->user()->current_longitude ?? $request->user()->last_lng),
+                    'last_location_at' => $this->dateTime($request->user()->location_updated_at ?? $request->user()->last_location_at),
                 ],
                 'pickup' => $this->pickupPoint($order),
                 'dropoff' => $this->dropoffPoint($order),
                 'route' => [
                     'status' => $order->delivery_status,
                     'target' => $order->delivery_status === 'accepted' ? 'pickup' : 'dropoff',
-                    'polyline_provider' => 'google_directions',
+                    'polyline_provider' => 'in_app',
                     'mode' => 'DRIVING',
                 ],
                 'timeline' => $this->deliveryTimeline($order),
+            ],
+        ]);
+    }
+
+    public function route(Request $request, Order $order): JsonResponse
+    {
+        $this->authorizeRiderOrder($request, $order);
+
+        $order->load('customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude');
+
+        $rider = [
+            'latitude' => $this->floatOrNull($request->user()->current_latitude ?? $request->user()->last_lat),
+            'longitude' => $this->floatOrNull($request->user()->current_longitude ?? $request->user()->last_lng),
+        ];
+
+        $customer = [
+            'latitude' => $this->floatOrNull($order->delivery_latitude),
+            'longitude' => $this->floatOrNull($order->delivery_longitude),
+        ];
+
+        if ($rider['latitude'] === null || $rider['longitude'] === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Rider location is not available yet.',
+            ], 422);
+        }
+
+        if ($customer['latitude'] === null || $customer['longitude'] === null) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer delivery coordinates are missing for this order.',
+            ], 422);
+        }
+
+        $baseUrl = rtrim((string) config('services.osrm.base_url'), '/');
+        $coordinates = $rider['longitude'].','.$rider['latitude'].';'.$customer['longitude'].','.$customer['latitude'];
+
+        try {
+            $response = Http::timeout(8)->get($baseUrl.'/route/v1/driving/'.$coordinates, [
+                'overview' => 'full',
+                'geometries' => 'geojson',
+                'steps' => 'true',
+            ]);
+        } catch (\Throwable) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Route service is unavailable. Please try again shortly.',
+            ], 503);
+        }
+
+        if (! $response->ok()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Route service could not calculate this delivery route.',
+            ], 503);
+        }
+
+        $route = $response->json('routes.0');
+        $distance = (float) ($route['distance'] ?? 0);
+        $duration = (float) ($route['duration'] ?? 0);
+        $coordinates = $route['geometry']['coordinates'] ?? [];
+
+        if (! is_array($coordinates) || count($coordinates) === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Route service returned an invalid route.',
+            ], 502);
+        }
+
+        return response()->json([
+            'success' => true,
+            'rider' => $rider,
+            'customer' => $customer,
+            'route' => [
+                'distance_meters' => round($distance),
+                'distance_km' => round($distance / 1000, 2),
+                'duration_seconds' => round($duration),
+                'duration_minutes' => max(1, (int) ceil($duration / 60)),
+                'coordinates' => $coordinates,
             ],
         ]);
     }
@@ -569,6 +649,9 @@ class RiderOrderController extends Controller
             'last_lat' => $this->floatOrNull($user->last_lat),
             'last_lng' => $this->floatOrNull($user->last_lng),
             'last_location_at' => $this->dateTime($user->last_location_at),
+            'current_latitude' => $this->floatOrNull($user->current_latitude),
+            'current_longitude' => $this->floatOrNull($user->current_longitude),
+            'location_updated_at' => $this->dateTime($user->location_updated_at),
             'notifications_enabled' => filled($user->expo_push_token),
         ];
     }
@@ -600,10 +683,12 @@ class RiderOrderController extends Controller
         return [
             'name' => $order->customer?->name,
             'address' => $order->customer?->address,
-            'lat' => null,
-            'lng' => null,
+            'lat' => $this->floatOrNull($order->delivery_latitude),
+            'lng' => $this->floatOrNull($order->delivery_longitude),
+            'latitude' => $this->floatOrNull($order->delivery_latitude),
+            'longitude' => $this->floatOrNull($order->delivery_longitude),
             'phone' => $order->customer?->contact,
-            'needs_geocoding' => true,
+            'needs_geocoding' => $order->delivery_latitude === null || $order->delivery_longitude === null,
         ];
     }
 

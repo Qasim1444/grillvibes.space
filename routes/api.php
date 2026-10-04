@@ -58,6 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/orders/{order}/assign', [RiderOrderController::class, 'assign']);
         Route::get('/orders/{order}', [RiderOrderController::class, 'show']);
         Route::get('/orders/{order}/tracking', [RiderOrderController::class, 'tracking']);
+        Route::get('/orders/{order}/route', [RiderOrderController::class, 'route']);
         Route::post('/orders/{order}/accept', [RiderOrderController::class, 'accept']);
         Route::post('/orders/{order}/reject', [RiderOrderController::class, 'reject']);
         Route::post('/orders/{order}/picked-up', [RiderOrderController::class, 'pickedUp']);

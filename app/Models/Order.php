@@ -25,6 +25,8 @@ class Order extends Model
         'delivery_rejection_reason',
         'delivery_proof_path',
         'cash_collected',
+        'delivery_latitude',
+        'delivery_longitude',
         'paid',
         'type',
         'qty',
@@ -65,6 +67,8 @@ class Order extends Model
         'loyalty_points_earned' => 'integer',
         'cogs_total' => 'decimal:2',
         'cash_collected' => 'decimal:2',
+        'delivery_latitude' => 'decimal:15',
+        'delivery_longitude' => 'decimal:15',
         'stock_consumed_at' => 'datetime',
     ];
 

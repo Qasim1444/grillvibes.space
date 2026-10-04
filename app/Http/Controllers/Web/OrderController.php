@@ -397,6 +397,8 @@ class OrderController extends Controller
             // Validated for shape, then overwritten by applyDiscounts() — the
             // client's total is never the one that gets stored.
             'grand_total' => 'required|numeric|min:0',
+            'delivery_latitude' => 'nullable|numeric|between:-90,90',
+            'delivery_longitude' => 'nullable|numeric|between:-180,180',
             'place_id' => 'required|integer',
             // CRM inputs: a code and a points count, both priced server-side.
             'promo_code' => 'nullable|string|max:50',

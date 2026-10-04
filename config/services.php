@@ -40,4 +40,8 @@ return [
         'base_url' => env('WHATSAPP_API_URL', 'https://webwhatsappjs.codewiresolutions.com'),
     ],
 
+    'osrm' => [
+        'base_url' => env('OSRM_BASE_URL', 'https://router.project-osrm.org'),
+    ],
+
 ];
