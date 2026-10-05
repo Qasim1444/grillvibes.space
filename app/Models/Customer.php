@@ -14,6 +14,8 @@ class Customer extends Model
         'name',
         'contact',
         'address',
+        'latitude',
+        'longitude',
         'email',
         'date_of_birth',
         'loyalty_points_balance',
@@ -22,6 +24,8 @@ class Customer extends Model
     protected $casts = [
         'date_of_birth' => 'date',
         'loyalty_points_balance' => 'integer',
+        'latitude' => 'decimal:15',
+        'longitude' => 'decimal:15',
     ];
 
     public function orders(): HasMany

@@ -21,6 +21,8 @@ class CustomerController extends Controller
             'contact' => 'required',
 
             'address' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'email' => [
                 'nullable',
                 'email:rfc,dns',

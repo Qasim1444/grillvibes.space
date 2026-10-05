@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Customer;
 use App\Models\KdsStation;
 use App\Models\Media;
 use App\Models\Order;
@@ -262,6 +263,15 @@ class OrderController extends Controller
         // order to the selected place's branch so API-created sales show beside
         // web POS sales.
         $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
+
+        if (($data['type'] ?? null) === 'delivery') {
+            $customer = ! empty($data['customer_id'])
+                ? Customer::query()->find($data['customer_id'])
+                : null;
+
+            $data['delivery_latitude'] = $data['delivery_latitude'] ?? $customer?->latitude;
+            $data['delivery_longitude'] = $data['delivery_longitude'] ?? $customer?->longitude;
+        }
 
         return $data;
     }
