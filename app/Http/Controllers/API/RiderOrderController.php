@@ -32,7 +32,7 @@ class RiderOrderController extends Controller
         $this->authorizeRider($request);
 
         $data = Order::query()
-            ->with(['customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude'])
+            ->with(['customer:id,name,contact,address,latitude,longitude,email', 'branch:id,name,address,phone,latitude,longitude'])
             ->withCount('orderItems as items_count')
             ->where('type', 'delivery')
             ->where(function ($query) use ($request) {
@@ -65,7 +65,7 @@ class RiderOrderController extends Controller
         $this->authorizeRider($request);
 
         $orders = Order::query()
-            ->with(['customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude'])
+            ->with(['customer:id,name,contact,address,latitude,longitude,email', 'branch:id,name,address,phone,latitude,longitude'])
             ->withCount('orderItems as items_count')
             ->where('type', 'delivery')
             ->where(function ($query) use ($request) {
@@ -134,7 +134,7 @@ class RiderOrderController extends Controller
         return response()->json([
             'status' => 'success',
             'data' => $this->orderDetail($order->load(
-                'customer:id,name,contact,address,email',
+                'customer:id,name,contact,address,latitude,longitude,email',
                 'branch:id,name,address,phone,latitude,longitude',
                 'orderItems.item'
             )),
@@ -285,7 +285,8 @@ class RiderOrderController extends Controller
     {
         $this->authorizeRiderOrder($request, $order);
 
-        $order->load('customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude');
+        $order->load('customer:id,name,contact,address,latitude,longitude,email', 'branch:id,name,address,phone,latitude,longitude');
+        $this->syncDeliveryCoordinatesFromCustomer($order);
 
         return response()->json([
             'status' => 'success',
@@ -316,7 +317,8 @@ class RiderOrderController extends Controller
     {
         $this->authorizeRiderOrder($request, $order);
 
-        $order->load('customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude');
+        $order->load('customer:id,name,contact,address,latitude,longitude,email', 'branch:id,name,address,phone,latitude,longitude');
+        $this->syncDeliveryCoordinatesFromCustomer($order);
 
         $rider = [
             'latitude' => $this->floatOrNull($request->user()->current_latitude ?? $request->user()->last_lat),
@@ -324,8 +326,8 @@ class RiderOrderController extends Controller
         ];
 
         $customer = [
-            'latitude' => $this->floatOrNull($order->delivery_latitude),
-            'longitude' => $this->floatOrNull($order->delivery_longitude),
+            'latitude' => $this->floatOrNull($order->delivery_latitude ?? $order->customer?->latitude),
+            'longitude' => $this->floatOrNull($order->delivery_longitude ?? $order->customer?->longitude),
         ];
 
         if ($rider['latitude'] === null || $rider['longitude'] === null) {
@@ -495,7 +497,7 @@ class RiderOrderController extends Controller
         $this->authorizeRider($request);
 
         $orders = Order::query()
-            ->with('customer:id,name,contact,address,email')
+            ->with('customer:id,name,contact,address,latitude,longitude,email')
             ->where('type', 'delivery')
             ->where('rider_id', $request->user()->id)
             ->latest('updated_at')
@@ -540,7 +542,7 @@ class RiderOrderController extends Controller
     private function deliveredOrdersQuery(Request $request)
     {
         return Order::query()
-            ->with(['customer:id,name,contact,address,email', 'branch:id,name,address,phone,latitude,longitude'])
+            ->with(['customer:id,name,contact,address,latitude,longitude,email', 'branch:id,name,address,phone,latitude,longitude'])
             ->where('type', 'delivery')
             ->where('rider_id', $request->user()->id)
             ->where('delivery_status', 'delivered');
@@ -663,6 +665,8 @@ class RiderOrderController extends Controller
             'name' => $order->customer?->name,
             'contact' => $order->customer?->contact,
             'address' => $order->customer?->address,
+            'latitude' => $this->floatOrNull($order->customer?->latitude),
+            'longitude' => $this->floatOrNull($order->customer?->longitude),
             'email' => $order->customer?->email,
         ];
     }
@@ -680,16 +684,45 @@ class RiderOrderController extends Controller
 
     private function dropoffPoint(Order $order): array
     {
+        [$latitude, $longitude] = $this->deliveryCoordinates($order);
+
         return [
             'name' => $order->customer?->name,
             'address' => $order->customer?->address,
-            'lat' => $this->floatOrNull($order->delivery_latitude),
-            'lng' => $this->floatOrNull($order->delivery_longitude),
-            'latitude' => $this->floatOrNull($order->delivery_latitude),
-            'longitude' => $this->floatOrNull($order->delivery_longitude),
+            'lat' => $latitude,
+            'lng' => $longitude,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
             'phone' => $order->customer?->contact,
-            'needs_geocoding' => $order->delivery_latitude === null || $order->delivery_longitude === null,
+            'needs_geocoding' => $latitude === null || $longitude === null,
         ];
+    }
+
+    /**
+     * @return array{0: ?float, 1: ?float}
+     */
+    private function deliveryCoordinates(Order $order): array
+    {
+        return [
+            $this->floatOrNull($order->delivery_latitude ?? $order->customer?->latitude),
+            $this->floatOrNull($order->delivery_longitude ?? $order->customer?->longitude),
+        ];
+    }
+
+    private function syncDeliveryCoordinatesFromCustomer(Order $order): void
+    {
+        if ($order->delivery_latitude !== null && $order->delivery_longitude !== null) {
+            return;
+        }
+
+        if ($order->customer?->latitude === null || $order->customer?->longitude === null) {
+            return;
+        }
+
+        $order->forceFill([
+            'delivery_latitude' => $order->delivery_latitude ?? $order->customer->latitude,
+            'delivery_longitude' => $order->delivery_longitude ?? $order->customer->longitude,
+        ])->save();
     }
 
     private function deliveryTimeline(Order $order): array
