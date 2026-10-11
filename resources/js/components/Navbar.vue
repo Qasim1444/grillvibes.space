@@ -15,8 +15,8 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
 import { useRouter } from "vue-router";
+import http from "../services/http";
 
 const router = useRouter();
 const user = ref({ name: "Loading..." });
@@ -28,9 +28,7 @@ const fetchUser = async () => {
     return;
   }
   try {
-    const res = await axios.get("http://127.0.0.1:8000/api/logged-user", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const res = await http.get("/logged-user");
     user.value = res.data;
   } catch (error) {
     console.error(error);
@@ -42,9 +40,7 @@ const fetchUser = async () => {
 const logout = async () => {
   const token = localStorage.getItem("token");
   try {
-    await axios.post("http://127.0.0.1:8000/api/logout", {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await http.post("/logout");
     localStorage.removeItem("token");
     router.push("/login");
   } catch (error) {
