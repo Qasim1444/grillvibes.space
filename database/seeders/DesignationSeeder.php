@@ -22,7 +22,6 @@ class DesignationSeeder extends Seeder
         'Chef' => 'Heads the kitchen and controls food quality.',
         'Cook' => 'Prepares food on the line.',
         'Kitchen Helper' => 'Preps ingredients and supports the line.',
-        'Rider' => 'Delivers orders to customers.',
         'Cleaner' => 'Keeps the floor and kitchen clean.',
         'Security Guard' => 'Guards the premises.',
     ];

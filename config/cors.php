@@ -7,7 +7,7 @@ return [
     | Cross-Origin Resource Sharing (CORS) Configuration
     |--------------------------------------------------------------------------
     |
-    | These settings allow the browser-based POS and rider apps to call the
+    | These settings allow browser-based clients to call the
     | API while still keeping the accepted origins explicit.
     |
     */

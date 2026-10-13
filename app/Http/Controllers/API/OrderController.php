@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
 use App\Models\KdsStation;
 use App\Models\Media;
 use App\Models\Order;
@@ -48,8 +47,6 @@ class OrderController extends Controller
                 'regex:/^\d+(\.\d{1,2})?$/',
             ],
             'grand_total' => 'required|numeric|min:0',
-            'delivery_latitude' => 'nullable|numeric|between:-90,90',
-            'delivery_longitude' => 'nullable|numeric|between:-180,180',
             'place_id' => 'required|exists:places,id',
             'order_items' => 'required|array',
             'order_items.*.fooditems_id' => 'required|exists:food_items,id',
@@ -263,15 +260,6 @@ class OrderController extends Controller
         // order to the selected place's branch so API-created sales show beside
         // web POS sales.
         $data['branch_id'] = $this->resolveBranchId((int) $data['place_id']);
-
-        if (($data['type'] ?? null) === 'delivery') {
-            $customer = ! empty($data['customer_id'])
-                ? Customer::query()->find($data['customer_id'])
-                : null;
-
-            $data['delivery_latitude'] = $data['delivery_latitude'] ?? $customer?->latitude;
-            $data['delivery_longitude'] = $data['delivery_longitude'] ?? $customer?->longitude;
-        }
 
         return $data;
     }

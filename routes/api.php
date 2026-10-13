@@ -8,8 +8,6 @@ use App\Http\Controllers\API\FoodCategoryController;
 use App\Http\Controllers\API\FoodItemController;
 use App\Http\Controllers\API\OrderController;
 use App\Http\Controllers\API\PasswordResetController;
-use App\Http\Controllers\API\RiderLocationController;
-use App\Http\Controllers\API\RiderOrderController;
 use App\Http\Controllers\API\WhatsAppChatController;
 use App\Http\Controllers\API\Guest\GuestMenuController;
 use App\Http\Controllers\PlaceController;
@@ -42,29 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/logged-user', [AuthController::class, 'logged_user']); // User looged
     Route::post('/update-profile', [AuthController::class, 'update_profile']); // Update own profile
     Route::post('/change-password', [AuthController::class, 'change_password']); // User change password
-
-    Route::prefix('rider')->group(function () {
-        Route::get('/home', [RiderOrderController::class, 'home']);
-        Route::get('/orders', [RiderOrderController::class, 'index']);
-        Route::get('/history', [RiderOrderController::class, 'history']);
-        Route::get('/earnings', [RiderOrderController::class, 'earnings']);
-        Route::get('/profile', [RiderOrderController::class, 'profile']);
-        Route::post('/profile', [RiderOrderController::class, 'updateProfile']);
-        Route::post('/push-token', [RiderOrderController::class, 'updatePushToken']);
-        Route::get('/settings', [RiderOrderController::class, 'settings']);
-        Route::get('/notifications', [RiderOrderController::class, 'notifications']);
-        Route::get('/available-riders', [RiderOrderController::class, 'availableRiders']);
-        Route::post('/location', [RiderLocationController::class, 'update']);
-        Route::post('/orders/{order}/assign', [RiderOrderController::class, 'assign']);
-        Route::get('/orders/{order}', [RiderOrderController::class, 'show']);
-        Route::get('/orders/{order}/tracking', [RiderOrderController::class, 'tracking']);
-        Route::get('/orders/{order}/route', [RiderOrderController::class, 'route']);
-        Route::post('/orders/{order}/accept', [RiderOrderController::class, 'accept']);
-        Route::post('/orders/{order}/reject', [RiderOrderController::class, 'reject']);
-        Route::post('/orders/{order}/picked-up', [RiderOrderController::class, 'pickedUp']);
-        Route::post('/orders/{order}/on-way', [RiderOrderController::class, 'onWay']);
-        Route::post('/orders/{order}/delivered', [RiderOrderController::class, 'delivered']);
-    });
 
 });
 

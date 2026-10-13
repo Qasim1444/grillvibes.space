@@ -138,7 +138,7 @@ class AuthController extends Controller
             ->first();
 
         if ($user && Hash::check($request->password, $user->password)) {
-            $token = $user->createToken($user->email ?? $user->phone ?? 'rider')->plainTextToken;
+            $token = $user->createToken($user->email ?? $user->phone ?? 'api')->plainTextToken;
 
             return response([
                 'token' => $token,
