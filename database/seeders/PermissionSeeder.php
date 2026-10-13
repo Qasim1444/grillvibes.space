@@ -95,6 +95,8 @@ class PermissionSeeder extends Seeder
 
     public function run(): void
     {
+        $this->deleteObsoleteRiderPermissions();
+
         foreach (self::catalogue() as $group => $modules) {
             foreach ($modules as $module => [$label, $actions]) {
                 foreach ($actions as $action) {
@@ -151,5 +153,26 @@ class PermissionSeeder extends Seeder
             Permission::whereIn('key', $keys)->pluck('id')
         );
         User::forgetPermissionCacheForRole($role);
+    }
+
+    private function deleteObsoleteRiderPermissions(): void
+    {
+        Permission::query()
+            ->where(function ($query) {
+                $query
+                    ->where('key', 'like', 'rider.%')
+                    ->orWhere('key', 'like', 'riders.%')
+                    ->orWhere('key', 'like', 'delivery-rider.%')
+                    ->orWhere('key', 'like', 'delivery-riders.%')
+                    ->orWhere('key', 'like', 'delivery.rider.%')
+                    ->orWhere('key', 'like', 'delivery.riders.%')
+                    ->orWhere('name', 'like', '%Rider%')
+                    ->orWhere('group', 'like', '%Rider%');
+            })
+            ->get()
+            ->each(function (Permission $permission) {
+                $permission->roles()->detach();
+                $permission->delete();
+            });
     }
 }
