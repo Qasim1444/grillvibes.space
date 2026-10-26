@@ -93,6 +93,19 @@ Route::middleware('auth')->group(function () {
     Route::delete('/customers/{id}', [CustomerController::class, 'destroy'])
         ->middleware('can.access:customers.delete')->name('customers.destroy');
 
+    // Session-authenticated WhatsApp endpoints used by the Customers page.
+    Route::prefix('/whatsapp')->middleware('can.access:customers.view')->group(function () {
+        Route::get('/status', [WhatsAppChatController::class, 'status']);
+        Route::get('/qr', [WhatsAppChatController::class, 'qr']);
+        Route::get('/conversations', [WhatsAppChatController::class, 'conversations']);
+        Route::get('/messages/{number}', [WhatsAppChatController::class, 'messages']);
+        Route::post('/send-message', [WhatsAppChatController::class, 'sendMessage']);
+        Route::post('/send-image', [WhatsAppChatController::class, 'sendImage']);
+        Route::post('/send-media', [WhatsAppChatController::class, 'sendMedia']);
+        Route::get('/calls', [WhatsAppChatController::class, 'calls']);
+        Route::post('/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);
+    });
+
     // Places
     Route::get('/places', [PlaceController::class, 'index'])
         ->middleware('can.access:places.view')->name('places.index');

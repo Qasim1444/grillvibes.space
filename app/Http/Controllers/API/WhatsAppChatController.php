@@ -163,6 +163,31 @@ class WhatsAppChatController extends Controller
         }
     }
 
+    /** GET /whatsapp/qr — current WhatsApp device-linking QR code. */
+    public function qr(): JsonResponse
+    {
+        try {
+            $res = Http::timeout(15)->get($this->baseUrl().'/qr-json');
+            $payload = $res->json();
+
+            if (! is_array($payload)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'WhatsApp API returned an invalid QR response.',
+                ], 502);
+            }
+
+            return response()->json($payload, $res->status());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to retrieve the WhatsApp QR code.',
+            ], 502);
+        }
+    }
+
     /** GET /whatsapp/conversations — chat list with unread counts. */
     public function conversations(Request $request): JsonResponse
     {

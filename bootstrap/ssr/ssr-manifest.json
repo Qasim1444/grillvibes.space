@@ -168,12 +168,12 @@
     "/build/assets/ContactPage-Df5Uuaiw.css"
   ],
   "resources/js/pages/Customers.vue": [
-    "/build/assets/Customers-CM7j3ZsN.js",
-    "/build/assets/Customers-DU1WlTMO.css"
+    "/build/assets/Customers-D8aRk7XS.js",
+    "/build/assets/Customers-RSW4BC8Y.css"
   ],
-  "resources/js/pages/Customers.vue?vue&type=style&index=0&scoped=9f3caaa1&lang.css": [
-    "/build/assets/Customers-CM7j3ZsN.js",
-    "/build/assets/Customers-DU1WlTMO.css"
+  "resources/js/pages/Customers.vue?vue&type=style&index=0&scoped=07bb79d0&lang.css": [
+    "/build/assets/Customers-D8aRk7XS.js",
+    "/build/assets/Customers-RSW4BC8Y.css"
   ],
   "resources/js/pages/Dashboard.vue": [
     "/build/assets/Dashboard-D4m6_HsZ.js",
@@ -517,8 +517,8 @@
     "/build/assets/api-D1flQl4z.js"
   ],
   "resources/js/services/whatsapp.js": [
-    "/build/assets/Customers-CM7j3ZsN.js",
-    "/build/assets/Customers-DU1WlTMO.css"
+    "/build/assets/Customers-D8aRk7XS.js",
+    "/build/assets/Customers-RSW4BC8Y.css"
   ],
   "resources/js/ssr.js": []
 }

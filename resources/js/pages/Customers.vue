@@ -77,8 +77,21 @@
 
       <div class="chat-container">
         <div class="chat-messages" ref="messagesContainer">
-          <div v-if="!whatsappConnected" class="chat-banner">
-            WhatsApp not connected — showing saved messages
+          <div v-if="!whatsappConnected" class="chat-qr-panel">
+            <strong>Connect WhatsApp</strong>
+            <p>On your phone, open WhatsApp → Linked devices → Link a device, then scan this code.</p>
+            <img v-if="whatsappQr" :src="whatsappQr" class="chat-qr-image" alt="WhatsApp linking QR code" />
+            <p v-else class="chat-qr-status">
+              {{ loadingWhatsappQr ? "Preparing QR code…" : whatsappQrError || "Waiting for a QR code…" }}
+            </p>
+            <button
+              class="ui-btn ui-btn--ghost ui-btn--sm"
+              :disabled="loadingWhatsappQr"
+              @click="refreshConnection(true)"
+            >
+              Refresh QR
+            </button>
+            <p class="chat-qr-footnote">Saved messages remain available while WhatsApp is disconnected.</p>
           </div>
           <div v-if="loadingMessages" class="chat-notice">Loading messages…</div>
           <div v-else-if="displayMessages.length === 0" class="chat-empty">No messages yet</div>
@@ -393,9 +406,14 @@ const messageInput = ref("");
 const loadingMessages = ref(false);
 const sendingMessage = ref(false);
 const whatsappConnected = ref(false);
+const whatsappQr = ref("");
+const loadingWhatsappQr = ref(false);
+const whatsappQrError = ref("");
 const conversations = ref([]); // used only for unread-count badges
 const messagesContainer = ref(null);
 let pollTimer = null;
+let connectionTimer = null;
+let connectionRefreshInFlight = false;
 
 // ---- Media attachment state ----
 const fileInput = ref(null);
@@ -708,14 +726,54 @@ const openCalls = (customer) => {
   showCalls.value = true;
 };
 
-const loadConnectionAndConversations = async () => {
+const loadWhatsappQr = async () => {
+  if (!whatsappQr.value) loadingWhatsappQr.value = true;
+  whatsappQrError.value = "";
+  try {
+    const response = await whatsapp.qr();
+    whatsappQr.value = response.success && typeof response.qr === "string" ? response.qr : "";
+    if (!whatsappQr.value) {
+      whatsappQrError.value = response.message || "Waiting for a QR code…";
+    }
+  } catch (err) {
+    whatsappQr.value = "";
+    whatsappQrError.value = err.data?.message || err.message || "Unable to load the WhatsApp QR code.";
+  } finally {
+    loadingWhatsappQr.value = false;
+  }
+};
+
+const refreshConnection = async (showQr = false) => {
+  if (connectionRefreshInFlight) return;
+  connectionRefreshInFlight = true;
   try {
     const status = await whatsapp.status();
     whatsappConnected.value = !!status.connected;
+    if (whatsappConnected.value) {
+      whatsappQr.value = "";
+      whatsappQrError.value = "";
+    } else if (showQr) {
+      await loadWhatsappQr();
+    }
+  } catch (err) {
+    whatsappConnected.value = false;
+    if (showQr) {
+      whatsappQr.value = "";
+      whatsappQrError.value = err.data?.message || err.message || "Unable to check WhatsApp connection.";
+    }
+  } finally {
+    connectionRefreshInFlight = false;
+  }
+};
+
+const loadConnectionAndConversations = async (showQr = false) => {
+  await refreshConnection(showQr);
+  try {
     const res = await whatsapp.conversations();
     conversations.value = res.conversations || [];
   } catch (err) {
-    whatsappConnected.value = false;
+    conversations.value = [];
+    console.error(err);
   }
 };
 
@@ -749,9 +807,11 @@ const openChat = async (customer) => {
   messages.value = [];
   showChat.value = true;
   loadingMessages.value = true;
-  await loadConnectionAndConversations();
+  await loadConnectionAndConversations(true);
   await loadMessages();
   loadingMessages.value = false;
+  clearInterval(connectionTimer);
+  connectionTimer = setInterval(() => refreshConnection(true), 4000);
   // Poll for new messages every 5s while the chat is open.
   clearInterval(pollTimer);
   pollTimer = setInterval(loadMessages, 5000);
@@ -846,6 +906,10 @@ watch(showChat, (open) => {
   if (!open) {
     clearInterval(pollTimer);
     pollTimer = null;
+    clearInterval(connectionTimer);
+    connectionTimer = null;
+    whatsappQr.value = "";
+    whatsappQrError.value = "";
     clearAttachment();
   }
 });
@@ -859,6 +923,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   clearInterval(pollTimer);
+  clearInterval(connectionTimer);
   clearInterval(callTimer);
 });
 </script>
@@ -1134,15 +1199,30 @@ onBeforeUnmount(() => {
   background: #fee2e2;
   color: #991b1b;
 }
-.chat-banner {
+.chat-qr-panel {
   flex-shrink: 0;
-  margin: 0 0 6px;
-  padding: 6px 12px;
+  padding: 12px;
   border-radius: 8px;
   background: #fff3cd;
-  color: #8a6d3b;
-  font-size: 12px;
+  color: #66521a;
   text-align: center;
+}
+.chat-qr-panel p {
+  margin: 6px 0;
+  font-size: 12px;
+}
+.chat-qr-image {
+  display: block;
+  width: 176px;
+  height: 176px;
+  margin: 8px auto;
+  background: #fff;
+}
+.chat-qr-status {
+  color: #8a6d3b;
+}
+.chat-qr-footnote {
+  opacity: 0.85;
 }
 .chat-messages {
   flex: 1;
