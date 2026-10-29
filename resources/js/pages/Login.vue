@@ -63,7 +63,12 @@ const brandInitial = computed(() => brandName.value.trim().charAt(0).toUpperCase
 
 const features = ["POS", "QR Menu", "KDS", "Inventory", "Payroll", "Finance", "CRM", "Reports"];
 
-const form = useForm({ email: "", password: "", remember: false });
+const demoCredentials = page.props.demoCredentials ?? {};
+const form = useForm({
+  email: demoCredentials.email ?? "",
+  password: demoCredentials.password ?? "",
+  remember: false,
+});
 
 watch(logoUrl, () => { logoFailed.value = false; });
 

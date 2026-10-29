@@ -44,4 +44,9 @@ return [
         'base_url' => env('OSRM_BASE_URL', 'https://router.project-osrm.org'),
     ],
 
+    'demo_login' => [
+        'email' => env('DEMO_LOGIN_EMAIL'),
+        'password' => env('DEMO_LOGIN_PASSWORD'),
+    ],
+
 ];

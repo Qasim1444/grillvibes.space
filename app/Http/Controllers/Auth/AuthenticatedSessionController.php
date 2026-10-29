@@ -16,7 +16,12 @@ class AuthenticatedSessionController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Login');
+        return Inertia::render('Login', [
+            'demoCredentials' => app()->environment('local') ? [
+                'email' => config('services.demo_login.email'),
+                'password' => config('services.demo_login.password'),
+            ] : null,
+        ]);
     }
 
     /**
