@@ -34,6 +34,7 @@ class PermissionSeeder extends Seeder
                 'food-categories' => ['Food Categories', ['view', 'create', 'update', 'delete']],
                 'food-items' => ['Food Items', ['view', 'create', 'update', 'delete']],
                 'places' => ['Places', ['view', 'create', 'update', 'delete']],
+                'branches' => ['Branches', ['view', 'create', 'update', 'delete']],
             ],
             'Blog' => [
                 'blog' => ['Blog Posts', ['view', 'create', 'update', 'delete']],

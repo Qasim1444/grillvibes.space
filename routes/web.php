@@ -97,6 +97,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('/whatsapp')->middleware('can.access:customers.view')->group(function () {
         Route::get('/status', [WhatsAppChatController::class, 'status']);
         Route::get('/qr', [WhatsAppChatController::class, 'qr']);
+        Route::post('/logout', [WhatsAppChatController::class, 'logout']);
         Route::get('/conversations', [WhatsAppChatController::class, 'conversations']);
         Route::get('/messages/{number}', [WhatsAppChatController::class, 'messages']);
         Route::post('/send-message', [WhatsAppChatController::class, 'sendMessage']);
@@ -116,8 +117,15 @@ Route::middleware('auth')->group(function () {
     Route::delete('/places/{id}', [PlaceController::class, 'destroy'])
         ->middleware('can.access:places.delete')->name('places.destroy');
 
-    // Outlet switcher — the Branches management page was removed, but any
-    // authenticated user may still scope their own UI to an outlet (topbar).
+    // Branch management and outlet switcher.
+    Route::get('/branches', [BranchController::class, 'index'])
+        ->middleware('can.access:branches.view')->name('branches.index');
+    Route::post('/branches', [BranchController::class, 'store'])
+        ->middleware('can.access:branches.create')->name('branches.store');
+    Route::put('/branches/{id}', [BranchController::class, 'update'])
+        ->middleware('can.access:branches.update')->name('branches.update');
+    Route::delete('/branches/{id}', [BranchController::class, 'destroy'])
+        ->middleware('can.access:branches.delete')->name('branches.destroy');
     Route::post('/branches/switch', [BranchController::class, 'switch'])
         ->name('branches.switch');
     Route::put('/branches/{id}/attendance-settings', [BranchController::class, 'updateAttendanceSettings'])

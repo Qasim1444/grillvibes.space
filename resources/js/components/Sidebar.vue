@@ -109,6 +109,7 @@ const groups = [
       { to: "/food-categories", label: "Food Categories", icon: icon.category, permission: "food-categories.view" },
       { to: "/food-items", label: "Food Items", icon: icon.food, permission: "food-items.view" },
       { to: "/places", label: "Places", icon: icon.place, permission: "places.view" },
+      { to: "/branches", label: "Branches", icon: icon.place, permission: "branches.view" },
     ],
   },
   {
@@ -125,7 +126,7 @@ const groups = [
       { to: "/inventory/stock",       label: "Stock on Hand", icon: icon.warehouse, permission: "inventory.stock.view" },
       { to: "/inventory/recipes",     label: "Recipes",       icon: icon.flask,     permission: "inventory.recipes.view" },
       // The report the whole module exists to produce, so it sits with it.
-      { to: "/reports/food-cost",     label: "Food Cost",     icon: icon.chart,     permission: "reports.food-cost.view" },
+      { to: "/reports/food-cost",     label: "Food Cost & Margin", icon: icon.chart, permission: "reports.food-cost.view" },
     ],
   },
   {

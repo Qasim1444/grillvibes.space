@@ -2,6 +2,7 @@
   <div class="page">
     <PageHeader title="Customers" subtitle="Manage customer records.">
       <template #actions>
+        <button class="ui-btn ui-btn--ghost" @click="openWhatsappQr">WhatsApp QR</button>
         <button class="ui-btn ui-btn--ghost" @click="openCompose">Message a Number</button>
         <button v-if="can('customers.create')" class="ui-btn ui-btn--primary" @click="openModal">+ Add Customer</button>
       </template>
@@ -63,6 +64,41 @@
       </template>
     </Modal>
 
+    <Modal v-model="showWhatsappQr" title="Connect WhatsApp" width="400px">
+      <div class="chat-qr-panel">
+        <template v-if="whatsappConnected">
+          <strong>WhatsApp is connected</strong>
+        </template>
+        <template v-else>
+          <p>On your phone, open WhatsApp → Linked devices → Link a device, then scan this code.</p>
+          <img v-if="whatsappQr" :src="whatsappQr" class="chat-qr-image" alt="WhatsApp linking QR code" />
+          <p v-else class="chat-qr-status">
+            {{ loadingWhatsappQr ? "Preparing QR code…" : whatsappQrError || "Waiting for a QR code…" }}
+          </p>
+          <p class="chat-qr-footnote">If the code expires, refresh it and scan the new code.</p>
+        </template>
+      </div>
+      <template #footer>
+        <button class="ui-btn ui-btn--ghost" @click="showWhatsappQr = false">Close</button>
+        <button
+          v-if="whatsappConnected"
+          class="ui-btn ui-btn--danger"
+          :disabled="loggingOutWhatsapp"
+          @click="logoutWhatsapp"
+        >
+          {{ loggingOutWhatsapp ? "Logging out…" : "Logout WhatsApp" }}
+        </button>
+        <button
+          v-if="!whatsappConnected"
+          class="ui-btn ui-btn--primary"
+          :disabled="loadingWhatsappQr"
+          @click="refreshConnection(true)"
+        >
+          Refresh QR
+        </button>
+      </template>
+    </Modal>
+
     <!-- WhatsApp Chat Modal -->
     <Modal v-model="showChat" width="440px" hide-header flush>
       <!-- Custom WhatsApp header -->
@@ -77,21 +113,8 @@
 
       <div class="chat-container">
         <div class="chat-messages" ref="messagesContainer">
-          <div v-if="!whatsappConnected" class="chat-qr-panel">
-            <strong>Connect WhatsApp</strong>
-            <p>On your phone, open WhatsApp → Linked devices → Link a device, then scan this code.</p>
-            <img v-if="whatsappQr" :src="whatsappQr" class="chat-qr-image" alt="WhatsApp linking QR code" />
-            <p v-else class="chat-qr-status">
-              {{ loadingWhatsappQr ? "Preparing QR code…" : whatsappQrError || "Waiting for a QR code…" }}
-            </p>
-            <button
-              class="ui-btn ui-btn--ghost ui-btn--sm"
-              :disabled="loadingWhatsappQr"
-              @click="refreshConnection(true)"
-            >
-              Refresh QR
-            </button>
-            <p class="chat-qr-footnote">Saved messages remain available while WhatsApp is disconnected.</p>
+          <div v-if="!whatsappConnected" class="chat-banner">
+            WhatsApp not connected — saved messages are still available. Use the WhatsApp QR button to connect.
           </div>
           <div v-if="loadingMessages" class="chat-notice">Loading messages…</div>
           <div v-else-if="displayMessages.length === 0" class="chat-empty">No messages yet</div>
@@ -399,6 +422,7 @@ const showModal = ref(false);
 const form = useForm({ id: null, name: "", email: "", contact: "", address: "", date_of_birth: "" });
 
 // ---- WhatsApp chat state ----
+const showWhatsappQr = ref(false);
 const showChat = ref(false);
 const chatCustomer = ref(null);
 const messages = ref([]);
@@ -409,10 +433,12 @@ const whatsappConnected = ref(false);
 const whatsappQr = ref("");
 const loadingWhatsappQr = ref(false);
 const whatsappQrError = ref("");
+const loggingOutWhatsapp = ref(false);
 const conversations = ref([]); // used only for unread-count badges
 const messagesContainer = ref(null);
 let pollTimer = null;
 let connectionTimer = null;
+let qrModalTimer = null;
 let connectionRefreshInFlight = false;
 
 // ---- Media attachment state ----
@@ -777,6 +803,36 @@ const loadConnectionAndConversations = async (showQr = false) => {
   }
 };
 
+const openWhatsappQr = async () => {
+  showWhatsappQr.value = true;
+  await refreshConnection(true);
+  clearInterval(qrModalTimer);
+  qrModalTimer = setInterval(() => refreshConnection(true), 4000);
+};
+
+const logoutWhatsapp = async () => {
+  if (!(await confirmDialog("Log out of WhatsApp? You will need to scan a new QR code to reconnect. Saved messages and media will be kept."))) return;
+  clearInterval(qrModalTimer);
+  loggingOutWhatsapp.value = true;
+  try {
+    const response = await whatsapp.logout();
+    if (!response.success) {
+      throw new Error(response.message || "Failed to log out of WhatsApp.");
+    }
+    whatsappConnected.value = false;
+    whatsappQr.value = "";
+    whatsappQrError.value = "";
+    await refreshConnection(true);
+  } catch (err) {
+    alertDialog(err.data?.message || err.message || "Failed to log out of WhatsApp.");
+  } finally {
+    loggingOutWhatsapp.value = false;
+    if (showWhatsappQr.value) {
+      qrModalTimer = setInterval(() => refreshConnection(true), 4000);
+    }
+  }
+};
+
 const scrollToBottom = () => {
   nextTick(() => {
     const el = messagesContainer.value;
@@ -807,11 +863,11 @@ const openChat = async (customer) => {
   messages.value = [];
   showChat.value = true;
   loadingMessages.value = true;
-  await loadConnectionAndConversations(true);
+  await loadConnectionAndConversations();
   await loadMessages();
   loadingMessages.value = false;
   clearInterval(connectionTimer);
-  connectionTimer = setInterval(() => refreshConnection(true), 4000);
+  connectionTimer = setInterval(() => refreshConnection(), 4000);
   // Poll for new messages every 5s while the chat is open.
   clearInterval(pollTimer);
   pollTimer = setInterval(loadMessages, 5000);
@@ -914,6 +970,15 @@ watch(showChat, (open) => {
   }
 });
 
+watch(showWhatsappQr, (open) => {
+  if (!open) {
+    clearInterval(qrModalTimer);
+    qrModalTimer = null;
+    whatsappQr.value = "";
+    whatsappQrError.value = "";
+  }
+});
+
 onMounted(() => {
   loadConnectionAndConversations(); // populate unread badges
   // A single 5s poll drives both incoming-call detection and the count badges.
@@ -924,6 +989,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   clearInterval(pollTimer);
   clearInterval(connectionTimer);
+  clearInterval(qrModalTimer);
   clearInterval(callTimer);
 });
 </script>
@@ -1200,7 +1266,6 @@ onBeforeUnmount(() => {
   color: #991b1b;
 }
 .chat-qr-panel {
-  flex-shrink: 0;
   padding: 12px;
   border-radius: 8px;
   background: #fff3cd;

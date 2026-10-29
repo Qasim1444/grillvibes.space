@@ -103,6 +103,7 @@ const titles = {
   "/food-categories": "Food Categories",
   "/food-items": "Food Items",
   "/places": "Places",
+  "/branches": "Branches",
   "/kds/stations": "KDS Stations",
   "/kds/board": "KDS Board",
   "/reservations": "Reservations",

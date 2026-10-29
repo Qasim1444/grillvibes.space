@@ -58,6 +58,7 @@ async function request(method, url, { params, body, formData } = {}) {
 export const whatsapp = {
   status: () => request("GET", "/whatsapp/status"),
   qr: () => request("GET", "/whatsapp/qr"),
+  logout: () => request("POST", "/whatsapp/logout", { body: {} }),
   conversations: (params) => request("GET", "/whatsapp/conversations", { params }),
   messages: (number, params) =>
     request("GET", `/whatsapp/messages/${encodeURIComponent(number)}`, { params }),

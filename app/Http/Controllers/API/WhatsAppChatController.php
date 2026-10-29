@@ -188,6 +188,33 @@ class WhatsAppChatController extends Controller
         }
     }
 
+    /** POST /whatsapp/logout — unlink the WhatsApp device without deleting saved data. */
+    public function logout(): JsonResponse
+    {
+        try {
+            $res = Http::timeout(30)->post($this->baseUrl().'/logout', [
+                'clearData' => false,
+            ]);
+            $payload = $res->json();
+
+            if (! is_array($payload)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'WhatsApp API returned an invalid logout response.',
+                ], 502);
+            }
+
+            return response()->json($payload, $res->status());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Unable to log out of WhatsApp.',
+            ], 502);
+        }
+    }
+
     /** GET /whatsapp/conversations — chat list with unread counts. */
     public function conversations(Request $request): JsonResponse
     {
