@@ -105,6 +105,7 @@
             <th class="st__right">Balance</th>
             <th class="st__right">Value</th>
             <th>Reference</th>
+            <th v-if="can('inventory.stock.update') || can('inventory.stock.delete')">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -121,10 +122,25 @@
               {{ m.reference || '—' }}
               <span v-if="m.note" class="st__note" :title="m.note">{{ m.note }}</span>
             </td>
+            <td v-if="can('inventory.stock.update') || can('inventory.stock.delete')" class="st__nowrap">
+              <template v-if="['adjustment', 'wastage'].includes(m.type)">
+                <button v-if="can('inventory.stock.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="openMovementEdit(m)">Edit</button>
+                <button v-if="can('inventory.stock.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="deleteMovement(m)">Delete</button>
+              </template>
+            </td>
           </tr>
         </tbody>
       </table>
     </section>
+
+    <Modal v-model="showMovementEdit" title="Edit Stock Movement" width="520px">
+      <FormField v-model.number="movementForm.quantity" label="Quantity *" type="number" step="0.0001" :error="movementForm.errors.quantity" />
+      <FormField v-model="movementForm.note" label="Note" :error="movementForm.errors.note" />
+      <template #footer>
+        <button class="ui-btn ui-btn--ghost" @click="showMovementEdit = false">Cancel</button>
+        <button class="ui-btn ui-btn--primary" :disabled="movementForm.processing" @click="saveMovementEdit">Save</button>
+      </template>
+    </Modal>
 
     <!-- Stock take -->
     <Modal v-model="showCount" title="Stock Take" width="560px">
@@ -318,6 +334,23 @@ const countDelta = computed(() => {
 // ── Wastage ─────────────────────────────────────────────────────────────────
 const showWriteOff = ref(false);
 const wasteForm = useForm({ ingredient_id: '', quantity: null, note: '' });
+const showMovementEdit = ref(false);
+const movementForm = useForm({ quantity: null, note: '' });
+const movementBeingEdited = ref(null);
+const openMovementEdit = movement => {
+  movementBeingEdited.value = movement;
+  movementForm.quantity = Math.abs(Number(movement.quantity));
+  movementForm.note = movement.note || '';
+  movementForm.clearErrors();
+  showMovementEdit.value = true;
+};
+const saveMovementEdit = () => movementForm.put(`/inventory/stock/movements/${movementBeingEdited.value.id}`, {
+  preserveScroll: true, onSuccess: () => (showMovementEdit.value = false),
+});
+const deleteMovement = async movement => {
+  if (!(await confirmDialog('Delete this manual stock movement? The stock balance will be adjusted.'))) return;
+  router.delete(`/inventory/stock/movements/${movement.id}`, { preserveScroll: true });
+};
 
 const openWriteOff = () => {
   wasteForm.reset(); wasteForm.clearErrors();

@@ -532,6 +532,10 @@ Route::middleware('auth')->group(function () {
             ->middleware('can.access:inventory.stock.adjust')->name('stock.adjust');
         Route::post('/stock/write-off', [StockController::class, 'writeOff'])
             ->middleware('can.access:inventory.stock.adjust')->name('stock.write-off');
+        Route::put('/stock/movements/{movement}', [StockController::class, 'updateMovement'])
+            ->middleware('can.access:inventory.stock.update')->name('stock.movements.update');
+        Route::delete('/stock/movements/{movement}', [StockController::class, 'destroyMovement'])
+            ->middleware('can.access:inventory.stock.delete')->name('stock.movements.destroy');
 
         // Recipe builder — dish cost is derived on read, never stored.
         Route::get('/recipes', [RecipeController::class, 'index'])

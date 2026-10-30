@@ -33,6 +33,8 @@ class Phase7PermissionsSeeder extends Seeder
             ['name' => 'View Stock',          'key' => 'inventory.stock.view',         'group' => 'Inventory'],
             // Stock takes and write-offs both rewrite a balance, so they share one key.
             ['name' => 'Adjust Stock',        'key' => 'inventory.stock.adjust',       'group' => 'Inventory'],
+            ['name' => 'Edit Stock Movements', 'key' => 'inventory.stock.update',       'group' => 'Inventory'],
+            ['name' => 'Delete Stock Movements', 'key' => 'inventory.stock.delete',     'group' => 'Inventory'],
             ['name' => 'View Recipes',        'key' => 'inventory.recipes.view',       'group' => 'Inventory'],
             ['name' => 'Update Recipes',      'key' => 'inventory.recipes.update',     'group' => 'Inventory'],
 

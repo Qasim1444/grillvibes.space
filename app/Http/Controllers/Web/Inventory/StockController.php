@@ -170,6 +170,57 @@ class StockController extends Controller
         return back()->with('success', 'Wastage recorded.');
     }
 
+    public function updateMovement(Request $request, StockMovement $movement): RedirectResponse
+    {
+        $movement = $this->editableMovement($movement);
+        $data = $request->validate([
+            'quantity' => 'required|numeric|min:0.0001',
+            'note' => 'nullable|string|max:255',
+        ]);
+
+        DB::transaction(function () use ($movement, $data) {
+            $newQuantity = $movement->type === StockMovement::TYPE_WASTAGE
+                ? -abs((float) $data['quantity']) : (float) $data['quantity'];
+            $this->applyMovementQuantityChange($movement, $newQuantity);
+            $movement->update(['quantity' => $newQuantity, 'note' => $data['note'] ?? null]);
+        });
+
+        return back()->with('success', 'Stock movement updated.');
+    }
+
+    public function destroyMovement(StockMovement $movement): RedirectResponse
+    {
+        $movement = $this->editableMovement($movement);
+
+        DB::transaction(function () use ($movement) {
+            $this->applyMovementQuantityChange($movement, 0);
+            $movement->delete();
+        });
+
+        return back()->with('success', 'Stock movement deleted.');
+    }
+
+    private function editableMovement(StockMovement $movement): StockMovement
+    {
+        abort_unless($movement->branch_id === CurrentBranch::id(), 404);
+        abort_unless(in_array($movement->type, [StockMovement::TYPE_ADJUSTMENT, StockMovement::TYPE_WASTAGE], true), 422, 'Only manual stock corrections can be changed.');
+        return $movement;
+    }
+
+    private function applyMovementQuantityChange(StockMovement $movement, float $newQuantity): void
+    {
+        $delta = $newQuantity - (float) $movement->quantity;
+        StockLevel::where('branch_id', $movement->branch_id)
+            ->where('ingredient_id', $movement->ingredient_id)
+            ->lockForUpdate()->firstOrFail()
+            ->increment('quantity', $delta);
+
+        StockMovement::where('branch_id', $movement->branch_id)
+            ->where('ingredient_id', $movement->ingredient_id)
+            ->where('id', '>=', $movement->id)
+            ->increment('balance_after', $delta);
+    }
+
     private function requireBranch(): ?int
     {
         return CurrentBranch::id();
