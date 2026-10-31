@@ -59,22 +59,11 @@
                   <span v-if="item.note" class="kds__item-note">📝 {{ item.note }}</span>
                 </div>
               </div>
-              <div class="kds__item-actions">
-                <button
-                  v-if="item.kds_status === 'sent'"
-                  class="kds__pill kds__pill--prep"
-                  @click="setStatus(item, 'preparing')"
-                >Prep</button>
-                <button
-                  v-if="item.kds_status === 'preparing'"
-                  class="kds__pill kds__pill--ready"
-                  @click="setStatus(item, 'ready')"
-                >Ready</button>
-                <button
-                  v-if="['sent','preparing','ready'].includes(item.kds_status)"
-                  class="kds__pill kds__pill--bump"
-                  @click="bumpItem(ticket, item)"
-                >✓</button>
+              <div class="kds__item-actions kds__item-status-flow">
+                <button class="kds__step" :class="statusStepClass(item, 0)" disabled>Pending</button>
+                <button class="kds__step" :class="statusStepClass(item, 1)" :disabled="item.kds_status !== 'sent'" @click="setStatus(item, 'preparing')">Prep</button>
+                <button class="kds__step" :class="statusStepClass(item, 2)" :disabled="item.kds_status !== 'preparing'" @click="setStatus(item, 'ready')">Ready</button>
+                <button class="kds__step kds__step--done" :class="statusStepClass(item, 3)" :disabled="item.kds_status !== 'ready'" @click="bumpItem(ticket, item)">✓</button>
               </div>
             </div>
           </div>
@@ -103,21 +92,16 @@
     <!-- Recall drawer (bumped items) -->
     <div v-if="recalled.length" class="kds__recall-bar">
       <span class="kds__recall-label">Recalled:</span>
-      <button class="kds__recall-all" @click="recallAll">↩ Recall All</button>
+      <button class="kds__recall-all" :disabled="recallingOrder" @click="recallAll">↩ Recall All</button>
       <button
         v-for="item in recalled"
         :key="item.id"
         class="kds__recall-chip"
-        @click="recallItem(item)"
+        :class="{ 'is-selected': selectedRecallOrderId === recallOrderValue(item) }"
+        @click="selectRecallOrder(item)"
       >
         ↩ Order #{{ item.order_number }} · {{ item.name }}
       </button>
-      <select v-model="selectedRecallOrderId" class="kds__recall-select" aria-label="Select order ID to recall" @change="recallError = ''">
-        <option value="">Select Order ID</option>
-        <option v-for="order in recalledOrders" :key="order.id" :value="order.id">
-          Order #{{ order.number }} (ID: {{ order.id }})
-        </option>
-      </select>
       <button class="kds__last-recall" :disabled="recallingOrder" @click="recallOrderById">
         {{ recallingOrder ? 'Recalling…' : 'Last Recall' }}
       </button>
@@ -146,14 +130,6 @@ const recalled        = ref([]);
 const selectedRecallOrderId = ref('');
 const recallError = ref('');
 const recallingOrder = ref(false);
-const recalledOrders = computed(() => {
-  const orders = new Map();
-  recalled.value.forEach(item => {
-    const id = String(item.order_id ?? item.order_number ?? '').replace(/^#/, '');
-    if (id && !orders.has(id)) orders.set(id, String(item.order_number ?? id).replace(/^#/, ''));
-  });
-  return [...orders].map(([id, number]) => ({ id, number }));
-});
 const loading         = ref(true);
 const polling         = ref(false);
 const clock           = ref('');
@@ -254,28 +230,40 @@ const setStatus = async (item, status) => {
   item.kds_status = status; // optimistic
 };
 
-const recallItem = async (item) => {
-  await apiFetch(`/kds/items/${item.id}/recall`, 'POST');
-  recalled.value = recalled.value.filter(r => r.id !== item.id);
-  await fetchTickets();
+const recallOrderValue = item => String(item.order_id ?? item.order_number ?? '').replace(/^#/, '');
+
+const selectRecallOrder = item => {
+  const id = recallOrderValue(item);
+  selectedRecallOrderId.value = selectedRecallOrderId.value === id ? '' : id;
+  recallError.value = '';
 };
 
 const recallAll = async () => {
+  if (recallingOrder.value) return;
   const items = [...recalled.value];
-  await Promise.all(items.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
-  const recalledIds = new Set(items.map(item => item.id));
-  recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
-  await fetchTickets();
+  recallingOrder.value = true;
+  try {
+    const results = await Promise.all(items.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
+    const restoredIds = new Set(items.filter((_, index) => results[index].ok).map(item => item.id));
+    recalled.value = recalled.value.filter(item => !restoredIds.has(item.id));
+    if (results.some(response => !response.ok)) recallError.value = 'Unable to recall some items. Please try again.';
+    else recallError.value = '';
+    selectedRecallOrderId.value = '';
+    await fetchTickets();
+  } finally {
+    recallingOrder.value = false;
+  }
 };
 
 const recallOrderById = async () => {
+  if (recallingOrder.value) return;
   const requested = selectedRecallOrderId.value.trim();
   if (!requested) {
     recallError.value = 'Select an order ID first.';
     return;
   }
 
-  const matches = recalled.value.filter(item => String(item.order_id ?? item.order_number ?? '').replace(/^#/, '') === requested);
+  const matches = recalled.value.filter(item => recallOrderValue(item) === requested);
 
   if (!matches.length) {
     recallError.value = 'Unable to recall: no bumped items found for that order ID.';
@@ -286,12 +274,12 @@ const recallOrderById = async () => {
   recallError.value = '';
   try {
     const results = await Promise.all(matches.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
+    const recalledIds = new Set(matches.filter((_, index) => results[index].ok).map(item => item.id));
+    recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
     if (results.some(response => !response.ok)) {
       recallError.value = 'Unable to recall all items for that order. Please try again.';
       return;
     }
-    const recalledIds = new Set(matches.map(item => item.id));
-    recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
     selectedRecallOrderId.value = '';
     await fetchTickets();
   } catch {
@@ -299,6 +287,15 @@ const recallOrderById = async () => {
   } finally {
     recallingOrder.value = false;
   }
+};
+
+const statusStepClass = (item, step) => {
+  const currentStep = ({ sent: 0, preparing: 1, ready: 2 })[item.kds_status] ?? 0;
+  return {
+    'is-complete': currentStep > step,
+    'is-current': currentStep === step,
+    'is-next': currentStep + 1 === step,
+  };
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -442,6 +439,17 @@ const typeLabel   = t => ({ dining: '🍽 Dine-in', 'on-way': '🥡 Takeaway', d
 .kds__item-note   { font-size: 0.78rem; color: #fde68a; margin-top: 2px; }
 
 .kds__item-actions { display: flex; gap: 6px; }
+.kds__item-status-flow { align-items: center; }
+.kds__step {
+  border: 1px solid #475569; border-radius: 5px; padding: 4px 7px;
+  background: #1e293b; color: #94a3b8; font-size: 0.7rem; font-weight: 700;
+}
+.kds__step.is-complete { background: #14532d; border-color: #16a34a; color: #bbf7d0; }
+.kds__step.is-current { background: #334155; border-color: #94a3b8; color: #f1f5f9; }
+.kds__step.is-next:not(:disabled) { background: #1d4ed8; border-color: #3b82f6; color: #fff; cursor: pointer; }
+.kds__step.is-next:not(:disabled):hover { filter: brightness(1.15); }
+.kds__step:disabled { cursor: default; opacity: 0.8; }
+.kds__step--done.is-next:not(:disabled) { background: #059669; border-color: #10b981; }
 .kds__pill {
   border: none; border-radius: 6px; padding: 4px 10px;
   font-size: 0.75rem; font-weight: 700; cursor: pointer;
@@ -489,10 +497,6 @@ const typeLabel   = t => ({ dining: '🍽 Dine-in', 'on-way': '🥡 Takeaway', d
   border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
 }
 .kds__last-recall:hover { background: #475569; }
-.kds__recall-select {
-  width: 190px; background: #0f172a; color: #f1f5f9; border: 1px solid #475569;
-  border-radius: 6px; padding: 5px 8px; font-size: 0.75rem; cursor: pointer;
-}
 .kds__recall-error { color: #fca5a5; font-size: 0.75rem; }
 .kds__recall-all {
   background: #0f766e; color: #f0fdfa; border: 1px solid #14b8a6;
@@ -504,6 +508,7 @@ const typeLabel   = t => ({ dining: '🍽 Dine-in', 'on-way': '🥡 Takeaway', d
   border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer;
 }
 .kds__recall-chip:hover { background: #475569; }
+.kds__recall-chip.is-selected { background: #1d4ed8; border-color: #60a5fa; }
 
 /* ── Transition ──────────────────────────────────────────────────────────── */
 .ticket-fade-enter-active, .ticket-fade-leave-active { transition: all 0.4s; }
