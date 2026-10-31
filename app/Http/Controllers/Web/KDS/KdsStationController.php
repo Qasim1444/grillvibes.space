@@ -145,17 +145,27 @@ class KdsStationController extends Controller
                     'placed_at' => $order->order_datetime?->toIso8601String(),
                     'age_seconds' => $lines->min(fn ($i) => $i->ageSeconds()),
                     'kds_status' => $this->resolveTicketStatus($lines),
-                    'items' => $lines->map(fn ($i) => [
-                        'id' => $i->id,
-                        'name' => $i->item?->name ?? '—',
-                        'qty' => $i->quantity,
-                        'note' => $i->add_note,
-                        'kds_status' => $i->kds_status,
-                        'age_seconds' => $i->ageSeconds(),
-                        'station_id' => $i->kds_station_id,
-                        'station_name' => $i->kdsStation?->name,
-                        'station_color' => $i->kdsStation?->color ?? '#6366f1',
-                    ])->values(),
+                    'items' => $lines->map(function ($i) {
+                        $extras = collect($i->extras ?? [])->map(fn ($extra) =>
+                            ($extra['ingredient_name'] ?? 'Extra topping').' × '.($extra['quantity'] ?? 0).' '.($extra['unit'] ?? '')
+                        )->implode(', ');
+                        $note = collect([
+                            $i->add_note,
+                            $extras !== '' ? 'Extras: '.$extras : null,
+                        ])->filter()->implode(' · ');
+
+                        return [
+                            'id' => $i->id,
+                            'name' => $i->item?->name ?? '—',
+                            'qty' => $i->quantity,
+                            'note' => $note,
+                            'kds_status' => $i->kds_status,
+                            'age_seconds' => $i->ageSeconds(),
+                            'station_id' => $i->kds_station_id,
+                            'station_name' => $i->kdsStation?->name,
+                            'station_color' => $i->kdsStation?->color ?? '#6366f1',
+                        ];
+                    })->values(),
                 ];
             })
             ->values();

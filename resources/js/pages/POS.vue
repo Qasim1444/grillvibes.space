@@ -130,6 +130,7 @@
             </div>
             <div v-if="successMsg" key="success" class="ui-alert ui-alert--success">
               <span class="alert-icon">✓</span> {{ successMsg }}
+              <a v-if="receiptUrl" class="pos-print-link" :href="receiptUrl" target="_blank" rel="noopener">Print receipt</a>
             </div>
           </TransitionGroup>
 
@@ -141,7 +142,7 @@
             </div>
 
             <TransitionGroup name="cart-item" tag="div" class="cart-items">
-              <div v-for="line in cart" :key="line.fooditems_id" class="pos-line">
+              <div v-for="line in cart" :key="line.cart_key" class="pos-line">
                 <div class="pos-line__content">
                   <div class="pos-line__main">
                     <span class="pos-line__name">{{ line.name }}</span>
@@ -149,7 +150,7 @@
                       class="pos-line__x"
                       type="button"
                       :aria-label="`Remove ${line.name}`"
-                      @click="removeLine(line.fooditems_id)"
+                      @click="removeLine(line.cart_key)"
                     >
                       <span>×</span>
                     </button>
@@ -166,7 +167,7 @@
                       <span class="qty-value">{{ line.quantity }}</span>
                       <button type="button" aria-label="Increase quantity" @click="bump(line, 1)">+</button>
                     </div>
-                    <span class="pos-line__unit">× {{ money(line.price) }}</span>
+                    <span class="pos-line__unit">{{ money(line.price + lineExtraPrice(line)) }} each</span>
                     <span class="pos-line__sub">{{ money(lineTotal(line)) }}</span>
                   </div>
 
@@ -177,6 +178,25 @@
                     placeholder="Add a note…"
                     :aria-label="`Note for ${line.name}`"
                   />
+
+                  <div class="pos-extras">
+                    <div class="pos-extras__header">
+                      <strong>Extra toppings</strong>
+                      <button type="button" class="pos-extras__add" @click="addExtra(line)">+ Add ingredient</button>
+                    </div>
+                    <small class="pos-extras__hint">Enter ingredient quantity and extra price per serving.</small>
+                    <div v-for="(extra, extraIndex) in line.extras" :key="extraIndex" class="pos-extra">
+                      <select v-model.number="extra.ingredient_id" class="ui-select" :aria-label="`Extra topping for ${line.name}`">
+                        <option value="">Choose ingredient</option>
+                        <option v-for="ingredient in props.ingredients" :key="ingredient.id" :value="ingredient.id">
+                          {{ ingredient.name }} ({{ ingredient.unit }}, stock {{ Number(ingredient.available_quantity).toFixed(2) }})
+                        </option>
+                      </select>
+                      <input v-model.number="extra.quantity" type="number" min="0.0001" step="0.0001" class="ui-input pos-extra__qty" aria-label="Extra ingredient quantity per item" :placeholder="`Qty (${selectedIngredientUnit(extra) || 'unit'})`" />
+                      <input v-model.number="extra.price" type="number" min="0" step="0.01" class="ui-input pos-extra__price" aria-label="Extra topping price per item" placeholder="Price Rs/item" />
+                      <button type="button" class="pos-extras__remove" aria-label="Remove extra topping" @click="removeExtra(line, extraIndex)">×</button>
+                    </div>
+                  </div>
 
                   <select
                     v-model="line.kds_station_id"
@@ -491,6 +511,7 @@ const props = defineProps({
   foodItems: { type: Array, default: () => [] },
   categories: { type: Array, default: () => [] },
   places: { type: Array, default: () => [] },
+  ingredients: { type: Array, default: () => [] },
   // Loyalty rates + live discount campaigns, used only to preview what a
   // redemption or an offer is worth. Both are re-priced server-side at checkout.
   loyalty: { type: Object, default: () => ({}) },
@@ -542,6 +563,7 @@ const itemsLoading = ref(false);
 const loadError = ref("");
 const saveError = ref("");
 const successMsg = ref("");
+const receiptUrl = ref("");
 const saving = ref(false);
 const showQuickReport = ref(false);
 const showTopTen = ref(false);
@@ -572,37 +594,46 @@ const filteredItems = computed(() => {
   });
 });
 
-const lineTotal = (line) => num(line.price) * num(line.quantity);
+const lineExtraPrice = line => (line.extras ?? []).reduce((sum, extra) => sum + num(extra.price), 0);
+const lineTotal = line => (num(line.price) + lineExtraPrice(line)) * num(line.quantity);
 
+let cartLineKey = 0;
 const addToCart = (item) => {
   successMsg.value = "";
-  const existing = cart.value.find((l) => l.fooditems_id === item.id);
+  const existing = cart.value.find((l) => l.fooditems_id === item.id && !l.add_note && !l.extras.length);
   if (existing) {
     existing.quantity += 1;
     return;
   }
   cart.value.push({
+    cart_key: ++cartLineKey,
     fooditems_id: item.id,
     category_id: item.foodcategory_id,
     name: item.name,
     price: num(item.price),
     quantity: 1,
     add_note: "",
+    extras: [],
     kds_station_id: null,
   });
 };
 
+const addExtra = line => line.extras.push({ ingredient_id: "", quantity: 1, price: null });
+const removeExtra = (line, index) => line.extras.splice(index, 1);
+const selectedIngredientUnit = extra =>
+  props.ingredients.find(ingredient => Number(ingredient.id) === Number(extra.ingredient_id))?.unit ?? "";
+
 const bump = (line, delta) => {
   const next = line.quantity + delta;
   if (next < 1) {
-    removeLine(line.fooditems_id);
+    removeLine(line.cart_key);
     return;
   }
   line.quantity = next;
 };
 
-const removeLine = (id) => {
-  cart.value = cart.value.filter((l) => l.fooditems_id !== id);
+const removeLine = (key) => {
+  cart.value = cart.value.filter((l) => l.cart_key !== key);
 };
 
 const clearCart = () => {
@@ -836,31 +867,10 @@ const nowForApi = () => {
   )}:${p(d.getSeconds())}`;
 };
 
-// Load the order's printable receipt in a hidden iframe; that page auto-opens
-// the browser print dialog once it (and the logo) have rendered. Reused across
-// orders — the previous frame is torn down first.
-const printReceipt = (orderId) => {
-  const prev = document.getElementById("pos-receipt-frame");
-  if (prev) prev.remove();
-
-  const frame = document.createElement("iframe");
-  frame.id = "pos-receipt-frame";
-  frame.setAttribute("aria-hidden", "true");
-  Object.assign(frame.style, {
-    position: "fixed",
-    left: "-9999px",
-    top: "0",
-    width: "1px",
-    height: "1px",
-    border: "0",
-  });
-  frame.src = `/orders/${orderId}/receipt`;
-  document.body.appendChild(frame);
-};
-
 const placeOrder = () => {
   saveError.value = "";
   successMsg.value = "";
+  receiptUrl.value = "";
 
   if (!cart.value.length) return;
   if (!form.value.place_id) {
@@ -879,6 +889,17 @@ const placeOrder = () => {
     saveError.value = "The discounts together exceed the subtotal — reduce one of them.";
     return;
   }
+  const invalidExtra = cart.value.some(line => line.extras.some(extra =>
+    !extra.ingredient_id || num(extra.quantity) <= 0 || extra.price === null || extra.price === "" || num(extra.price) < 0
+  ));
+  if (invalidExtra) {
+    saveError.value = "Choose an ingredient, quantity, and price for each extra topping.";
+    return;
+  }
+
+  // Open the receipt tab while the cashier's click is still active. Browsers
+  // can block print dialogs launched later from a hidden iframe after checkout.
+  const receiptWindow = window.open("about:blank", "_blank");
 
   const payload = {
     order_datetime: nowForApi(),
@@ -902,6 +923,11 @@ const placeOrder = () => {
       discount_amount: 0,
       sub_total: Number(lineTotal(l).toFixed(2)),
       add_note: l.add_note || "",
+      extras: l.extras.map(extra => ({
+        ingredient_id: Number(extra.ingredient_id),
+        quantity: Number(extra.quantity),
+        price: Number(num(extra.price).toFixed(2)),
+      })),
       kds_station_id: l.kds_station_id ?? null,
     })),
   };
@@ -917,9 +943,13 @@ const placeOrder = () => {
       // The controller flashes a success message with the new order id.
       const msg = page.props.flash?.success || "Order placed successfully.";
       successMsg.value = msg;
-      // Flash reads "Order #123 placed successfully." — pull the id and print.
       const idMatch = String(msg).match(/#(\d+)/);
-      if (idMatch) printReceipt(idMatch[1]);
+      if (idMatch) {
+        receiptUrl.value = `/orders/${idMatch[1]}/receipt`;
+        if (receiptWindow && !receiptWindow.closed) receiptWindow.location.replace(receiptUrl.value);
+      } else if (receiptWindow && !receiptWindow.closed) {
+        receiptWindow.close();
+      }
       cart.value = [];
       form.value.discount_amount = 0;
       form.value.customer_id = null;
@@ -928,12 +958,14 @@ const placeOrder = () => {
       clearPromo();
     },
     onError: (errors) => {
+      if (receiptWindow && !receiptWindow.closed) receiptWindow.close();
       saveError.value =
         Object.values(errors).flat().join(" ") ||
         "Could not place the order. Please try again.";
     },
     onFinish: () => {
       saving.value = false;
+      if (!receiptUrl.value && receiptWindow && !receiptWindow.closed) receiptWindow.close();
     },
   });
 };
@@ -1524,6 +1556,23 @@ const placeOrder = () => {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
 }
+
+.pos-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  padding: 9px;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 8px;
+  background: var(--surface-2, #f8fafc);
+}
+.pos-extras__header { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+.pos-extras__hint { color: var(--muted, #64748b); font-size: 10px; }
+.pos-extras__add { border: 0; background: transparent; color: var(--brand, #2563eb); font: inherit; font-weight: 700; cursor: pointer; }
+.pos-extra { display: grid; grid-template-columns: minmax(100px, 1fr) 72px 92px 26px; gap: 6px; align-items: center; }
+.pos-extra .ui-select, .pos-extra .ui-input { min-width: 0; width: 100%; padding: 6px 7px; font-size: 11px; }
+.pos-extras__remove { border: 0; border-radius: 5px; background: #fee2e2; color: #b91c1c; font-size: 18px; line-height: 1; cursor: pointer; height: 28px; }
+.pos-print-link { margin-left: 10px; color: inherit; font-weight: 700; text-decoration: underline; }
 
 .pos-line__station {
   font-size: 12px;

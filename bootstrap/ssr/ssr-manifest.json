@@ -372,20 +372,20 @@
     "/build/assets/MaintenanceLogs-pne4FZ3z.css"
   ],
   "resources/js/pages/Orders.vue": [
-    "/build/assets/Orders-D8YjXBiJ.js",
-    "/build/assets/Orders-DB28dXkA.css"
+    "/build/assets/Orders-Qm1lni9v.js",
+    "/build/assets/Orders-CZZmnAud.css"
   ],
-  "resources/js/pages/Orders.vue?vue&type=style&index=0&scoped=38ca1465&lang.css": [
-    "/build/assets/Orders-D8YjXBiJ.js",
-    "/build/assets/Orders-DB28dXkA.css"
+  "resources/js/pages/Orders.vue?vue&type=style&index=0&scoped=8e5f6e74&lang.css": [
+    "/build/assets/Orders-Qm1lni9v.js",
+    "/build/assets/Orders-CZZmnAud.css"
   ],
   "resources/js/pages/POS.vue": [
-    "/build/assets/POS-C1uLrAtB.js",
-    "/build/assets/POS-DP1R1UCq.css"
+    "/build/assets/POS-DuzFIX0V.js",
+    "/build/assets/POS-5r-GR32A.css"
   ],
-  "resources/js/pages/POS.vue?vue&type=style&index=0&scoped=c4f72a31&lang.css": [
-    "/build/assets/POS-C1uLrAtB.js",
-    "/build/assets/POS-DP1R1UCq.css"
+  "resources/js/pages/POS.vue?vue&type=style&index=0&scoped=48a3fbba&lang.css": [
+    "/build/assets/POS-DuzFIX0V.js",
+    "/build/assets/POS-5r-GR32A.css"
   ],
   "resources/js/pages/Places.vue": [
     "/build/assets/Places-DLtMHWyN.js"

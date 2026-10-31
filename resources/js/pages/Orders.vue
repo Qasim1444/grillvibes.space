@@ -175,6 +175,7 @@
         <div v-for="line in form.items" :key="line.fooditems_id" class="ord-line">
           <div class="ord-line__left">
             <span class="ord-line__name">{{ line.name }}</span>
+            <small v-if="line.extras?.length" class="ord-line__extras">Extras: {{ extraSummary(line.extras) }}</small>
             <select v-model="line.kds_station_id" class="ui-select ord-line__station">
               <option :value="null">Auto KDS station</option>
               <option v-for="s in kdsStations" :key="s.id" :value="s.id">{{ s.name }}</option>
@@ -324,6 +325,7 @@ watch(search, (value) => {
 });
 
 const itemName = (id) => items.value.find((i) => i.id === id)?.name || `Item #${id}`;
+const extraSummary = extras => extras.map(extra => `${extra.ingredient_name || 'Topping'} × ${extra.quantity} ${extra.unit || ''}`.trim()).join(', ');
 const placeName = (id) => places.value.find((p) => p.id === id)?.name || "—";
 
 // A partial reload refreshes the current page + aggregates without a full nav.
@@ -372,7 +374,7 @@ const form = ref({
 });
 
 const customerRequired = computed(() => form.value.type === "delivery");
-const lineTotal = (line) => num(line.price) * num(line.quantity);
+const lineTotal = line => (num(line.price) + (line.extras || []).reduce((sum, extra) => sum + num(extra.price), 0)) * num(line.quantity);
 
 const subtotal = computed(() => form.value.items.reduce((s, l) => s + lineTotal(l), 0));
 
@@ -424,9 +426,12 @@ const editOrder = (row) => {
         category_id: it.category_id ?? menuItem?.foodcategory_id,
         name: menuItem?.name || `Item #${it.fooditems_id}`,
         // Prefer the price actually charged; fall back to the current menu price.
-        price: num(it.sub_total) ? num(it.sub_total) / qty : num(menuItem?.price),
+        price: num(it.sub_total)
+          ? Math.max(0, num(it.sub_total) / qty - (it.extras || []).reduce((sum, extra) => sum + num(extra.price), 0))
+          : num(menuItem?.price),
         quantity: qty,
         add_note: it.add_note || "",
+        extras: Array.isArray(it.extras) ? it.extras : [],
         kds_station_id: it.kds_station_id ?? null,
       };
     }),
@@ -467,6 +472,7 @@ const addLine = () => {
       price: num(menuItem.price),
       quantity: 1,
       add_note: "",
+      extras: [],
       kds_station_id: null,
     });
   }
@@ -518,6 +524,11 @@ const saveOrder = () => {
       discount_amount: 0,
       sub_total: Number(lineTotal(l).toFixed(2)),
       add_note: l.add_note || "",
+      extras: (l.extras || []).map(extra => ({
+        ingredient_id: Number(extra.ingredient_id),
+        quantity: Number(extra.quantity),
+        price: Number(extra.price),
+      })),
       kds_station_id: l.kds_station_id ?? null,
     })),
   };
@@ -632,6 +643,7 @@ const deleteOrder = async (id) => {
   flex: 1;
   font-size: 0.875rem;
 }
+.ord-line__extras { color: var(--text-soft, #64748b); font-size: 0.72rem; }
 
 .ord-line__left {
   flex: 1;

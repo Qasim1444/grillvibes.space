@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\DiscountCampaign;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
+use App\Models\Ingredient;
 use App\Models\KdsStation;
 use App\Models\LoyaltySetting;
 use App\Models\Place;
@@ -49,6 +50,17 @@ class POSController extends Controller
                 })
                 ->orderBy('name')
                 ->get(['id', 'name', 'color', 'branch_id']),
+            'ingredients' => Ingredient::active()
+                ->with(['stockLevels' => fn ($q) => $q->where('branch_id', $branchId)])
+                ->orderBy('name')
+                ->get(['id', 'name', 'unit'])
+                ->map(fn (Ingredient $ingredient) => [
+                    'id' => $ingredient->id,
+                    'name' => $ingredient->name,
+                    'unit' => $ingredient->unit,
+                    'available_quantity' => (float) ($ingredient->stockLevels->first()?->quantity ?? 0),
+                ])
+                ->values(),
             // Customers are NOT shipped here — the table can hold 100k+ rows.
             // The POS customer field resolves them via /customers/search.
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
 use App\Models\FoodItem;
+use App\Models\Ingredient;
 use App\Models\KdsStation;
 use App\Models\Media;
 use App\Models\Order;
@@ -19,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -97,6 +99,7 @@ class OrderController extends Controller
 
         $data = $this->normalize($request->validate($this->rules()));
         $orderItems = $data['order_items'];
+        $data['subtotal'] = $this->priceOrderItems($orderItems);
         $promoCode = $data['promo_code'] ?? null;
         $redeemPoints = (int) ($data['redeem_points'] ?? 0);
         unset($data['order_items'], $data['promo_code'], $data['redeem_points']);
@@ -134,6 +137,7 @@ class OrderController extends Controller
 
         $data = $this->normalize($request->validate($this->rules()));
         $orderItems = $data['order_items'];
+        $data['subtotal'] = $this->priceOrderItems($orderItems);
         $promoCode = $data['promo_code'] ?? null;
         $redeemPoints = (int) ($data['redeem_points'] ?? 0);
         unset($data['order_items'], $data['promo_code'], $data['redeem_points']);
@@ -313,9 +317,56 @@ class OrderController extends Controller
         return $data;
     }
 
+    /** Price each line from the menu price plus cashier-entered extra prices. */
+    private function priceOrderItems(array &$orderItems): float
+    {
+        $foodPrices = FoodItem::whereIn('id', collect($orderItems)->pluck('fooditems_id')->unique())
+            ->pluck('price', 'id');
+        $subtotal = 0.0;
+
+        foreach ($orderItems as &$item) {
+            if (! array_key_exists('extras', $item)) {
+                $item['sub_total'] = round((float) ($item['sub_total'] ?? 0), 2);
+                $subtotal += $item['sub_total'];
+                continue;
+            }
+
+            $foodPrice = (float) ($foodPrices[$item['fooditems_id']] ?? 0);
+            $extraPricePerServing = collect($item['extras'] ?? [])
+                ->sum(fn (array $extra) => (float) $extra['price']);
+            $quantity = (int) $item['quantity'];
+            $item['sub_total'] = round(($foodPrice + $extraPricePerServing) * $quantity, 2);
+            $item['discount_amount'] = 0;
+            $subtotal += $item['sub_total'];
+        }
+        unset($item);
+
+        return round($subtotal, 2);
+    }
+
     private function syncItems(Order $order, array $orderItems): void
     {
+        $extraIngredientIds = collect($orderItems)
+            ->flatMap(fn (array $item) => collect($item['extras'] ?? [])->pluck('ingredient_id'))
+            ->unique()
+            ->values();
+        $extraIngredients = Ingredient::whereIn('id', $extraIngredientIds)
+            ->get(['id', 'name', 'unit'])
+            ->keyBy('id');
+
         foreach ($orderItems as $item) {
+            $extras = collect($item['extras'] ?? [])->map(function (array $extra) use ($extraIngredients) {
+                $ingredient = $extraIngredients->get((int) $extra['ingredient_id']);
+
+                return [
+                    'ingredient_id' => (int) $extra['ingredient_id'],
+                    'ingredient_name' => $ingredient?->name ?? 'Ingredient',
+                    'unit' => $ingredient?->unit ?? '',
+                    'quantity' => (float) $extra['quantity'],
+                    'price' => round((float) $extra['price'], 2),
+                ];
+            })->values()->all();
+
             $line = $order->orderItems()->create([
                 'fooditems_id' => $item['fooditems_id'],
                 'category_id' => $item['category_id'],
@@ -323,6 +374,7 @@ class OrderController extends Controller
                 'discount_amount' => $item['discount_amount'] ?? 0,
                 'sub_total' => $item['sub_total'] ?? 0,
                 'add_note' => $item['add_note'] ?? '',
+                'extras' => $extras,
             ]);
 
             // Use the station chosen on the order page, or fall back to
@@ -354,14 +406,20 @@ class OrderController extends Controller
     {
         $order->load('orderItems.item', 'customer');
 
-        $receipt = app(ReceiptGenerator::class)->generate($order);
+        try {
+            $receipt = app(ReceiptGenerator::class)->generate($order);
 
-        Media::create([
-            'order_id' => $order->id,
-            'file_path' => $receipt['relative'],
-            'type' => 'image/png',
-            'uploaded_at' => now(),
-        ]);
+            Media::create([
+                'order_id' => $order->id,
+                'file_path' => $receipt['relative'],
+                'type' => 'image/png',
+                'uploaded_at' => now(),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return; // Keep checkout and the HTML print receipt available if PNG generation fails.
+        }
 
         if (empty($order->customer?->contact)) {
             return;
@@ -409,6 +467,14 @@ class OrderController extends Controller
             'order_items.*.category_id' => 'required|integer',
             'order_items.*.add_note' => 'nullable|string',
             'order_items.*.kds_station_id' => 'nullable|exists:kds_stations,id',
+            'order_items.*.extras' => 'nullable|array',
+            'order_items.*.extras.*.ingredient_id' => [
+                'required',
+                'integer',
+                Rule::exists('ingredients', 'id')->whereNull('deleted_at')->where('is_active', true),
+            ],
+            'order_items.*.extras.*.quantity' => 'required|numeric|min:0.0001',
+            'order_items.*.extras.*.price' => 'required|numeric|min:0',
         ];
     }
 }

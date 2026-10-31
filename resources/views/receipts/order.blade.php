@@ -66,6 +66,13 @@
         .negative-amount {
             color: #dc3545;
         }
+        .item-note {
+            display: inline-block;
+            margin-top: 2px;
+            color: #555;
+            font-size: 0.75rem;
+            white-space: pre-wrap;
+        }
         .invoice-footer {
             color: #6c757d;
             font-size: 0.9rem;
@@ -153,7 +160,15 @@
             <tbody>
             @foreach($order->orderItems as $item)
             <tr>
-                <td>{{ $item->item->name ?? 'Item' }}</td>
+                <td>
+                    {{ $item->item->name ?? 'Item' }}
+                    @if($item->add_note)
+                        <br><small class="item-note">Extras / kitchen note: {{ $item->add_note }}</small>
+                    @endif
+                    @foreach(($item->extras ?? []) as $extra)
+                        <br><small class="item-note">Extra: {{ $extra['ingredient_name'] ?? 'Topping' }} × {{ $extra['quantity'] }} {{ $extra['unit'] ?? '' }} (+{{ $currency }} {{ number_format($extra['price'], 2) }} each)</small>
+                    @endforeach
+                </td>
                 <td class="text-end">{{ $item->quantity }}</td>
                 <td class="text-end">{{ $currency }} {{ number_format($item->sub_total, 2) }}</td>
             </tr>

@@ -121,8 +121,18 @@ class ReceiptGenerator
     private function draw(Order $order, string $path): void
     {
         $items = $order->orderItems;
+        $detailLineCount = $items->sum(function ($item) {
+            $details = collect($item->extras ?? [])->map(fn ($extra) =>
+                'Extra: '.($extra['ingredient_name'] ?? 'Topping').' x '.($extra['quantity'] ?? 0).' '.($extra['unit'] ?? '').' (+'.$this->money($extra['price'] ?? 0).' each)'
+            );
+            if ($item->add_note) {
+                $details->prepend('Note: '.$item->add_note);
+            }
+
+            return $details->sum(fn ($detail) => max(1, count($this->wrap($detail, self::WIDTH - (self::PAD * 2) - 8, 8.5))));
+        });
         // Generous canvas; cropped to the real height before saving.
-        $height = 560 + ($items->count() * 64);
+        $height = 560 + ($items->count() * 64) + ($detailLineCount * 20);
 
         $this->img = imagecreatetruecolor(self::WIDTH, $height);
         imagealphablending($this->img, true);
@@ -241,6 +251,20 @@ class ReceiptGenerator
             $this->textRight(self::PRICE_RIGHT, $this->money($item->sub_total), 10, $this->c['dark']);
 
             $this->y = $rowTop + (count($lines) * $this->lineHeight(10)) + 4;
+
+            $details = collect($item->extras ?? [])->map(fn ($extra) =>
+                'Extra: '.($extra['ingredient_name'] ?? 'Topping').' x '.($extra['quantity'] ?? 0).' '.($extra['unit'] ?? '').' (+'.$this->money($extra['price'] ?? 0).' each)'
+            );
+            if ($item->add_note) {
+                $details->prepend('Note: '.$item->add_note);
+            }
+            foreach ($details as $detail) {
+                foreach ($this->wrap($detail, self::WIDTH - (self::PAD * 2) - 8, 8.5) as $detailLine) {
+                    $this->text(self::PAD + 8, $detailLine, 8.5, $this->c['muted']);
+                    $this->y += $this->lineHeight(8.5);
+                }
+            }
+            $this->y += 2;
         }
 
         $this->y += 2;

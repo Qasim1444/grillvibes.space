@@ -60,7 +60,8 @@ class StockConsumptionService
 
             $recipe = $dish->recipeItems;
 
-            if ($recipe->isEmpty()) {
+            $extras = collect($line->extras ?? []);
+            if ($recipe->isEmpty() && $extras->isEmpty()) {
                 continue;
             }
 
@@ -78,6 +79,24 @@ class StockConsumptionService
                     $required,
                     $order,
                     StockMovement::TYPE_SALE,
+                );
+
+                $lineCost += $required * (float) $level->average_cost;
+            }
+
+            foreach ($extras as $extra) {
+                $required = $portions * (float) ($extra['quantity'] ?? 0);
+                if ($required <= 0) {
+                    continue;
+                }
+
+                $level = $this->stock->issue(
+                    $branchId,
+                    (int) $extra['ingredient_id'],
+                    $required,
+                    $order,
+                    StockMovement::TYPE_SALE,
+                    'Extra topping on order item #'.$line->id,
                 );
 
                 $lineCost += $required * (float) $level->average_cost;

@@ -15,6 +15,7 @@ class OrderItem extends Model
     protected $casts = [
         'kds_sent_at'   => 'datetime',
         'kds_bumped_at' => 'datetime',
+        'extras'        => 'array',
     ];
 
     public function order()
