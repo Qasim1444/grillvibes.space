@@ -73,7 +73,7 @@
                 <button
                   v-if="['sent','preparing','ready'].includes(item.kds_status)"
                   class="kds__pill kds__pill--bump"
-                  @click="bumpItem(item)"
+                  @click="bumpItem(ticket, item)"
                 >✓</button>
               </div>
             </div>
@@ -103,14 +103,6 @@
     <!-- Recall drawer (bumped items) -->
     <div v-if="recalled.length" class="kds__recall-bar">
       <span class="kds__recall-label">Recalled:</span>
-      <button
-        class="kds__last-recall"
-        :aria-expanded="showLastRecall"
-        @click="showLastRecall = !showLastRecall"
-      >Last Recall · Order #{{ recalled[recalled.length - 1].order_number }}</button>
-      <span v-if="showLastRecall && recalled.length" class="kds__last-recall-detail">
-        Order #{{ recalled[recalled.length - 1].order_number }} · {{ recalled[recalled.length - 1].name }}
-      </span>
       <button class="kds__recall-all" @click="recallAll">↩ Recall All</button>
       <button
         v-for="item in recalled"
@@ -120,6 +112,16 @@
       >
         ↩ Order #{{ item.order_number }} · {{ item.name }}
       </button>
+      <select v-model="selectedRecallOrderId" class="kds__recall-select" aria-label="Select order ID to recall" @change="recallError = ''">
+        <option value="">Select Order ID</option>
+        <option v-for="order in recalledOrders" :key="order.id" :value="order.id">
+          Order #{{ order.number }} (ID: {{ order.id }})
+        </option>
+      </select>
+      <button class="kds__last-recall" :disabled="recallingOrder" @click="recallOrderById">
+        {{ recallingOrder ? 'Recalling…' : 'Last Recall' }}
+      </button>
+      <span v-if="recallError" class="kds__recall-error" role="alert">{{ recallError }}</span>
     </div>
   </div>
 </template>
@@ -141,7 +143,17 @@ const selectedStation = ref(props.initialStationId ?? '');
 const selectedBranch  = ref(props.initialBranchId  ?? '');
 const tickets         = ref([]);
 const recalled        = ref([]);
-const showLastRecall  = ref(false);
+const selectedRecallOrderId = ref('');
+const recallError = ref('');
+const recallingOrder = ref(false);
+const recalledOrders = computed(() => {
+  const orders = new Map();
+  recalled.value.forEach(item => {
+    const id = String(item.order_id ?? item.order_number ?? '').replace(/^#/, '');
+    if (id && !orders.has(id)) orders.set(id, String(item.order_number ?? id).replace(/^#/, ''));
+  });
+  return [...orders].map(([id, number]) => ({ id, number }));
+});
 const loading         = ref(true);
 const polling         = ref(false);
 const clock           = ref('');
@@ -221,20 +233,20 @@ const apiFetch = (url, method, body = null) =>
     body: body ? JSON.stringify(body) : undefined,
   });
 
-const bumpItem = async (item) => {
+const bumpItem = async (ticket, item) => {
   await apiFetch(`/kds/items/${item.id}/bump`, 'POST');
   // Optimistically remove item; full refresh in 5s
   tickets.value = tickets.value.map(t => ({
     ...t,
     items: t.items.filter(i => i.id !== item.id),
   })).filter(t => t.items.length > 0);
-  recalled.value.push({ ...item });
+  recalled.value.push({ ...item, order_id: ticket.order_id, order_number: ticket.order_number });
 };
 
 const bumpOrder = async (ticket) => {
   await apiFetch(`/kds/orders/${ticket.order_id}/bump`, 'POST');
   tickets.value = tickets.value.filter(t => t.order_id !== ticket.order_id);
-  ticket.items.forEach(i => recalled.value.push({ ...i, order_number: ticket.order_number }));
+  ticket.items.forEach(i => recalled.value.push({ ...i, order_id: ticket.order_id, order_number: ticket.order_number }));
 };
 
 const setStatus = async (item, status) => {
@@ -254,6 +266,39 @@ const recallAll = async () => {
   const recalledIds = new Set(items.map(item => item.id));
   recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
   await fetchTickets();
+};
+
+const recallOrderById = async () => {
+  const requested = selectedRecallOrderId.value.trim();
+  if (!requested) {
+    recallError.value = 'Select an order ID first.';
+    return;
+  }
+
+  const matches = recalled.value.filter(item => String(item.order_id ?? item.order_number ?? '').replace(/^#/, '') === requested);
+
+  if (!matches.length) {
+    recallError.value = 'Unable to recall: no bumped items found for that order ID.';
+    return;
+  }
+
+  recallingOrder.value = true;
+  recallError.value = '';
+  try {
+    const results = await Promise.all(matches.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
+    if (results.some(response => !response.ok)) {
+      recallError.value = 'Unable to recall all items for that order. Please try again.';
+      return;
+    }
+    const recalledIds = new Set(matches.map(item => item.id));
+    recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
+    selectedRecallOrderId.value = '';
+    await fetchTickets();
+  } catch {
+    recallError.value = 'Unable to recall that order right now. Please try again.';
+  } finally {
+    recallingOrder.value = false;
+  }
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -444,7 +489,11 @@ const typeLabel   = t => ({ dining: '🍽 Dine-in', 'on-way': '🥡 Takeaway', d
   border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
 }
 .kds__last-recall:hover { background: #475569; }
-.kds__last-recall-detail { color: #cbd5e1; font-size: 0.75rem; }
+.kds__recall-select {
+  width: 190px; background: #0f172a; color: #f1f5f9; border: 1px solid #475569;
+  border-radius: 6px; padding: 5px 8px; font-size: 0.75rem; cursor: pointer;
+}
+.kds__recall-error { color: #fca5a5; font-size: 0.75rem; }
 .kds__recall-all {
   background: #0f766e; color: #f0fdfa; border: 1px solid #14b8a6;
   border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
