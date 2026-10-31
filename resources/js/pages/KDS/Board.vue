@@ -61,7 +61,7 @@
               </div>
               <div class="kds__item-actions kds__item-status-flow">
                 <button class="kds__step" :class="statusStepClass(item, 0)" disabled>Pending</button>
-                <button class="kds__step" :class="statusStepClass(item, 1)" :disabled="item.kds_status !== 'sent'" @click="setStatus(item, 'preparing')">Prep</button>
+                <button class="kds__step" :class="statusStepClass(item, 1)" :disabled="!['new', 'sent'].includes(item.kds_status)" @click="setStatus(item, 'preparing')">Prep</button>
                 <button class="kds__step" :class="statusStepClass(item, 2)" :disabled="item.kds_status !== 'preparing'" @click="setStatus(item, 'ready')">Ready</button>
                 <button class="kds__step kds__step--done" :class="statusStepClass(item, 3)" :disabled="item.kds_status !== 'ready'" @click="bumpItem(ticket, item)">✓</button>
               </div>
@@ -313,7 +313,7 @@ const recallOrderById = async () => {
 };
 
 const statusStepClass = (item, step) => {
-  const currentStep = ({ sent: 0, preparing: 1, ready: 2 })[item.kds_status] ?? 0;
+  const currentStep = ({ new: 0, sent: 0, preparing: 1, ready: 2 })[item.kds_status] ?? 0;
   return {
     'is-complete': currentStep > step,
     'is-current': currentStep === step,
