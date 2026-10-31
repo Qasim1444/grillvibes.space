@@ -130,6 +130,7 @@ const recalled        = ref([]);
 const selectedRecallOrderId = ref('');
 const recallError = ref('');
 const recallingOrder = ref(false);
+const restoredRecallItemIds = ref(new Set());
 const loading         = ref(true);
 const polling         = ref(false);
 const clock           = ref('');
@@ -182,6 +183,10 @@ watch([selectedStation, selectedBranch], () => {
 });
 
 onMounted(() => {
+  try {
+    const savedIds = JSON.parse(sessionStorage.getItem('kds-restored-recall-item-ids') || '[]');
+    if (Array.isArray(savedIds)) restoredRecallItemIds.value = new Set(savedIds.map(String));
+  } catch { /* Ignore unavailable or invalid session storage. */ }
   updateClock();
   clockTimer = setInterval(updateClock, 1000);
   startPolling();
@@ -209,6 +214,14 @@ const apiFetch = (url, method, body = null) =>
     body: body ? JSON.stringify(body) : undefined,
   });
 
+const markRecallRestored = items => {
+  const ids = items.map(item => String(item.id));
+  restoredRecallItemIds.value = new Set([...restoredRecallItemIds.value, ...ids]);
+  try {
+    sessionStorage.setItem('kds-restored-recall-item-ids', JSON.stringify([...restoredRecallItemIds.value]));
+  } catch { /* The in-memory guard still prevents duplicate recall entries. */ }
+};
+
 const bumpItem = async (ticket, item) => {
   await apiFetch(`/kds/items/${item.id}/bump`, 'POST');
   // Optimistically remove item; full refresh in 5s
@@ -216,13 +229,19 @@ const bumpItem = async (ticket, item) => {
     ...t,
     items: t.items.filter(i => i.id !== item.id),
   })).filter(t => t.items.length > 0);
-  recalled.value.push({ ...item, order_id: ticket.order_id, order_number: ticket.order_number });
+  if (!restoredRecallItemIds.value.has(String(item.id))) {
+    recalled.value.push({ ...item, order_id: ticket.order_id, order_number: ticket.order_number });
+  }
 };
 
 const bumpOrder = async (ticket) => {
   await apiFetch(`/kds/orders/${ticket.order_id}/bump`, 'POST');
   tickets.value = tickets.value.filter(t => t.order_id !== ticket.order_id);
-  ticket.items.forEach(i => recalled.value.push({ ...i, order_id: ticket.order_id, order_number: ticket.order_number }));
+  ticket.items.forEach(i => {
+    if (!restoredRecallItemIds.value.has(String(i.id))) {
+      recalled.value.push({ ...i, order_id: ticket.order_id, order_number: ticket.order_number });
+    }
+  });
 };
 
 const setStatus = async (item, status) => {
@@ -244,7 +263,9 @@ const recallAll = async () => {
   recallingOrder.value = true;
   try {
     const results = await Promise.all(items.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
-    const restoredIds = new Set(items.filter((_, index) => results[index].ok).map(item => item.id));
+    const restoredItems = items.filter((_, index) => results[index].ok);
+    markRecallRestored(restoredItems);
+    const restoredIds = new Set(restoredItems.map(item => item.id));
     recalled.value = recalled.value.filter(item => !restoredIds.has(item.id));
     if (results.some(response => !response.ok)) recallError.value = 'Unable to recall some items. Please try again.';
     else recallError.value = '';
@@ -274,7 +295,9 @@ const recallOrderById = async () => {
   recallError.value = '';
   try {
     const results = await Promise.all(matches.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
-    const recalledIds = new Set(matches.filter((_, index) => results[index].ok).map(item => item.id));
+    const restoredItems = matches.filter((_, index) => results[index].ok);
+    markRecallRestored(restoredItems);
+    const recalledIds = new Set(restoredItems.map(item => item.id));
     recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
     if (results.some(response => !response.ok)) {
       recallError.value = 'Unable to recall all items for that order. Please try again.';
