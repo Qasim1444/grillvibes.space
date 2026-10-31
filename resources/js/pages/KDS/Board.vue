@@ -60,10 +60,11 @@
                 </div>
               </div>
               <div class="kds__item-actions kds__item-status-flow">
-                <button class="kds__step" :class="statusStepClass(item, 0)" disabled>Pending</button>
-                <button class="kds__step" :class="statusStepClass(item, 1)" :disabled="!['new', 'sent'].includes(item.kds_status)" @click="setStatus(item, 'preparing')">Prep</button>
-                <button class="kds__step" :class="statusStepClass(item, 2)" :disabled="item.kds_status !== 'preparing'" @click="setStatus(item, 'ready')">Ready</button>
-                <button class="kds__step kds__step--done" :class="statusStepClass(item, 3)" :disabled="item.kds_status !== 'ready'" @click="bumpItem(ticket, item)">✓</button>
+                <button
+                  class="kds__step"
+                  :class="'kds__step--' + item.kds_status"
+                  @click="advanceItemStatus(ticket, item)"
+                >{{ statusStepLabel(item) }}</button>
               </div>
             </div>
           </div>
@@ -312,13 +313,17 @@ const recallOrderById = async () => {
   }
 };
 
-const statusStepClass = (item, step) => {
-  const currentStep = ({ new: 0, sent: 0, preparing: 1, ready: 2 })[item.kds_status] ?? 0;
-  return {
-    'is-complete': currentStep > step,
-    'is-current': currentStep === step,
-    'is-next': currentStep + 1 === step,
-  };
+const statusStepLabel = item => ({
+  new: 'Pending',
+  sent: 'Pending',
+  preparing: 'Prep',
+  ready: 'Ready · ✓',
+})[item.kds_status] ?? 'Pending';
+
+const advanceItemStatus = (ticket, item) => {
+  if (['new', 'sent'].includes(item.kds_status)) return setStatus(item, 'preparing');
+  if (item.kds_status === 'preparing') return setStatus(item, 'ready');
+  if (item.kds_status === 'ready') return bumpItem(ticket, item);
 };
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -464,15 +469,12 @@ const typeLabel   = t => ({ dining: '🍽 Dine-in', 'on-way': '🥡 Takeaway', d
 .kds__item-actions { display: flex; gap: 6px; }
 .kds__item-status-flow { align-items: center; }
 .kds__step {
-  border: 1px solid #475569; border-radius: 5px; padding: 4px 7px;
-  background: #1e293b; color: #94a3b8; font-size: 0.7rem; font-weight: 700;
+  min-width: 76px; border: 1px solid #475569; border-radius: 5px; padding: 6px 9px;
+  background: #334155; color: #f1f5f9; font-size: 0.75rem; font-weight: 700; cursor: pointer;
 }
-.kds__step.is-complete { background: #14532d; border-color: #16a34a; color: #bbf7d0; }
-.kds__step.is-current { background: #334155; border-color: #94a3b8; color: #f1f5f9; }
-.kds__step.is-next:not(:disabled) { background: #1d4ed8; border-color: #3b82f6; color: #fff; cursor: pointer; }
-.kds__step.is-next:not(:disabled):hover { filter: brightness(1.15); }
-.kds__step:disabled { cursor: default; opacity: 0.8; }
-.kds__step--done.is-next:not(:disabled) { background: #059669; border-color: #10b981; }
+.kds__step:hover { filter: brightness(1.15); }
+.kds__step--preparing { background: #b45309; border-color: #f59e0b; color: #fff; }
+.kds__step--ready { background: #047857; border-color: #10b981; color: #fff; }
 .kds__pill {
   border: none; border-radius: 6px; padding: 4px 10px;
   font-size: 0.75rem; font-weight: 700; cursor: pointer;
