@@ -230,7 +230,7 @@
     "/build/assets/FoodItems-B9h0uhBd.css"
   ],
   "resources/js/pages/ForgotPassword.vue": [
-    "/build/assets/ForgotPassword-DXAzn2pU.js"
+    "/build/assets/ForgotPassword-CbGU5rZU.js"
   ],
   "resources/js/pages/Guest/QRMenu.vue": [
     "/build/assets/QRMenu-DIvJKtme.js",
@@ -332,12 +332,12 @@
     "/build/assets/Stock-D1znoKo2.css"
   ],
   "resources/js/pages/KDS/Board.vue": [
-    "/build/assets/Board-B-za4sjG.js",
-    "/build/assets/Board-D7fj00Q1.css"
+    "/build/assets/Board-_2cyejvc.js",
+    "/build/assets/Board-B1WKk4Mi.css"
   ],
-  "resources/js/pages/KDS/Board.vue?vue&type=style&index=0&scoped=a6fec45f&lang.css": [
-    "/build/assets/Board-B-za4sjG.js",
-    "/build/assets/Board-D7fj00Q1.css"
+  "resources/js/pages/KDS/Board.vue?vue&type=style&index=0&scoped=17a5b441&lang.css": [
+    "/build/assets/Board-_2cyejvc.js",
+    "/build/assets/Board-B1WKk4Mi.css"
   ],
   "resources/js/pages/KDS/Stations.vue": [
     "/build/assets/Stations-DQqIDjtS.js",
@@ -463,7 +463,7 @@
     "/build/assets/QRCodes-BuVNqvvm.css"
   ],
   "resources/js/pages/Register.vue": [
-    "/build/assets/Register-BCrt6H0_.js"
+    "/build/assets/Register-B0uYGzjT.js"
   ],
   "resources/js/pages/Reports/FoodCost.vue": [
     "/build/assets/FoodCost-CwrzrPiF.js",
@@ -514,10 +514,10 @@
     "/build/assets/Users-CJVuy0RM.css"
   ],
   "resources/js/services/api.js": [
-    "/build/assets/api-D1flQl4z.js"
+    "/build/assets/api-DWk_W29k.js"
   ],
   "resources/js/services/http.js": [
-    "/build/assets/api-D1flQl4z.js"
+    "/build/assets/api-DWk_W29k.js"
   ],
   "resources/js/services/whatsapp.js": [
     "/build/assets/Customers-C4MXvAi-.js",

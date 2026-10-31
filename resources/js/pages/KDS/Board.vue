@@ -104,12 +104,21 @@
     <div v-if="recalled.length" class="kds__recall-bar">
       <span class="kds__recall-label">Recalled:</span>
       <button
+        class="kds__last-recall"
+        :aria-expanded="showLastRecall"
+        @click="showLastRecall = !showLastRecall"
+      >Last Recall</button>
+      <span v-if="showLastRecall && recalled.length" class="kds__last-recall-detail">
+        Order #{{ recalled[recalled.length - 1].order_number }} · {{ recalled[recalled.length - 1].name }}
+      </span>
+      <button class="kds__recall-all" @click="recallAll">↩ Recall All</button>
+      <button
         v-for="item in recalled"
         :key="item.id"
         class="kds__recall-chip"
         @click="recallItem(item)"
       >
-        ↩ {{ item.name }} (Order {{ item.order_number }})
+        ↩ Order #{{ item.order_number }} · {{ item.name }}
       </button>
     </div>
   </div>
@@ -132,6 +141,7 @@ const selectedStation = ref(props.initialStationId ?? '');
 const selectedBranch  = ref(props.initialBranchId  ?? '');
 const tickets         = ref([]);
 const recalled        = ref([]);
+const showLastRecall  = ref(false);
 const loading         = ref(true);
 const polling         = ref(false);
 const clock           = ref('');
@@ -235,6 +245,14 @@ const setStatus = async (item, status) => {
 const recallItem = async (item) => {
   await apiFetch(`/kds/items/${item.id}/recall`, 'POST');
   recalled.value = recalled.value.filter(r => r.id !== item.id);
+  await fetchTickets();
+};
+
+const recallAll = async () => {
+  const items = [...recalled.value];
+  await Promise.all(items.map(item => apiFetch(`/kds/items/${item.id}/recall`, 'POST')));
+  const recalledIds = new Set(items.map(item => item.id));
+  recalled.value = recalled.value.filter(item => !recalledIds.has(item.id));
   await fetchTickets();
 };
 
@@ -421,6 +439,17 @@ const typeLabel   = t => ({ dining: '🍽 Dine-in', 'on-way': '🥡 Takeaway', d
   border-top: 1px solid #334155; flex-shrink: 0;
 }
 .kds__recall-label { font-size: 0.75rem; color: #94a3b8; font-weight: 700; }
+.kds__last-recall {
+  background: #334155; color: #f1f5f9; border: 1px solid #475569;
+  border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+}
+.kds__last-recall:hover { background: #475569; }
+.kds__last-recall-detail { color: #cbd5e1; font-size: 0.75rem; }
+.kds__recall-all {
+  background: #0f766e; color: #f0fdfa; border: 1px solid #14b8a6;
+  border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+}
+.kds__recall-all:hover { background: #115e59; }
 .kds__recall-chip  {
   background: #334155; color: #f1f5f9; border: 1px solid #475569;
   border-radius: 6px; padding: 4px 10px; font-size: 0.75rem; cursor: pointer;
