@@ -107,7 +107,7 @@
         class="kds__last-recall"
         :aria-expanded="showLastRecall"
         @click="showLastRecall = !showLastRecall"
-      >Last Recall</button>
+      >Last Recall · Order #{{ recalled[recalled.length - 1].order_number }}</button>
       <span v-if="showLastRecall && recalled.length" class="kds__last-recall-detail">
         Order #{{ recalled[recalled.length - 1].order_number }} · {{ recalled[recalled.length - 1].name }}
       </span>

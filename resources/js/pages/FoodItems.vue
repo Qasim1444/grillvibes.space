@@ -151,6 +151,7 @@
           accept="image/*"
           @change="handleFileChange"
         />
+        <p class="food-item__image-hint">Maximum image size: 2 MB.</p>
 
         <span
           v-if="form.errors.image"
@@ -537,5 +538,11 @@ onBeforeUnmount(() => {
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   margin-bottom: 8px;
+}
+
+.food-item__image-hint {
+  margin: 4px 0 0;
+  color: var(--text-soft);
+  font-size: 0.8rem;
 }
 </style>
