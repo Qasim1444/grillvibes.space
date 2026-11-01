@@ -59,6 +59,7 @@ class POSController extends Controller
                     'name' => $ingredient->name,
                     'unit' => $ingredient->unit,
                     'available_quantity' => (float) ($ingredient->stockLevels->first()?->quantity ?? 0),
+                    'average_cost' => (float) ($ingredient->stockLevels->first()?->average_cost ?? 0),
                 ])
                 ->values(),
             // Customers are NOT shipped here — the table can hold 100k+ rows.

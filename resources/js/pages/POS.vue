@@ -184,7 +184,7 @@
                       <strong>Extra toppings</strong>
                       <button type="button" class="pos-extras__add" @click="addExtra(line)">+ Add ingredient</button>
                     </div>
-                    <small class="pos-extras__hint">Enter ingredient quantity and extra price per serving.</small>
+                    <small class="pos-extras__hint">Extra price is calculated from current ingredient cost at a 40% food-cost target.</small>
                     <div v-for="(extra, extraIndex) in line.extras" :key="extraIndex" class="pos-extra">
                       <select v-model.number="extra.ingredient_id" class="ui-select" :aria-label="`Extra topping for ${line.name}`">
                         <option value="">Choose ingredient</option>
@@ -193,7 +193,7 @@
                         </option>
                       </select>
                       <input v-model.number="extra.quantity" type="number" min="0.0001" step="0.0001" class="ui-input pos-extra__qty" aria-label="Extra ingredient quantity per item" :placeholder="`Qty (${selectedIngredientUnit(extra) || 'unit'})`" />
-                      <input v-model.number="extra.price" type="number" min="0" step="0.01" class="ui-input pos-extra__price" aria-label="Extra topping price per item" placeholder="Price Rs/item" />
+                      <input :value="money(extraPrice(extra))" type="text" class="ui-input pos-extra__price" aria-label="Calculated extra topping price per serving" readonly />
                       <button type="button" class="pos-extras__remove" aria-label="Remove extra topping" @click="removeExtra(line, extraIndex)">×</button>
                     </div>
                   </div>
@@ -594,7 +594,11 @@ const filteredItems = computed(() => {
   });
 });
 
-const lineExtraPrice = line => (line.extras ?? []).reduce((sum, extra) => sum + num(extra.price), 0);
+const extraPrice = extra => {
+  const ingredient = props.ingredients.find(item => Number(item.id) === Number(extra.ingredient_id));
+  return Number(((num(extra.quantity) * num(ingredient?.average_cost)) / 0.4).toFixed(2));
+};
+const lineExtraPrice = line => (line.extras ?? []).reduce((sum, extra) => sum + extraPrice(extra), 0);
 const lineTotal = line => (num(line.price) + lineExtraPrice(line)) * num(line.quantity);
 
 let cartLineKey = 0;
@@ -618,7 +622,7 @@ const addToCart = (item) => {
   });
 };
 
-const addExtra = line => line.extras.push({ ingredient_id: "", quantity: 1, price: null });
+const addExtra = line => line.extras.push({ ingredient_id: "", quantity: 1 });
 const removeExtra = (line, index) => line.extras.splice(index, 1);
 const selectedIngredientUnit = extra =>
   props.ingredients.find(ingredient => Number(ingredient.id) === Number(extra.ingredient_id))?.unit ?? "";
@@ -890,10 +894,10 @@ const placeOrder = () => {
     return;
   }
   const invalidExtra = cart.value.some(line => line.extras.some(extra =>
-    !extra.ingredient_id || num(extra.quantity) <= 0 || extra.price === null || extra.price === "" || num(extra.price) < 0
+    !extra.ingredient_id || num(extra.quantity) <= 0
   ));
   if (invalidExtra) {
-    saveError.value = "Choose an ingredient, quantity, and price for each extra topping.";
+    saveError.value = "Choose an ingredient and enter a valid quantity for each extra topping.";
     return;
   }
 
@@ -926,7 +930,6 @@ const placeOrder = () => {
       extras: l.extras.map(extra => ({
         ingredient_id: Number(extra.ingredient_id),
         quantity: Number(extra.quantity),
-        price: Number(num(extra.price).toFixed(2)),
       })),
       kds_station_id: l.kds_station_id ?? null,
     })),

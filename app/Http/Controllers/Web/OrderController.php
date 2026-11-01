@@ -38,6 +38,8 @@ use Inertia\Response;
  */
 class OrderController extends Controller
 {
+    private const EXTRA_FOOD_COST_TARGET = 0.40;
+
     public function __construct(
         private readonly PromoService $promos,
         private readonly LoyaltyService $loyalty,
@@ -322,6 +324,17 @@ class OrderController extends Controller
     {
         $foodPrices = FoodItem::whereIn('id', collect($orderItems)->pluck('fooditems_id')->unique())
             ->pluck('price', 'id');
+        $extraIngredientIds = collect($orderItems)
+            ->flatMap(fn (array $item) => collect($item['extras'] ?? [])->pluck('ingredient_id'))
+            ->unique()
+            ->values();
+        $branchId = CurrentBranch::id();
+        $extraUnitCosts = Ingredient::with(['stockLevels' => fn ($q) => $q->where('branch_id', $branchId)])
+            ->whereIn('id', $extraIngredientIds)
+            ->get(['id'])
+            ->mapWithKeys(fn (Ingredient $ingredient) => [
+                $ingredient->id => (float) ($ingredient->stockLevels->first()?->average_cost ?? 0),
+            ]);
         $subtotal = 0.0;
 
         foreach ($orderItems as &$item) {
@@ -332,8 +345,16 @@ class OrderController extends Controller
             }
 
             $foodPrice = (float) ($foodPrices[$item['fooditems_id']] ?? 0);
-            $extraPricePerServing = collect($item['extras'] ?? [])
-                ->sum(fn (array $extra) => (float) $extra['price']);
+            $extras = $item['extras'] ?? [];
+            foreach ($extras as &$extra) {
+                $quantityPerServing = (float) $extra['quantity'];
+                $extra['price'] = array_key_exists('price', $extra) && $extra['price'] !== null
+                    ? round((float) $extra['price'], 2)
+                    : round(($quantityPerServing * (float) ($extraUnitCosts[$extra['ingredient_id']] ?? 0)) / self::EXTRA_FOOD_COST_TARGET, 2);
+            }
+            unset($extra);
+            $item['extras'] = $extras;
+            $extraPricePerServing = collect($extras)->sum(fn (array $extra) => (float) $extra['price']);
             $quantity = (int) $item['quantity'];
             $item['sub_total'] = round(($foodPrice + $extraPricePerServing) * $quantity, 2);
             $item['discount_amount'] = 0;
@@ -474,7 +495,7 @@ class OrderController extends Controller
                 Rule::exists('ingredients', 'id')->whereNull('deleted_at')->where('is_active', true),
             ],
             'order_items.*.extras.*.quantity' => 'required|numeric|min:0.0001',
-            'order_items.*.extras.*.price' => 'required|numeric|min:0',
+            'order_items.*.extras.*.price' => 'nullable|numeric|min:0',
         ];
     }
 }
