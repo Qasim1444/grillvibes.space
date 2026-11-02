@@ -7,6 +7,7 @@ use App\Http\Controllers\API\CustomerController;
 use App\Http\Controllers\API\FoodCategoryController;
 use App\Http\Controllers\API\FoodItemController;
 use App\Http\Controllers\API\OrderController;
+use App\Http\Controllers\API\PosIngredientController;
 use App\Http\Controllers\API\PasswordResetController;
 use App\Http\Controllers\API\WhatsAppChatController;
 use App\Http\Controllers\API\Guest\GuestMenuController;
@@ -36,6 +37,7 @@ Route::post('/reset-password/{otp}', [PasswordResetController::class, 'reset']);
 
 // Protected Routes (require authentication)
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('pos/ingredients', [PosIngredientController::class, 'index'])->middleware('can.access:pos.view,orders.create');
     Route::post('/logout', [AuthController::class, 'logout']); // User logout
     Route::get('/logged-user', [AuthController::class, 'logged_user']); // User looged
     Route::post('/update-profile', [AuthController::class, 'update_profile']); // Update own profile

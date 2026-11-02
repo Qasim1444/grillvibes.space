@@ -38,7 +38,6 @@ use Inertia\Response;
  */
 class OrderController extends Controller
 {
-    private const EXTRA_FOOD_COST_TARGET = 0.40;
 
     public function __construct(
         private readonly PromoService $promos,
@@ -348,9 +347,7 @@ class OrderController extends Controller
             $extras = $item['extras'] ?? [];
             foreach ($extras as &$extra) {
                 $quantityPerServing = (float) $extra['quantity'];
-                $extra['price'] = array_key_exists('price', $extra) && $extra['price'] !== null
-                    ? round((float) $extra['price'], 2)
-                    : round(($quantityPerServing * (float) ($extraUnitCosts[$extra['ingredient_id']] ?? 0)) / self::EXTRA_FOOD_COST_TARGET, 2);
+                $extra['price'] = round($quantityPerServing * (float) ($extraUnitCosts[$extra['ingredient_id']] ?? 0), 2);
             }
             unset($extra);
             $item['extras'] = $extras;

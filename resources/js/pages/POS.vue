@@ -184,7 +184,7 @@
                       <strong>Extra toppings</strong>
                       <button type="button" class="pos-extras__add" @click="addExtra(line)">+ Add ingredient</button>
                     </div>
-                    <small class="pos-extras__hint">Extra price is calculated from current ingredient cost at a 40% food-cost target.</small>
+                    <small class="pos-extras__hint">Extra price is calculated from the current ingredient cost and quantity used.</small>
                     <div v-for="(extra, extraIndex) in line.extras" :key="extraIndex" class="pos-extra">
                       <select v-model.number="extra.ingredient_id" class="ui-select" :aria-label="`Extra topping for ${line.name}`">
                         <option value="">Choose ingredient</option>
@@ -596,7 +596,7 @@ const filteredItems = computed(() => {
 
 const extraPrice = extra => {
   const ingredient = props.ingredients.find(item => Number(item.id) === Number(extra.ingredient_id));
-  return Number(((num(extra.quantity) * num(ingredient?.average_cost)) / 0.4).toFixed(2));
+  return Number((num(extra.quantity) * num(ingredient?.average_cost)).toFixed(2));
 };
 const lineExtraPrice = line => (line.extras ?? []).reduce((sum, extra) => sum + extraPrice(extra), 0);
 const lineTotal = line => (num(line.price) + lineExtraPrice(line)) * num(line.quantity);

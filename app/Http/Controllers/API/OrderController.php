@@ -4,6 +4,8 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\KdsStation;
+use App\Models\FoodItem;
+use App\Models\Ingredient;
 use App\Models\Media;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -56,6 +58,12 @@ class OrderController extends Controller
             'order_items.*.category_id' => 'required|integer',
             'order_items.*.add_note' => 'nullable|string',
             'order_items.*.kds_station_id' => 'nullable|exists:kds_stations,id',
+            'order_items.*.extras' => 'nullable|array',
+            'order_items.*.extras.*.ingredient_id' => [
+                'required', 'integer',
+                \Illuminate\Validation\Rule::exists('ingredients', 'id')->whereNull('deleted_at')->where('is_active', true),
+            ],
+            'order_items.*.extras.*.quantity' => 'required|numeric|min:0.0001',
         ];
     }
 
@@ -68,6 +76,8 @@ class OrderController extends Controller
         $data = $this->normalizeOrderData($data);
 
         $orderItems = $data['order_items'];
+        $data['subtotal'] = $this->priceOrderItems($orderItems, $this->resolveBranchId((int) $data['place_id']));
+        $this->recalculateTotals($data);
         unset($data['order_items']);
 
         // The sale, its lines and the ingredient draw-down commit together, so a
@@ -182,6 +192,8 @@ class OrderController extends Controller
         unset($data['order_items']);
 
         $data = $this->normalizeOrderData($data);
+        $data['subtotal'] = $this->priceOrderItems($orderItems, $this->resolveBranchId((int) $data['place_id']));
+        $this->recalculateTotals($data);
 
         DB::transaction(function () use ($order, $data, $orderItems) {
             $stock = app(StockConsumptionService::class);
@@ -218,6 +230,7 @@ class OrderController extends Controller
             'discount_amount' => $item['discount_amount'] ?? 0,
             'sub_total' => $item['sub_total'] ?? 0,
             'add_note' => $item['add_note'] ?? '',
+            'extras' => $item['extras'] ?? [],
         ]);
 
         // Use the station chosen on the order page, or fall back to
@@ -240,6 +253,45 @@ class OrderController extends Controller
         }
 
         return $line;
+    }
+
+    /** Price toppings from branch moving-average cost; never trust app-sent prices or totals. */
+    private function priceOrderItems(array &$items, ?int $branchId): float
+    {
+        $foodPrices = FoodItem::whereIn('id', collect($items)->pluck('fooditems_id')->unique())->pluck('price', 'id');
+        $ingredientIds = collect($items)->flatMap(fn (array $item) => collect($item['extras'] ?? [])->pluck('ingredient_id'))->unique();
+        $ingredients = Ingredient::with(['stockLevels' => fn ($q) => $q->where('branch_id', $branchId)])
+            ->whereIn('id', $ingredientIds)->get(['id', 'name', 'unit'])->keyBy('id');
+
+        $subtotal = 0.0;
+        foreach ($items as &$item) {
+            $extras = [];
+            foreach ($item['extras'] ?? [] as $extra) {
+                $ingredient = $ingredients->get((int) $extra['ingredient_id']);
+                $qty = (float) $extra['quantity'];
+                $extras[] = [
+                    'ingredient_id' => (int) $extra['ingredient_id'],
+                    'ingredient_name' => $ingredient?->name ?? 'Ingredient',
+                    'unit' => $ingredient?->unit ?? '',
+                    'quantity' => $qty,
+                    'price' => round($qty * (float) ($ingredient?->stockLevels->first()?->average_cost ?? 0), 2),
+                ];
+            }
+            $item['extras'] = $extras;
+            $item['sub_total'] = round(((float) ($foodPrices[$item['fooditems_id']] ?? 0) + collect($extras)->sum('price')) * (int) $item['quantity'], 2);
+            $subtotal += $item['sub_total'];
+        }
+        unset($item);
+        return round($subtotal, 2);
+    }
+
+    private function recalculateTotals(array &$data): void
+    {
+        $subtotal = (float) $data['subtotal'];
+        $discount = min($subtotal, (float) ($data['discount_amount'] ?? 0));
+        $taxable = max(0, $subtotal - $discount);
+        $data['service_charges'] = round($taxable * ((float) ($data['service_charges_percentage'] ?? 0) / 100), 2);
+        $data['grand_total'] = round($taxable + $data['service_charges'], 2);
     }
 
     private function resolveBranchId(int $placeId): ?int
