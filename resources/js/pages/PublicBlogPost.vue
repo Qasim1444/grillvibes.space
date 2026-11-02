@@ -7,7 +7,7 @@
       </a>
       <nav aria-label="Primary navigation">
         <a href="/">Home</a>
-        <a href="/product">Product</a>
+        <a href="/project">Project</a>
         <a class="active" href="/blog">Blog</a>
         <a href="/login">Sign In</a>
       </nav>

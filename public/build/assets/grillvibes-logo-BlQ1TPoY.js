@@ -1,0 +1,1 @@
+var e=`/build/assets/grillvibes-logo-DW_m9BSw.png`;export{e as t};

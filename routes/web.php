@@ -62,7 +62,8 @@ Route::get('/menu/{slug}', function (string $slug) {
 // Redirect the site root: authenticated users go to the dashboard, guests go
 // to the login page (no public marketing page in this admin build).
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/product', [HomeController::class, 'product'])->name('product');
+Route::get('/project', [HomeController::class, 'product'])->name('project');
+Route::redirect('/product', '/project', 301)->name('product.legacy');
 Route::post('/reservations/request', [HomeController::class, 'storeReservation'])
     ->name('reservations.request');
 Route::get('/blog', [PublicBlogController::class, 'index'])->name('blog.public');

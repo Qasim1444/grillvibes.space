@@ -3,6 +3,10 @@
     "/build/assets/_plugin-vue_export-helper-BOaGB7Aw.js"
   ],
   "node_modules/laravel-vite-plugin/inertia-helpers/index.js": [],
+  "resources/js/assets/grillvibes-logo.png": [
+    "/build/assets/grillvibes-logo-lmKkVPW5.js",
+    "/build/assets/grillvibes-logo-DW_m9BSw.png"
+  ],
   "resources/js/components/Sidebar.vue": [
     "/build/assets/AdminLayout-DfQNjfKt.js",
     "/build/assets/AdminLayout-84MCvit3.css"
@@ -85,12 +89,12 @@
     "/build/assets/AdminLayout-84MCvit3.css"
   ],
   "resources/js/layouts/LoginLayout.vue": [
-    "/build/assets/Login-oSevyOe2.js",
-    "/build/assets/Login-D1Efq4xn.css"
+    "/build/assets/Login-1qzAjLsG.js",
+    "/build/assets/Login-C8I5QoVo.css"
   ],
-  "resources/js/layouts/LoginLayout.vue?vue&type=style&index=0&scoped=33d165eb&lang.css": [
-    "/build/assets/Login-oSevyOe2.js",
-    "/build/assets/Login-D1Efq4xn.css"
+  "resources/js/layouts/LoginLayout.vue?vue&type=style&index=0&scoped=ea167eda&lang.css": [
+    "/build/assets/Login-1qzAjLsG.js",
+    "/build/assets/Login-C8I5QoVo.css"
   ],
   "resources/js/pages/AboutPage.vue": [
     "/build/assets/AboutPage-DEUHZyse.js",
@@ -300,12 +304,12 @@
     "/build/assets/Payroll-D7aiFON8.css"
   ],
   "resources/js/pages/HomePage.vue": [
-    "/build/assets/HomePage-KNpsl5aL.js",
-    "/build/assets/HomePage-7gMI3-KI.css"
+    "/build/assets/HomePage-Cmy0CDsg.js",
+    "/build/assets/HomePage-Cc3wnA-y.css"
   ],
-  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=2ce41a06&lang.css": [
-    "/build/assets/HomePage-KNpsl5aL.js",
-    "/build/assets/HomePage-7gMI3-KI.css"
+  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=c9ee1698&lang.css": [
+    "/build/assets/HomePage-Cmy0CDsg.js",
+    "/build/assets/HomePage-Cc3wnA-y.css"
   ],
   "resources/js/pages/Inventory/Ingredients.vue": [
     "/build/assets/Ingredients-FEVd0rgr.js",
@@ -348,12 +352,12 @@
     "/build/assets/Stations-iVTc7aKZ.css"
   ],
   "resources/js/pages/Login.vue": [
-    "/build/assets/Login-oSevyOe2.js",
-    "/build/assets/Login-D1Efq4xn.css"
+    "/build/assets/Login-1qzAjLsG.js",
+    "/build/assets/Login-C8I5QoVo.css"
   ],
   "resources/js/pages/Login.vue?vue&type=style&index=0&scoped=ac41e038&lang.css": [
-    "/build/assets/Login-oSevyOe2.js",
-    "/build/assets/Login-D1Efq4xn.css"
+    "/build/assets/Login-1qzAjLsG.js",
+    "/build/assets/Login-C8I5QoVo.css"
   ],
   "resources/js/pages/Maintenance/Assets.vue": [
     "/build/assets/Assets-BlyPGY8G.js",
@@ -423,12 +427,12 @@
     "/build/assets/Vendors-BySm8l9p.css"
   ],
   "resources/js/pages/ProductPage.vue": [
-    "/build/assets/ProductPage-3332gVeB.js",
-    "/build/assets/ProductPage-Bera5ufW.css"
+    "/build/assets/ProductPage-DkXv_4Nh.js",
+    "/build/assets/ProductPage-DsuWa0Oi.css"
   ],
-  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=1a880dbf&lang.css": [
-    "/build/assets/ProductPage-3332gVeB.js",
-    "/build/assets/ProductPage-Bera5ufW.css"
+  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=e9b1bb2d&lang.css": [
+    "/build/assets/ProductPage-DkXv_4Nh.js",
+    "/build/assets/ProductPage-DsuWa0Oi.css"
   ],
   "resources/js/pages/Profile.vue": [
     "/build/assets/Profile-3JDTtp2w.js",
@@ -439,20 +443,20 @@
     "/build/assets/Profile-Ckslprdo.css"
   ],
   "resources/js/pages/PublicBlog.vue": [
-    "/build/assets/PublicBlog-B-G0dpdy.js",
-    "/build/assets/PublicBlog-DOJzfnla.css"
+    "/build/assets/PublicBlog-BcQxWj0g.js",
+    "/build/assets/PublicBlog-kJ5v-e-K.css"
   ],
-  "resources/js/pages/PublicBlog.vue?vue&type=style&index=0&scoped=1cdd8d05&lang.css": [
-    "/build/assets/PublicBlog-B-G0dpdy.js",
-    "/build/assets/PublicBlog-DOJzfnla.css"
+  "resources/js/pages/PublicBlog.vue?vue&type=style&index=0&scoped=a1fd6376&lang.css": [
+    "/build/assets/PublicBlog-BcQxWj0g.js",
+    "/build/assets/PublicBlog-kJ5v-e-K.css"
   ],
   "resources/js/pages/PublicBlogPost.vue": [
-    "/build/assets/PublicBlogPost-DFBvQ2lI.js",
-    "/build/assets/PublicBlogPost-BOXAT0NU.css"
+    "/build/assets/PublicBlogPost-C52zXQmD.js",
+    "/build/assets/PublicBlogPost-DK3K4AnS.css"
   ],
-  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=0&scoped=0085994a&lang.css": [
-    "/build/assets/PublicBlogPost-DFBvQ2lI.js",
-    "/build/assets/PublicBlogPost-BOXAT0NU.css"
+  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=0&scoped=5552690b&lang.css": [
+    "/build/assets/PublicBlogPost-C52zXQmD.js",
+    "/build/assets/PublicBlogPost-DK3K4AnS.css"
   ],
   "resources/js/pages/QRCodes.vue": [
     "/build/assets/QRCodes-ByGKEUj9.js",

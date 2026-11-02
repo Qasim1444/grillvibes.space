@@ -3,8 +3,7 @@
     <!-- Header -->
     <header class="gv-header">
       <Link class="brand" href="/">
-        <span class="brand-flame">🔥</span>
-        <span>Grill<span class="accent">Vibes</span></span>
+        <img class="brand-logo" :src="logoUrl" alt="GrillVibes — Good Food, Better Vibes" />
       </Link>
 
       <nav class="nav" :class="{ open: mobileOpen }">
@@ -255,8 +254,7 @@
       <div class="wrap footer-inner">
         <div>
           <Link class="brand" href="/">
-            <span class="brand-flame">🔥</span>
-            Grill<span class="accent">Vibes</span>
+            <img class="brand-logo" :src="logoUrl" alt="GrillVibes — Good Food, Better Vibes" />
           </Link>
           <p>Complete Restaurant Management System</p>
         </div>
@@ -276,6 +274,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import logoUrl from '../assets/grillvibes-logo.png';
 
 const props = defineProps({
   // Optional: pass WhatsApp number from Laravel controller
@@ -415,6 +414,7 @@ const moreFeatures = [
   color: #fff; text-decoration: none;
 }
 .brand-flame { font-size: 1.3rem; }
+.brand-logo { display: block; width: 68px; height: 68px; object-fit: contain; border-radius: 8px; }
 .accent { color: var(--orange); }
 .nav { display: flex; gap: 22px; margin-left: auto; }
 .nav a { color: var(--muted); text-decoration: none; font-size: .85rem; font-weight: 500; transition: .2s; }

@@ -20,11 +20,6 @@
           </div>
         </div>
       </div>
-      <div class="auth__metric-row" aria-label="Project highlights">
-        <div><strong>40+</strong><span>Models</span></div>
-        <div><strong>POS</strong><span>Ready</span></div>
-        <div><strong>API</strong><span>Sanctum</span></div>
-      </div>
       <div class="auth__glow auth__glow--1" />
       <div class="auth__glow auth__glow--2" />
     </div>
@@ -203,35 +198,6 @@ watch(logoUrl, () => { logoFailed.value = false; });
   border-radius: 50%;
   background: #ef4858;
   flex: 0 0 auto;
-}
-
-.auth__metric-row {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  max-width: 430px;
-}
-
-.auth__metric-row div {
-  border-top: 1px solid rgba(255, 255, 255, 0.22);
-  padding-top: 14px;
-}
-
-.auth__metric-row strong {
-  display: block;
-  color: #fff;
-  font-size: 1.45rem;
-  line-height: 1;
-}
-
-.auth__metric-row span {
-  display: block;
-  margin-top: 5px;
-  color: rgba(255, 255, 255, 0.66);
-  font-size: 0.7rem;
-  font-weight: 700;
 }
 
 .auth__glow {

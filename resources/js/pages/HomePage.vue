@@ -2,13 +2,12 @@
   <div class="restaurant-home">
     <header class="site-header">
       <a class="brand" href="/" aria-label="GrillVibes home">
-        <span class="brand-mark">G</span>
-        <span>Grill<span class="brand-accent">Vibes</span></span>
+        <img class="brand-logo" :src="logoUrl" alt="GrillVibes — Good Food, Better Vibes" />
       </a>
 
       <nav class="site-nav" :class="{ 'site-nav--open': mobileOpen }" aria-label="Primary navigation">
         <a href="/" @click="mobileOpen = false">Home</a>
-        <a href="/product" @click="mobileOpen = false">Project</a>
+        <a href="/project" @click="mobileOpen = false">Project</a>
         <a href="#menu" @click="mobileOpen = false">Menu</a>
         <a href="#reserve" @click="mobileOpen = false">Reservation</a>
         <a href="#blog" @click="mobileOpen = false">Blog</a>
@@ -283,11 +282,11 @@
     <footer id="footer" class="site-footer">
       <div class="section-shell footer-grid">
         <div>
-          <a class="brand" href="/"><span class="brand-mark">G</span><span>Grill<span class="brand-accent">Vibes</span></span></a>
+          <a class="brand" href="/" aria-label="GrillVibes home"><img class="brand-logo" :src="logoUrl" alt="GrillVibes — Good Food, Better Vibes" /></a>
           <p>Fresh grill, warm tables, bold flavor.</p>
         </div>
         <nav aria-label="Footer navigation">
-          <a href="#menu">Menu</a><a href="#reserve">Reservations</a><a href="/product">Project</a><a href="#story">About</a>
+          <a href="#menu">Menu</a><a href="#reserve">Reservations</a><a href="/project">Project</a><a href="#story">About</a>
         </nav>
         <div class="footer-cta">
           <span>Hungry already?</span>
@@ -301,8 +300,10 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import logoUrl from '../assets/grillvibes-logo.png';
 
 defineOptions({ layout: null });
+
 
 const props = defineProps({
 	categories: { type: Array, default: () => [] },
@@ -391,7 +392,7 @@ const submitReservation = () => {
 .section-shell{width:min(1180px,calc(100% - 48px));margin:0 auto}
 .site-header{position:sticky;top:0;z-index:50;width:min(1180px,calc(100% - 48px));min-height:78px;margin:0 auto;display:flex;align-items:center;gap:26px;background:rgba(250,245,236,.88);backdrop-filter:blur(16px)}
 .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font:700 1.12rem 'DM Sans',sans-serif;letter-spacing:-.04em;text-decoration:none;white-space:nowrap}
-.brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--coral);color:#fff;font:700 .9rem 'Fraunces',serif}
+.brand-logo{display:block;width:68px;height:68px;object-fit:contain;border-radius:8px}
 .brand-accent{color:var(--coral)}
 .site-nav{display:flex;gap:25px;margin-left:auto}
 .site-nav a,.header-login{color:#656d65;font-size:.78rem;text-decoration:none;transition:.2s}
