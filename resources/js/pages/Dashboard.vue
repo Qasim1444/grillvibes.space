@@ -183,48 +183,66 @@
       />
     </div>
 
-    <div class="report-charts">
-      <section class="ui-card report-chart-card">
-        <div class="ui-card-header">Sales mix <span class="report-chip">By order type</span></div>
-        <div v-if="!salesMix.length" class="chart-empty">No sales in this range.</div>
-        <div v-else class="chart-columns">
-          <div v-for="(row, index) in salesMix" :key="row.label" class="chart-column">
-            <strong>{{ compactMoney(row.value) }}</strong>
-            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
-            <span>{{ row.label }}</span>
-          </div>
+    <section class="analytics-grid" aria-label="Sales and order analytics">
+      <article class="ui-card analytics-card analytics-card--trend">
+        <div class="ui-card-header">
+          <div><span class="analytics-eyebrow">PERFORMANCE</span><h3>Revenue trend</h3></div>
+          <span class="analytics-total">{{ money(summary.totalGrandTotal) }}</span>
         </div>
-      </section>
+        <div v-if="reportsLoading" class="analytics-empty">Updating report…</div>
+        <div v-else-if="!revenueTrend.length" class="analytics-empty">No revenue in this date range.</div>
+        <div v-else class="trend-chart">
+          <svg class="trend-chart__svg" viewBox="0 0 760 250" role="img" aria-label="Daily revenue trend">
+            <defs>
+              <linearGradient id="revenueFill" x1="0" x2="0" y1="0" y2="1">
+                <stop offset="0%" stop-color="#f04b2c" stop-opacity=".24" />
+                <stop offset="100%" stop-color="#f04b2c" stop-opacity="0" />
+              </linearGradient>
+            </defs>
+            <g v-for="tick in trendTicks" :key="tick.label">
+              <line x1="50" :y1="tick.y" x2="748" :y2="tick.y" class="trend-chart__grid" />
+              <text x="42" :y="tick.y + 4" text-anchor="end" class="trend-chart__tick">{{ tick.label }}</text>
+            </g>
+            <path :d="trendAreaPath" fill="url(#revenueFill)" />
+            <polyline :points="trendLinePoints" class="trend-chart__line" />
+            <circle v-for="point in trendPoints" :key="point.date" :cx="point.x" :cy="point.y" r="4" class="trend-chart__point">
+              <title>{{ point.label }}: {{ money(point.value) }} · {{ point.orders }} orders</title>
+            </circle>
+            <text v-for="label in trendDateLabels" :key="label.text" :x="label.x" y="238" text-anchor="middle" class="trend-chart__tick">{{ label.text }}</text>
+          </svg>
+        </div>
+        <div class="trend-legend"><span class="trend-legend__dot"></span>Revenue <span class="trend-legend__unit">Daily total · PKR</span></div>
+      </article>
 
-      <section class="ui-card report-chart-card">
-        <div class="ui-card-header">Sales by category <span class="report-chip">{{ categoryGraph.length }} categories</span></div>
-        <div v-if="!categoryGraph.length" class="chart-empty">No category sales in this range.</div>
-        <div v-else class="chart-columns">
-          <div v-for="(row, index) in categoryGraph" :key="row.label" class="chart-column">
-            <strong>{{ compactMoney(row.value) }}</strong>
-            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
-            <span>{{ row.label }}</span>
+      <article class="ui-card analytics-card analytics-card--status">
+        <div class="ui-card-header">
+          <div><span class="analytics-eyebrow">OPERATIONS</span><h3>Order status</h3></div>
+          <span class="analytics-period">{{ rangeLabel }}</span>
+        </div>
+        <div v-if="reportsLoading" class="analytics-empty">Updating report…</div>
+        <div v-else-if="!orderStatusTotal" class="analytics-empty">No orders in this date range.</div>
+        <div v-else class="status-breakdown">
+          <div v-for="item in orderStatusLegend" :key="item.label" class="status-breakdown__row">
+            <div class="status-breakdown__label"><span><i :style="{ background: item.color }"></i>{{ item.label }}</span><strong>{{ item.value }} <small>{{ item.percent }}%</small></strong></div>
+            <div class="status-breakdown__track"><i :style="{ width: `${item.percent}%`, background: item.color }"></i></div>
           </div>
         </div>
-      </section>
-
-      <section class="ui-card report-chart-card report-chart-card--wide">
-        <div class="ui-card-header">Top selling items <span class="report-chip">Quantity sold</span></div>
-        <div v-if="!topItemsGraph.length" class="chart-empty">No item sales in this range.</div>
-        <div v-else class="chart-columns chart-columns--items">
-          <div v-for="(row, index) in topItemsGraph" :key="row.label" class="chart-column">
-            <strong>{{ row.value }}</strong>
-            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
-            <span>{{ row.label }}</span>
-          </div>
-        </div>
-      </section>
-    </div>
+      </article>
+    </section>
 
     <div class="dash-grid">
       <!-- Sales by type breakdown -->
       <div class="ui-card">
         <div class="ui-card-header">Daily Summary by Type</div>
+        <div v-if="summaryTypeGraph.length" class="report-inline-chart">
+          <p class="chart-caption">Share of revenue by order type</p>
+          <div class="type-mix__bar" role="img" :aria-label="`${money(summary.totalGrandTotal)} sales by order type`">
+            <span v-for="item in summaryTypeGraph" :key="item.label" :style="{ width: `${item.percent}%`, background: item.color }"></span>
+          </div>
+          <ul class="type-mix__legend">
+            <li v-for="item in summaryTypeGraph" :key="item.label"><span><i :style="{ background: item.color }"></i>{{ item.label }}</span><strong>{{ money(item.value) }} <small>{{ item.percent }}%</small></strong></li>
+          </ul>
+        </div>
         <div class="data-table-wrap">
           <table class="data-table">
             <thead>
@@ -256,6 +274,14 @@
       <!-- Category sales -->
       <div class="ui-card">
         <div class="ui-card-header">Category Sales</div>
+        <div v-if="categoryShare.length" class="category-share">
+          <div class="category-share__donut" :style="{ background: categoryDonut }" role="img" :aria-label="`${money(categorySalesTotal)} category sales`">
+            <div><strong>{{ compactMoney(categorySalesTotal) }}</strong><span>Total sales</span></div>
+          </div>
+          <ul class="category-share__legend">
+            <li v-for="item in categoryShare" :key="item.label"><span><i :style="{ background: item.color }"></i>{{ item.label }}</span><strong>{{ item.percent }}%</strong></li>
+          </ul>
+        </div>
         <div class="data-table-wrap">
           <table class="data-table">
             <thead>
@@ -342,11 +368,12 @@
         </span>
       </div>
       <div v-if="currentQtyGraph.length" class="report-inline-chart">
-        <p class="chart-caption">Top items by quantity</p>
-        <div class="chart-bars">
-          <div v-for="(row, index) in currentQtyGraph" :key="row.label" class="chart-bar-row">
-            <div class="chart-bar-label"><span class="chart-dot" :class="`chart-dot--${index % 4}`"></span><span>{{ row.label }}</span><strong>{{ row.value }}</strong></div>
-            <div class="chart-track"><span class="chart-fill" :class="`chart-fill--${index % 4}`" :style="{ width: `${row.percent}%` }"></span></div>
+        <p class="chart-caption">Quantity by item · Order date</p>
+        <div class="chart-columns current-qty-columns">
+          <div v-for="(row, index) in currentQtyGraph" :key="row.label" class="chart-column">
+            <strong>{{ row.value }}</strong>
+            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
+            <span>{{ row.label }}</span>
           </div>
         </div>
       </div>
@@ -392,12 +419,14 @@
           <span class="report-chip">{{ quickReport.length }} order(s)</span>
         </div>
         <div class="data-table-wrap">
-          <div v-if="quickOrderGraph.length" class="report-inline-chart">
-            <div class="chart-columns">
-              <div v-for="(row, index) in quickOrderGraph" :key="row.label" class="chart-column">
-                <strong>{{ compactMoney(row.value) }}</strong><div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div><span>{{ row.label }}</span>
-              </div>
-            </div>
+          <div v-if="quickOrderLine.length" class="report-inline-chart">
+            <p class="chart-caption">Order value sequence · Today</p>
+            <svg class="quick-line-chart" viewBox="0 0 620 150" role="img" aria-label="Order values today">
+              <line v-for="tick in quickLineTicks" :key="tick.y" x1="34" :y1="tick.y" x2="610" :y2="tick.y" class="trend-chart__grid" />
+              <circle v-for="point in quickOrderLine" :key="point.id" :cx="point.x" :cy="point.y" :r="point.radius" class="quick-scatter__point"><title>Order #{{ point.id }}: {{ money(point.value) }}</title></circle>
+              <text v-for="label in quickLineLabels" :key="label.id" :x="label.x" y="145" text-anchor="middle" class="trend-chart__tick">#{{ label.id }}</text>
+              <text x="30" y="12" text-anchor="end" class="trend-chart__tick">{{ compactMoney(quickLineMax) }}</text>
+            </svg>
           </div>
           <table class="data-table">
             <thead>
@@ -428,9 +457,14 @@
       <div class="ui-card">
         <div class="ui-card-header">Top 10 Deals — Today</div>
         <div class="data-table-wrap">
-          <div v-if="topTenGraph.length" class="report-inline-chart">
-            <div class="chart-columns chart-columns--items">
-              <div v-for="(row, index) in topTenGraph" :key="row.label" class="chart-column"><strong>{{ compactMoney(row.value) }}</strong><div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div><span>{{ row.label }}</span></div>
+          <div v-if="topTenRankGraph.length" class="report-inline-chart">
+            <p class="chart-caption">Order value ranking · shown orders</p>
+            <div class="rank-chart">
+              <div v-for="row in topTenRankGraph" :key="row.id" class="rank-chart__row">
+                <span class="rank-chart__label">#{{ row.id }}</span>
+                <span class="rank-chart__track"><i :style="{ left: `${row.percent}%` }"></i></span>
+                <strong>{{ compactMoney(row.value) }}</strong>
+              </div>
             </div>
           </div>
           <table class="data-table">
@@ -463,11 +497,14 @@
         Deleted Orders — Today
         <span class="report-chip">{{ deletedOrders.length }} deleted</span>
       </div>
-      <div v-if="deletedGraph.length" class="report-inline-chart">
-        <p class="chart-caption">Deleted orders by type</p>
-        <div class="chart-columns">
-          <div v-for="(row, index) in deletedGraph" :key="row.label" class="chart-column"><strong>{{ row.value }}</strong><div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div><span>{{ row.label }}</span></div>
-        </div>
+      <div v-if="deletedTimeline.length" class="report-inline-chart">
+        <p class="chart-caption">Deletion activity across the day</p>
+        <svg class="deleted-timeline" viewBox="0 0 760 104" role="img" aria-label="Deleted orders by time of day">
+          <line v-for="tick in deletedTimelineTicks" :key="tick.label" :x1="tick.x" y1="10" :x2="tick.x" y2="78" class="trend-chart__grid" />
+          <circle v-for="(item, index) in deletedTimeline" :key="item.id" :cx="item.x" :cy="28 + (index % 4) * 12" r="5" :fill="item.color" class="deleted-timeline__point"><title>Order #{{ item.id }} · {{ item.type }} · {{ item.time }}</title></circle>
+          <text v-for="tick in deletedTimelineTicks" :key="`${tick.label}-label`" :x="tick.x" y="98" text-anchor="middle" class="trend-chart__tick">{{ tick.label }}</text>
+        </svg>
+        <div class="deleted-timeline__legend"><span v-for="item in deletedTypeLegend" :key="item.label"><i :style="{ background: item.color }"></i>{{ item.label }}</span></div>
       </div>
       <div class="data-table-wrap">
         <table class="data-table">
@@ -569,6 +606,61 @@ const summary = computed(() => ({
   ordersByType: props.reports?.summary?.ordersByType ?? [],
   totalGrandTotal: Number(props.reports?.summary?.totalGrandTotal ?? 0),
 }));
+const revenueTrend = computed(() => props.reports?.revenueTrend ?? []);
+const trendPoints = computed(() => {
+  const rows = revenueTrend.value;
+  const max = Math.max(...rows.map(row => Number(row.total_sales) || 0), 1);
+  const left = 54;
+  const right = 746;
+  const top = 20;
+  const bottom = 198;
+  return rows.map((row, index) => {
+    const value = Number(row.total_sales) || 0;
+    const x = rows.length === 1 ? (left + right) / 2 : left + ((right - left) * index) / (rows.length - 1);
+    const y = bottom - (value / max) * (bottom - top);
+    const date = String(row.report_date || '').slice(0, 10);
+    const parsed = new Date(`${date}T12:00:00`);
+    return {
+      date,
+      value,
+      orders: Number(row.order_count) || 0,
+      x,
+      y,
+      label: Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleDateString('en-PK', { day: 'numeric', month: 'short', timeZone: 'Asia/Karachi' }),
+    };
+  });
+});
+const trendLinePoints = computed(() => trendPoints.value.map(point => `${point.x},${point.y}`).join(' '));
+const trendAreaPath = computed(() => {
+  const points = trendPoints.value;
+  if (!points.length) return '';
+  return `M ${points[0].x} 198 L ${points.map(point => `${point.x} ${point.y}`).join(' L ')} L ${points[points.length - 1].x} 198 Z`;
+});
+const trendTicks = computed(() => {
+  const max = Math.max(...revenueTrend.value.map(row => Number(row.total_sales) || 0), 1);
+  return [0, 1, 2, 3].map(index => ({
+    y: 198 - index * (178 / 3),
+    label: compactMoney(max * index / 3),
+  }));
+});
+const trendDateLabels = computed(() => {
+  const points = trendPoints.value;
+  if (points.length <= 4) return points.map(point => ({ x: point.x, text: point.label }));
+  const indices = [...new Set([0, Math.round((points.length - 1) / 3), Math.round((points.length - 1) * 2 / 3), points.length - 1])];
+  return indices.map(index => ({ x: points[index].x, text: points[index].label }));
+});
+const orderStatusRows = computed(() => props.reports?.orderStatus ?? []);
+const orderStatusTotal = computed(() => orderStatusRows.value.reduce((total, row) => total + (Number(row.order_count) || 0), 0));
+const STATUS_COLORS = ['#f04b2c', '#84cc16', '#818cf8', '#f59e0b', '#22c5a7', '#a1a1aa'];
+const orderStatusLegend = computed(() => orderStatusRows.value.map((row, index) => {
+  const value = Number(row.order_count) || 0;
+  return {
+    label: row.status_label || 'Unknown',
+    value,
+    percent: orderStatusTotal.value ? Math.round(value / orderStatusTotal.value * 100) : 0,
+    color: STATUS_COLORS[index % STATUS_COLORS.length],
+  };
+}));
 const dining = computed(() => ({
   totalGrandTotal: Number(props.reports?.dining?.totalGrandTotal ?? 0),
   rows: props.reports?.dining?.rows ?? [],
@@ -582,27 +674,34 @@ const onway = computed(() => ({
   rows: props.reports?.onway?.rows ?? [],
 }));
 const categorySales = computed(() => props.reports?.categorySales ?? []);
-const salesMix = computed(() => {
-  const rows = summary.value.ordersByType.map(row => ({ label: typeLabel(row.type), value: Number(row.grand_total) || 0 }));
-  const max = Math.max(...rows.map(row => row.value), 1);
-  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
-});
-const categoryGraph = computed(() => {
-  const rows = categorySales.value.map(row => ({ label: row.category_name || 'Uncategorized', value: Number(row.grand_total) || 0 }))
-    .sort((a, b) => b.value - a.value).slice(0, 6);
-  const max = Math.max(...rows.map(row => row.value), 1);
-  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
-});
 const barsFor = rows => {
   const max = Math.max(...rows.map(row => row.value), 1);
   return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
 };
-const topItemsGraph = computed(() => {
-  const rows = itemQty.value.categories.flatMap(category => (category.items || []).map(item => ({
-    label: item.item_name || 'Menu item', value: Number(item.total_quantity) || 0,
-  }))).sort((a, b) => b.value - a.value).slice(0, 8);
-  const max = Math.max(...rows.map(row => row.value), 1);
-  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
+const summaryTypeGraph = computed(() => {
+  const colors = ['#f04b2c', '#84cc16', '#818cf8', '#f59e0b'];
+  const rows = summary.value.ordersByType.map(row => ({ label: typeLabel(row.type), value: Number(row.grand_total) || 0 }));
+  const total = rows.reduce((sum, row) => sum + row.value, 0) || 1;
+  return rows.map((row, index) => ({ ...row, percent: row.value / total * 100, color: colors[index % colors.length] }));
+});
+const categorySalesTotal = computed(() => categorySales.value.reduce((sum, row) => sum + (Number(row.grand_total) || 0), 0));
+const CATEGORY_COLORS = ['#f04b2c', '#84cc16', '#818cf8', '#f59e0b', '#22c5a7', '#d946ef', '#38bdf8'];
+const categoryShare = computed(() => categorySales.value.map((row, index) => {
+  const value = Number(row.grand_total) || 0;
+  return {
+    label: row.category_name || 'Uncategorized',
+    value,
+    percent: categorySalesTotal.value ? Math.round(value / categorySalesTotal.value * 100) : 0,
+    color: CATEGORY_COLORS[index % CATEGORY_COLORS.length],
+  };
+}));
+const categoryDonut = computed(() => {
+  let offset = 0;
+  return `conic-gradient(${categoryShare.value.map(item => {
+    const start = offset;
+    offset += categorySalesTotal.value ? item.value / categorySalesTotal.value * 100 : 0;
+    return `${item.color} ${start}% ${offset}%`;
+  }).join(', ')})`;
 });
 const itemQty = computed(() => ({
   service_charge_total: Number(props.reports?.itemQty?.service_charge_total ?? 0),
@@ -622,20 +721,54 @@ const currentQtyGraph = computed(() => barsFor(itemQtyCurrent.value.categories.f
 const quickReport = computed(() => props.reports?.quickReport ?? []);
 const topTen = computed(() => props.reports?.topTen ?? []);
 const deletedOrders = computed(() => props.reports?.deletedOrders ?? []);
-const quickOrderGraph = computed(() => barsFor(quickReport.value.map(order => ({
-  label: `#${order.id}`, value: Number(order.grand_total) || 0,
-})).sort((a, b) => b.value - a.value).slice(0, 8)));
-const topTenGraph = computed(() => barsFor(topTen.value.map(order => ({
-  label: `#${order.id}`, value: Number(order.grand_total) || 0,
-})).sort((a, b) => b.value - a.value).slice(0, 10)));
-const deletedGraph = computed(() => {
-  const counts = deletedOrders.value.reduce((result, order) => {
-    const label = typeLabel(order.type || 'Other');
-    result[label] = (result[label] || 0) + 1;
-    return result;
-  }, {});
-  return barsFor(Object.entries(counts).map(([label, value]) => ({ label, value })));
+const quickLineMax = computed(() => Math.max(...quickReport.value.map(order => Number(order.grand_total) || 0), 1));
+const quickOrderLine = computed(() => {
+  const orders = [...quickReport.value].sort((left, right) => {
+    const leftTime = new Date(left.order_datetime || left.created_at || 0).getTime();
+    const rightTime = new Date(right.order_datetime || right.created_at || 0).getTime();
+    return leftTime - rightTime;
+  }).slice(-12);
+  return orders.map((order, index) => ({
+    id: order.id,
+    value: Number(order.grand_total) || 0,
+    x: orders.length === 1 ? 322 : 34 + index * (576 / (orders.length - 1)),
+    y: 124 - (Number(order.grand_total) || 0) / quickLineMax.value * 100,
+    radius: 4 + Math.sqrt((Number(order.grand_total) || 0) / quickLineMax.value) * 5,
+  }));
 });
+const quickLineTicks = computed(() => [24, 74, 124].map(y => ({ y })));
+const quickLineLabels = computed(() => {
+  const points = quickOrderLine.value;
+  if (points.length <= 4) return points;
+  return [...new Set([0, Math.round((points.length - 1) / 2), points.length - 1])].map(index => points[index]);
+});
+const topTenRankGraph = computed(() => {
+  const rows = topTen.value.map(order => ({ id: order.id, value: Number(order.grand_total) || 0 }))
+    .sort((a, b) => b.value - a.value).slice(0, 10);
+  const max = Math.max(...rows.map(row => row.value), 1);
+  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
+});
+const ORDER_TYPE_COLORS = { Dining: '#f04b2c', Delivery: '#84cc16', 'On the way': '#818cf8' };
+const deletedTimeline = computed(() => deletedOrders.value.map(order => {
+  const date = new Date(order.deleted_at);
+  const parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(date);
+  const hour = Number(parts.find(part => part.type === 'hour')?.value) || 0;
+  const minute = Number(parts.find(part => part.type === 'minute')?.value) || 0;
+  const type = typeLabel(order.type || 'Other');
+  return {
+    id: order.id,
+    type,
+    time: `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`,
+    x: 40 + ((hour * 60 + minute) / 1440) * 680,
+    color: ORDER_TYPE_COLORS[type] || '#a1a1aa',
+    timestamp: date.getTime(),
+  };
+}).sort((a, b) => a.timestamp - b.timestamp));
+const deletedTimelineTicks = [
+  { x: 40, label: '12 AM' }, { x: 210, label: '6 AM' }, { x: 380, label: '12 PM' },
+  { x: 550, label: '6 PM' }, { x: 720, label: '12 AM' },
+];
+const deletedTypeLegend = computed(() => [...new Map(deletedTimeline.value.map(item => [item.type, { label: item.type, color: item.color }])).values()]);
 const compactMoney = value => {
   const amount = Number(value) || 0;
   return amount >= 1000000 ? `Rs ${(amount / 1000000).toFixed(1)}m`
@@ -956,6 +1089,31 @@ const exportData = () => {
 .report-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:18px 0 22px; }
 .report-chart-card { min-width:0; padding:18px; }
 .report-chart-card--wide { grid-column:1 / -1; }
+.analytics-grid { display:grid; grid-template-columns:minmax(0,1.65fr) minmax(300px,.85fr); gap:18px; margin:0 0 26px; }
+.analytics-card { min-width:0; padding:20px 22px 18px; overflow:hidden; border:1px solid #e8e9ed; border-radius:14px; box-shadow:0 8px 24px rgba(20,24,35,.035); }
+.analytics-card .ui-card-header { align-items:center; min-height:42px; margin-bottom:10px; }
+.analytics-card .ui-card-header h3 { margin:4px 0 0; color:var(--text); font-size:1rem; font-weight:700; letter-spacing:-.02em; }
+.analytics-eyebrow { color:var(--text-muted); font-size:.62rem; font-weight:700; letter-spacing:.12em; }
+.analytics-total { color:var(--text); font-size:1rem; font-weight:750; font-variant-numeric:tabular-nums; }
+.analytics-period { max-width:45%; overflow:hidden; color:var(--text-muted); font-size:.7rem; text-overflow:ellipsis; white-space:nowrap; }
+.analytics-empty { display:grid; min-height:210px; place-items:center; color:var(--text-muted); font-size:.82rem; }
+.trend-chart { width:100%; min-height:220px; }
+.trend-chart__svg { display:block; width:100%; height:auto; overflow:visible; }
+.trend-chart__grid { stroke:#eceef2; stroke-width:1; }
+.trend-chart__tick { fill:#858b98; font-size:10px; }
+.trend-chart__line { fill:none; stroke:#f04b2c; stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
+.trend-chart__point { fill:#fff; stroke:#f04b2c; stroke-width:2.5; }
+.trend-legend { display:flex; align-items:center; gap:8px; margin:2px 8px 0 50px; color:var(--text); font-size:.72rem; font-weight:650; }
+.trend-legend__dot { width:8px; height:8px; border-radius:50%; background:#f04b2c; }
+.trend-legend__unit { margin-left:auto; color:var(--text-muted); font-size:.68rem; font-weight:450; }
+.status-breakdown { display:grid; gap:17px; min-height:232px; align-content:center; padding:12px 2px 4px; }
+.status-breakdown__label { display:flex; justify-content:space-between; gap:10px; margin-bottom:7px; color:var(--text); font-size:.74rem; }
+.status-breakdown__label>span { display:flex; min-width:0; align-items:center; gap:8px; color:var(--text-muted); text-transform:capitalize; }
+.status-breakdown__label i { flex:0 0 8px; width:8px; height:8px; border-radius:50%; }
+.status-breakdown__label strong { white-space:nowrap; font-variant-numeric:tabular-nums; }
+.status-breakdown__label small { margin-left:4px; color:var(--text-muted); font-size:.65rem; font-weight:500; }
+.status-breakdown__track { height:8px; overflow:hidden; border-radius:99px; background:var(--surface-2); }
+.status-breakdown__track i { display:block; height:100%; min-width:3px; border-radius:inherit; }
 .chart-bars { display:grid; gap:17px; padding:8px 2px 2px; }
 .chart-bars--items { grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:28px; }
 .chart-bar-row { min-width:0; }
@@ -977,9 +1135,38 @@ const exportData = () => {
 .chart-columns--items { grid-template-columns:repeat(auto-fit,minmax(68px,1fr)); gap:8px; }
 .report-inline-chart { padding:8px 18px 18px; }
 .chart-caption { margin:0 0 4px; color:var(--text-muted); font-size:.76rem; font-weight:600; }
+.type-mix__bar { display:flex; width:100%; height:13px; margin:14px 0 16px; overflow:hidden; border-radius:99px; background:var(--surface-2); }
+.type-mix__bar span { min-width:3px; border-right:2px solid var(--surface); transition:width .3s ease; }
+.type-mix__legend,.category-share__legend { display:grid; gap:12px; margin:0; padding:0; list-style:none; }
+.type-mix__legend li,.category-share__legend li { display:flex; align-items:center; justify-content:space-between; gap:10px; color:var(--text); font-size:.74rem; }
+.type-mix__legend li>span,.category-share__legend li>span { display:flex; align-items:center; min-width:0; gap:8px; color:var(--text-muted); }
+.type-mix__legend i,.category-share__legend i,.deleted-timeline__legend i { flex:0 0 9px; width:9px; height:9px; border-radius:50%; }
+.type-mix__legend small { margin-left:4px; color:var(--text-muted); font-size:.66rem; font-weight:500; }
+.category-share { display:grid; grid-template-columns:minmax(118px,.9fr) minmax(0,1.1fr); align-items:center; gap:16px; padding:18px 20px; }
+.category-share__donut { position:relative; display:grid; width:min(100%,150px); aspect-ratio:1; place-items:center; justify-self:center; border-radius:50%; }
+.category-share__donut::before { position:absolute; inset:13px; border-radius:50%; background:var(--surface,#fff); content:""; }
+.category-share__donut>div { z-index:1; display:grid; justify-items:center; gap:2px; text-align:center; }
+.category-share__donut strong { color:var(--text); font-size:.93rem; }
+.category-share__donut span { color:var(--text-muted); font-size:.62rem; }
+.category-share__legend li>strong { flex:0 0 auto; color:var(--text); font-variant-numeric:tabular-nums; }
+.quick-line-chart { display:block; width:100%; height:auto; margin-top:12px; overflow:visible; }
+.quick-scatter__point { fill:#f04b2c; fill-opacity:.78; stroke:#fff; stroke-width:2; transition:r .2s ease,fill-opacity .2s ease; }
+.quick-scatter__point:hover { fill-opacity:1; }
+.rank-chart { display:grid; gap:13px; padding:10px 0 2px; }
+.rank-chart__row { display:grid; grid-template-columns:38px minmax(35px,1fr) auto; align-items:center; gap:10px; }
+.rank-chart__label { color:var(--text-muted); font-size:.7rem; font-variant-numeric:tabular-nums; }
+.rank-chart__track { position:relative; height:1px; background:var(--border); }
+.rank-chart__track i { position:absolute; top:50%; width:10px; height:10px; border:2px solid #fff; border-radius:50%; background:#f04b2c; box-shadow:0 0 0 1px #f04b2c; transform:translate(-50%,-50%); }
+.rank-chart__row strong { color:var(--text); font-size:.69rem; font-variant-numeric:tabular-nums; }
+.deleted-timeline { display:block; width:100%; height:auto; margin:12px 0 4px; overflow:visible; }
+.deleted-timeline__point { stroke:#fff; stroke-width:1.5; }
+.deleted-timeline__legend { display:flex; flex-wrap:wrap; gap:12px 18px; margin-top:13px; }
+.deleted-timeline__legend>span { display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); font-size:.7rem; }
 .report-inline-chart .chart-columns { padding-top:8px; }
 .report-inline-chart .chart-bars { grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 24px; }
 .report-inline-chart .chart-bar-label>span:nth-child(2) { max-width:220px; }
+@media(max-width:900px){.analytics-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.category-share{grid-template-columns:1fr}.category-share__legend{width:100%}}
 @media(max-width:760px){.report-charts{grid-template-columns:1fr}.report-chart-card--wide{grid-column:auto}.chart-bars--items{grid-template-columns:1fr}}
 @media(max-width:600px){.report-inline-chart{padding:6px 12px 14px}.report-inline-chart .chart-bars{grid-template-columns:1fr}.chart-columns{gap:6px;grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}.chart-column__track{width:26px}}
 
@@ -997,5 +1184,6 @@ const exportData = () => {
     grid-template-columns: 1fr;
   }
   .reservation-list { grid-template-columns:1fr; }
+  .analytics-card { padding:16px; }
 }
 </style>

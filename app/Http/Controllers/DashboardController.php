@@ -35,6 +35,27 @@ class DashboardController extends Controller
             'branch_id' => $branchId,
         ]);
 
+        $reportStart = Carbon::parse($startDate)->startOfDay();
+        $reportEnd = Carbon::parse($endDate)->endOfDay();
+        $rangeOrders = Order::query()
+            ->when($branchId, fn ($query) => $query->where('branch_id', $branchId))
+            ->where(fn ($query) => $query
+                ->whereBetween('order_datetime', [$reportStart, $reportEnd])
+                ->orWhereBetween('created_at', [$reportStart, $reportEnd]));
+
+        $revenueTrend = (clone $rangeOrders)
+            ->selectRaw('DATE(CASE WHEN order_datetime BETWEEN ? AND ? THEN order_datetime ELSE created_at END) as report_date', [$reportStart, $reportEnd])
+            ->selectRaw('SUM(grand_total) as total_sales, COUNT(*) as order_count')
+            ->groupBy('report_date')
+            ->orderBy('report_date')
+            ->get();
+
+        $orderStatus = (clone $rangeOrders)
+            ->selectRaw("COALESCE(NULLIF(status, ''), 'Unknown') as status_label, COUNT(*) as order_count")
+            ->groupBy('status_label')
+            ->orderByDesc('order_count')
+            ->get();
+
         $reports = new ReportController;
         $orders = new OrderController(new Order);
 
@@ -116,6 +137,8 @@ class DashboardController extends Controller
                     'ordersByType' => $summaryData['ordersByType'] ?? [],
                     'totalGrandTotal' => (float) ($summaryData['totalGrandTotal'] ?? 0),
                 ],
+                'revenueTrend' => $revenueTrend,
+                'orderStatus' => $orderStatus,
                 'dining' => [
                     'totalGrandTotal' => (float) ($diningData['totalGrandTotal'] ?? 0),
                     'rows' => $diningData['othercolumns'] ?? [],
