@@ -77,8 +77,6 @@ Route::middleware('auth')->group(function () {
     // Dashboard (moved off `/` — the site root is now the public marketing page)
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware('can.access:dashboard.view')->name('dashboard');
-    Route::post('/dashboard/blog-comments/{id}/reply', [DashboardController::class, 'replyBlogComment'])
-        ->middleware('can.access:blog.update')->whereNumber('id')->name('dashboard.blog-comments.reply');
 
     // Customers (Inertia CRUD — replaces the old /api customers endpoints)
     Route::get('/customers', [CustomerController::class, 'index'])
@@ -164,6 +162,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('can.access:blog.update')->whereNumber('id')->name('blog.update');
     Route::delete('/blog/{id}', [BlogController::class, 'destroy'])
         ->middleware('can.access:blog.delete')->whereNumber('id')->name('blog.destroy');
+    Route::put('/blog/comments/{id}', [BlogController::class, 'updateComment'])
+        ->middleware('can.access:blog.update')->whereNumber('id')->name('blog.comments.update');
+    Route::delete('/blog/comments/{id}', [BlogController::class, 'destroyComment'])
+        ->middleware('can.access:blog.delete')->whereNumber('id')->name('blog.comments.destroy');
     Route::post('/blog/categories', [BlogController::class, 'storeCategory'])
         ->middleware('can.access:blog.create')->name('blog.categories.store');
     Route::put('/blog/categories/{id}', [BlogController::class, 'updateCategory'])

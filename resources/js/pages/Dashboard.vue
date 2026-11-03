@@ -93,20 +93,6 @@
         </div>
       </div>
 
-      <!-- Blog comments -->
-      <div class="ui-card blog-comments-card">
-        <div class="ui-card-header">Blog Comments <span class="ui-badge ui-badge--info">{{ blogComments.length }}</span></div>
-        <div v-if="!blogComments.length" class="data-table__empty" style="padding:20px 0">No blog comments yet.</div>
-        <div v-for="comment in blogComments" :key="comment.id" class="blog-comment-row">
-          <div class="blog-comment-meta"><strong>{{ comment.author_name }}</strong><span>{{ comment.post?.title }}</span><time>{{ dateTime(comment.created_at) }}</time></div>
-          <p>{{ comment.body }}</p>
-          <div v-for="reply in (comment.replies || [])" :key="reply.id" class="blog-comment-reply"><strong>{{ reply.author_name }}:</strong> {{ reply.body }}</div>
-          <form class="blog-reply-form" @submit.prevent="replyToComment(comment.id)">
-            <input v-model="replyDrafts[comment.id]" class="ui-input" placeholder="Write a reply…" maxlength="2000" />
-            <button class="ui-btn ui-btn--primary ui-btn--sm" :disabled="replyingId === comment.id">Reply</button>
-          </form>
-        </div>
-      </div>
 
       <!-- Customer feedback -->
       <div class="ui-card">
@@ -439,7 +425,6 @@ const props = defineProps({
   topCategories: { type: Array, default: () => [] },
   feedback: { type: Array, default: () => [] },
   feedbackStats: { type: Object, default: () => ({ avg_rating: null, total: 0 }) },
-  blogComments: { type: Array, default: () => [] },
   range: { type: Object, default: () => ({ start_date: "", end_date: "" }) },
   reports: { type: Object, default: () => ({}) },
 });
@@ -477,18 +462,6 @@ const recentOrders = computed(() => props.recentOrders ?? []);
 const topCategories = computed(() => props.topCategories ?? []);
 const feedback = computed(() => props.feedback ?? []);
 const feedbackStats = computed(() => props.feedbackStats ?? { avg_rating: null, total: 0 });
-const blogComments = computed(() => props.blogComments ?? []);
-const replyDrafts = ref({});
-const replyingId = ref(null);
-const replyToComment = (id) => {
-  const body = (replyDrafts.value[id] || '').trim();
-  if (!body) return;
-  replyingId.value = id;
-  router.post(`/dashboard/blog-comments/${id}/reply`, { body }, {
-    preserveScroll: true,
-    onFinish: () => { replyingId.value = null; },
-  });
-};
 const stars = (r) => "★".repeat(Math.max(0, Math.min(5, Number(r) || 0))) + "☆".repeat(5 - Math.max(0, Math.min(5, Number(r) || 0)));
 
 // ── Report blocks (all computed from the server-rendered props) ──────────────
@@ -823,16 +796,6 @@ const exportData = () => {
 .fb__top     { display: flex; justify-content: space-between; gap: 10px; }
 .fb__name    { font-weight: 600; font-size: 0.875rem; }
 .fb__comment { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
-.blog-comments-card { grid-column: 1 / -1; }
-.blog-comment-row { padding: 16px 0; border-bottom: 1px solid var(--border); }
-.blog-comment-row:last-child { border-bottom: 0; }
-.blog-comment-meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .78rem; }
-.blog-comment-meta span { color: var(--text-soft); }
-.blog-comment-meta time { margin-left: auto; color: var(--text-soft); font-size: .7rem; }
-.blog-comment-row p { margin: 8px 0; color: var(--text); white-space: pre-wrap; }
-.blog-comment-reply { margin: 8px 0 10px 18px; padding: 8px 10px; background: var(--surface-muted); font-size: .78rem; }
-.blog-reply-form { display: flex; gap: 8px; }
-.blog-reply-form .ui-input { flex: 1; min-width: 0; }
 
 @media (max-width: 1100px) {
   .stat-grid {

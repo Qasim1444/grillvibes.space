@@ -112,6 +112,21 @@
             :only="['posts']"
         />
 
+        <section class="blog-comments-section">
+            <PageHeader title="Blog Comments" subtitle="Edit or delete comments and replies from your published posts." />
+            <div v-if="!comments.length" class="ui-card ui-card-pad data-table__empty">No blog comments yet.</div>
+            <div v-for="comment in comments" :key="comment.id" class="ui-card blog-comment-card">
+                <div class="blog-comment-card__meta"><strong>{{ comment.author_name }}</strong><span>{{ comment.post?.title }}</span><time>{{ formatDate(comment.created_at) }}</time></div>
+                <textarea v-model="commentDrafts[comment.id]" class="ui-input blog-comment-card__body" rows="3" />
+                <div class="blog-comment-card__actions"><button v-if="can('blog.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="saveComment(comment.id)">Save</button><button v-if="can('blog.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="deleteComment(comment.id)">Delete</button></div>
+                <div v-for="reply in (comment.replies || [])" :key="reply.id" class="blog-reply-card">
+                    <div class="blog-comment-card__meta"><strong>{{ reply.author_name }}</strong><time>{{ formatDate(reply.created_at) }}</time></div>
+                    <textarea v-model="commentDrafts[reply.id]" class="ui-input blog-comment-card__body" rows="2" />
+                    <div class="blog-comment-card__actions"><button v-if="can('blog.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="saveComment(reply.id)">Save</button><button v-if="can('blog.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="deleteComment(reply.id)">Delete</button></div>
+                </div>
+            </div>
+        </section>
+
 
         <!-- =====================================================
              CREATE / EDIT POST MODAL
@@ -884,6 +899,8 @@ const props = defineProps({
             search: ''
         })
     }
+    ,
+    comments: { type: Array, default: () => [] }
 
 });
 
@@ -915,6 +932,12 @@ const columns = [
     }
 
 ];
+
+const comments = computed(() => props.comments ?? []);
+const commentDrafts = ref({});
+const saveComment = id => router.put(`/blog/comments/${id}`, { body: commentDrafts.value[id] }, { preserveScroll: true });
+const deleteComment = async id => { if (await confirmDialog('Delete this blog comment or reply?')) router.delete(`/blog/comments/${id}`, { preserveScroll: true }); };
+watch(comments, rows => { rows.forEach(c => { commentDrafts.value[c.id] ??= c.body; (c.replies || []).forEach(r => { commentDrafts.value[r.id] ??= r.body; }); }); }, { immediate: true });
 
 
 // ============================================================
@@ -2557,5 +2580,14 @@ const formatDate = (value) => {
     line-height: 1.7;
     resize: vertical;
 }
+
+.blog-comments-section { margin-top: 36px; }
+.blog-comment-card { margin-top: 12px; padding: 16px; }
+.blog-comment-card__meta { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .8rem; }
+.blog-comment-card__meta span { color: var(--text-soft); }
+.blog-comment-card__meta time { margin-left: auto; color: var(--text-soft); font-size: .7rem; }
+.blog-comment-card__body { display: block; width: 100%; margin-top: 10px; resize: vertical; }
+.blog-comment-card__actions { display: flex; gap: 8px; margin-top: 8px; }
+.blog-reply-card { margin: 14px 0 0 24px; padding: 12px; background: var(--surface-muted); border-left: 3px solid var(--brand); }
 
 </style>

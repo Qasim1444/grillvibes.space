@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BlogCategory;
 use App\Models\BlogPost;
 use App\Models\BlogTag;
+use App\Models\BlogComment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -31,7 +32,21 @@ class BlogController extends Controller
             'categories' => BlogCategory::active()->orderBy('name')->get(['id', 'name']),
             'tags' => BlogTag::orderBy('name')->get(['id', 'name']),
             'filters' => ['search' => $search],
+            'comments' => BlogComment::with(['post:id,title', 'replies'])->whereNull('parent_id')->latest()->take(50)->get(),
         ]);
+    }
+
+    public function updateComment(Request $request, int $id): RedirectResponse
+    {
+        $comment = BlogComment::findOrFail($id);
+        $comment->update($request->validate(['body' => 'required|string|max:2000']));
+        return back()->with('success', 'Blog comment updated.');
+    }
+
+    public function destroyComment(int $id): RedirectResponse
+    {
+        BlogComment::findOrFail($id)->delete();
+        return back()->with('success', 'Blog comment deleted.');
     }
 
     public function store(Request $request): RedirectResponse
