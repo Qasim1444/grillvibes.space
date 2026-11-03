@@ -1985,7 +1985,7 @@ const statusClass = (status) => {
 const formatDate = (value) => {
 
     return value
-        ? new Date(value).toLocaleDateString()
+        ? new Date(value).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' })
         : '-';
 
 };

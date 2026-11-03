@@ -206,7 +206,7 @@ const statusClass = s => ({
 }[s] ?? 'ui-badge--muted');
 
 // ── Modal ───────────────────────────────────────────────────────────────────
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
 
 const defaults = () => ({
   id: null, branch_id: '', petty_cash_account_id: '', claimant_id: '', claimant_name: '',
@@ -315,7 +315,7 @@ const del = async row => {
 };
 
 const fmt     = v => 'Rs ' + Number(v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
-const fmtDate = v => v ? new Date(v).toLocaleDateString() : '—';
+const fmtDate = v => v ? new Date(v).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : '—';
 const date    = v => v ? String(v).slice(0, 10) : '';
 </script>
 

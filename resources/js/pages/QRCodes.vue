@@ -220,7 +220,7 @@ const copy = async url => {
 };
 
 const shortUrl = u => String(u || '').replace(/^https?:\/\/[^/]+/, '') || u;
-const fmtDate = v => (v ? new Date(v).toLocaleString() : '—');
+const fmtDate = v => (v ? new Date(v).toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }) : '—');
 </script>
 
 <style scoped>

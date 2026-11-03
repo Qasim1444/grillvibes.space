@@ -88,7 +88,7 @@ defineProps({
 });
 
 const formatDate = value => value
-  ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+  ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Karachi' }).format(new Date(value))
   : '';
 const excerpt = value => (value || '').replace(/<[^>]*>/g, '').slice(0, 180);
 </script>

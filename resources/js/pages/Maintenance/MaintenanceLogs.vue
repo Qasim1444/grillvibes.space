@@ -250,9 +250,9 @@ const doComplete = () => completeForm.put(`/maintenance/logs/${completeRow.value
 
 const titleize = s => String(s || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 const fmt      = v => 'Rs ' + Number(v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
-const fmtDate  = v => v ? new Date(v).toLocaleDateString() : '—';
+const fmtDate  = v => v ? new Date(v).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : '—';
 const date     = v => v ? String(v).slice(0, 10) : '';
-const today    = () => new Date().toISOString().slice(0, 10);
+const today    = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
 </script>
 
 <style scoped>

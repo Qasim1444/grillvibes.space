@@ -214,7 +214,7 @@ const deleteUser = async (id) => {
   router.delete(`/users/${id}`, { preserveScroll: true });
 };
 
-const formatDate = (dateStr) => (dateStr ? new Date(dateStr).toLocaleDateString() : "—");
+const formatDate = (dateStr) => (dateStr ? new Date(dateStr).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : "—");
 </script>
 
 <style scoped>

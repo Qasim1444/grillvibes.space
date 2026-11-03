@@ -246,7 +246,7 @@ const del = async row => {
 };
 
 const fmt     = v => 'Rs ' + Number(v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
-const fmtDate = v => v ? new Date(v).toLocaleDateString() : '—';
+const fmtDate = v => v ? new Date(v).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : '—';
 // Normalise an incoming date (ISO or date-only) to a YYYY-MM-DD value for <input type=date>.
 const date    = v => v ? String(v).slice(0, 10) : '';
 </script>

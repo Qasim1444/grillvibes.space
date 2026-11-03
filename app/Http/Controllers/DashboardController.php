@@ -9,6 +9,7 @@ use App\Models\Feedback;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
 use App\Models\Order;
+use App\Models\Reservation;
 use App\Models\User;
 use App\Support\CurrentBranch;
 use Carbon\Carbon;
@@ -51,6 +52,16 @@ class DashboardController extends Controller
             ->latest('id')
             ->take(5)
             ->get(['id', 'customer_id', 'type', 'status', 'grand_total']);
+
+        $upcomingReservations = Reservation::with('diningTable:id,table_number')
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->where('reserved_at', '>=', now())
+            ->when($branchId, fn ($query) => $query->where(fn ($branchQuery) => $branchQuery
+                ->where('branch_id', $branchId)
+                ->orWhereNull('branch_id')))
+            ->orderBy('reserved_at')
+            ->take(6)
+            ->get(['id', 'guest_name', 'guest_phone', 'party_size', 'reserved_at', 'status', 'dining_table_id']);
 
         // ── Top categories (ranked by number of food items) ──────────────
         $categories = FoodCategory::query()
@@ -95,6 +106,7 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'counts' => $counts,
             'recentOrders' => $recentOrders,
+            'upcomingReservations' => $upcomingReservations,
             'topCategories' => $topCategories,
             'feedback' => $feedback,
             'feedbackStats' => $feedbackStats,

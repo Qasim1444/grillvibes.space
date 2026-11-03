@@ -278,7 +278,7 @@ const num = (v) => {
   const n = Number(v);
   return Number.isFinite(n) ? n : 0;
 };
-const dateTime = (v) => (v ? new Date(v).toLocaleString() : "—");
+const dateTime = (v) => (v ? new Date(v).toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }) : "—");
 
 const TYPE_LABELS = { delivery: "Delivery", dining: "Dining", "on-way": "On the way" };
 const typeLabel = (t) => TYPE_LABELS[t] || t || "—";

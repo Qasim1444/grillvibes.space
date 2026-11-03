@@ -649,7 +649,7 @@ const getUnreadCount = (contact) => {
 
 // ---- Shared formatting helpers ----
 const money = (v) => `$${Number(v || 0).toFixed(2)}`;
-const dateTime = (v) => (v ? new Date(v).toLocaleString() : "—");
+const dateTime = (v) => (v ? new Date(v).toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }) : "—");
 const TYPE_LABELS = { delivery: "Delivery", dining: "Dining", "on-way": "On the way" };
 const typeLabel = (t) => TYPE_LABELS[t] || t || "—";
 const statusClass = (s) => {
@@ -907,7 +907,8 @@ const sendMessage = async () => {
 
 const formatMessageTime = (ts) => {
   if (!ts) return "";
-  return new Date(ts).toLocaleString([], {
+  return new Date(ts).toLocaleString('en-PK', {
+    timeZone: 'Asia/Karachi',
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -955,7 +956,7 @@ const deleteCustomer = async (id) => {
   router.delete(`/customers/${id}`, { preserveScroll: true });
 };
 
-const formatDate = (v) => (v ? new Date(v).toLocaleDateString() : "—");
+const formatDate = (v) => (v ? new Date(v).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : "—");
 
 // Stop polling and clear any pending attachment once the chat modal closes.
 watch(showChat, (open) => {

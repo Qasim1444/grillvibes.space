@@ -230,7 +230,7 @@ const delAccount = async row => {
 };
 
 // ── Transaction modal ─────────────────────────────────────────────────────────
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
 
 const txnForm = useForm({ petty_cash_account_id: '', type: 'top_up', amount: 0, occurred_on: today(), reference: '', description: '' });
 const showTxn = ref(false);
@@ -256,7 +256,7 @@ const txnHint = computed(() => {
 
 const fmt     = v => 'Rs ' + Number(v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
 const signed  = v => (Number(v) < 0 ? '− ' : '+ ') + 'Rs ' + Math.abs(Number(v || 0)).toLocaleString('en-PK', { minimumFractionDigits: 2 });
-const fmtDate = v => v ? new Date(v).toLocaleDateString() : '—';
+const fmtDate = v => v ? new Date(v).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : '—';
 </script>
 
 <style scoped>

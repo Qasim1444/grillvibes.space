@@ -117,7 +117,7 @@ import { useForm } from '@inertiajs/vue3';
 defineOptions({ layout: null });
 
 const formatDate = value => value
-  ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
+  ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Karachi' }).format(new Date(value))
   : '';
 
 const readingMinutes = value => Math.max(1, Math.ceil((value || '').replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length / 200));

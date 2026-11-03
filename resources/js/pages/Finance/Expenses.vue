@@ -194,7 +194,7 @@ const statusClass = s => ({
   pending: 'ui-badge--warning', approved: 'ui-badge--success', rejected: 'ui-badge--danger',
 }[s] ?? 'ui-badge--muted');
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
 
 const defaults = () => ({
   id: null, category: 'supplies', branch_id: '', vendor_id: '', payee: '',
@@ -249,7 +249,7 @@ const del = async row => {
 };
 
 const fmt     = v => 'Rs ' + Number(v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
-const fmtDate = v => v ? new Date(v).toLocaleDateString() : '—';
+const fmtDate = v => v ? new Date(v).toLocaleDateString('en-PK', { timeZone: 'Asia/Karachi' }) : '—';
 const date    = v => v ? String(v).slice(0, 10) : '';
 </script>
 

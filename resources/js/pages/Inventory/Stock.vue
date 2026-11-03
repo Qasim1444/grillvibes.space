@@ -418,7 +418,7 @@ const typeBadge = t => TYPE_BADGES[t] ?? 'ui-badge--muted';
 
 const fmt = v => 'Rs ' + Number(v || 0).toLocaleString('en-PK', { minimumFractionDigits: 2 });
 const qty = v => Number(v || 0).toLocaleString('en-PK', { maximumFractionDigits: 4 });
-const fmtDateTime = v => v ? new Date(v.replace(' ', 'T')).toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+const fmtDateTime = v => v ? new Date(v.replace(' ', 'T')).toLocaleString('en-PK', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'Asia/Karachi' }) : '—';
 </script>
 
 <style scoped>

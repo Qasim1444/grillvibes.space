@@ -132,6 +132,21 @@
       </div>
     </div>
 
+    <section class="ui-card reservations-widget">
+      <div class="ui-card-header">
+        <span>Upcoming Reservations <span class="report-chip">{{ upcomingReservations.length }}</span></span>
+        <Link href="/reservations">View all</Link>
+      </div>
+      <p v-if="!upcomingReservations.length" class="reservation-empty">No upcoming reservations.</p>
+      <div v-else class="reservation-list">
+        <article v-for="reservation in upcomingReservations" :key="reservation.id" class="reservation-row">
+          <div class="reservation-row__date"><strong>{{ reservationDate(reservation.reserved_at).day }}</strong><span>{{ reservationDate(reservation.reserved_at).month }}</span></div>
+          <div class="reservation-row__details"><strong>{{ reservation.guest_name }}</strong><span>{{ reservationTime(reservation.reserved_at) }} · {{ reservation.party_size }} guests · Table {{ reservation.dining_table?.table_number || '—' }}</span></div>
+          <span class="ui-badge" :class="reservation.status === 'confirmed' ? 'ui-badge--success' : 'ui-badge--warning'">{{ reservation.status }}</span>
+        </article>
+      </div>
+    </section>
+
     <!-- ── Reports ──────────────────────────────────────────────────── -->
     <h2 class="report-heading">Reports</h2>
     <p class="report-heading__sub">{{ rangeLabel }}</p>
@@ -166,6 +181,44 @@
         color="var(--warning)"
         tint="var(--warning-soft)"
       />
+    </div>
+
+    <div class="report-charts">
+      <section class="ui-card report-chart-card">
+        <div class="ui-card-header">Sales mix <span class="report-chip">By order type</span></div>
+        <div v-if="!salesMix.length" class="chart-empty">No sales in this range.</div>
+        <div v-else class="chart-columns">
+          <div v-for="(row, index) in salesMix" :key="row.label" class="chart-column">
+            <strong>{{ compactMoney(row.value) }}</strong>
+            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
+            <span>{{ row.label }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="ui-card report-chart-card">
+        <div class="ui-card-header">Sales by category <span class="report-chip">{{ categoryGraph.length }} categories</span></div>
+        <div v-if="!categoryGraph.length" class="chart-empty">No category sales in this range.</div>
+        <div v-else class="chart-columns">
+          <div v-for="(row, index) in categoryGraph" :key="row.label" class="chart-column">
+            <strong>{{ compactMoney(row.value) }}</strong>
+            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
+            <span>{{ row.label }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="ui-card report-chart-card report-chart-card--wide">
+        <div class="ui-card-header">Top selling items <span class="report-chip">Quantity sold</span></div>
+        <div v-if="!topItemsGraph.length" class="chart-empty">No item sales in this range.</div>
+        <div v-else class="chart-columns chart-columns--items">
+          <div v-for="(row, index) in topItemsGraph" :key="row.label" class="chart-column">
+            <strong>{{ row.value }}</strong>
+            <div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div>
+            <span>{{ row.label }}</span>
+          </div>
+        </div>
+      </section>
     </div>
 
     <div class="dash-grid">
@@ -236,6 +289,15 @@
         Category Sales by Item Quantity
         <span class="report-chip">Service charges: {{ money(itemQty.service_charge_total) }}</span>
       </div>
+      <div v-if="itemQtyGraph.length" class="report-inline-chart">
+        <p class="chart-caption">Top items by quantity</p>
+        <div class="chart-bars">
+          <div v-for="(row, index) in itemQtyGraph" :key="row.label" class="chart-bar-row">
+            <div class="chart-bar-label"><span class="chart-dot" :class="`chart-dot--${index % 4}`"></span><span>{{ row.label }}</span><strong>{{ row.value }}</strong></div>
+            <div class="chart-track"><span class="chart-fill" :class="`chart-fill--${index % 4}`" :style="{ width: `${row.percent}%` }"></span></div>
+          </div>
+        </div>
+      </div>
       <div class="data-table-wrap">
         <table class="data-table">
           <thead>
@@ -279,6 +341,15 @@
           Total: {{ money(itemQtyCurrent.totalGrandTotal) }}
         </span>
       </div>
+      <div v-if="currentQtyGraph.length" class="report-inline-chart">
+        <p class="chart-caption">Top items by quantity</p>
+        <div class="chart-bars">
+          <div v-for="(row, index) in currentQtyGraph" :key="row.label" class="chart-bar-row">
+            <div class="chart-bar-label"><span class="chart-dot" :class="`chart-dot--${index % 4}`"></span><span>{{ row.label }}</span><strong>{{ row.value }}</strong></div>
+            <div class="chart-track"><span class="chart-fill" :class="`chart-fill--${index % 4}`" :style="{ width: `${row.percent}%` }"></span></div>
+          </div>
+        </div>
+      </div>
       <div class="data-table-wrap">
         <table class="data-table">
           <thead>
@@ -321,6 +392,13 @@
           <span class="report-chip">{{ quickReport.length }} order(s)</span>
         </div>
         <div class="data-table-wrap">
+          <div v-if="quickOrderGraph.length" class="report-inline-chart">
+            <div class="chart-columns">
+              <div v-for="(row, index) in quickOrderGraph" :key="row.label" class="chart-column">
+                <strong>{{ compactMoney(row.value) }}</strong><div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div><span>{{ row.label }}</span>
+              </div>
+            </div>
+          </div>
           <table class="data-table">
             <thead>
               <tr>
@@ -350,6 +428,11 @@
       <div class="ui-card">
         <div class="ui-card-header">Top 10 Deals — Today</div>
         <div class="data-table-wrap">
+          <div v-if="topTenGraph.length" class="report-inline-chart">
+            <div class="chart-columns chart-columns--items">
+              <div v-for="(row, index) in topTenGraph" :key="row.label" class="chart-column"><strong>{{ compactMoney(row.value) }}</strong><div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div><span>{{ row.label }}</span></div>
+            </div>
+          </div>
           <table class="data-table">
             <thead>
               <tr>
@@ -379,6 +462,12 @@
       <div class="ui-card-header">
         Deleted Orders — Today
         <span class="report-chip">{{ deletedOrders.length }} deleted</span>
+      </div>
+      <div v-if="deletedGraph.length" class="report-inline-chart">
+        <p class="chart-caption">Deleted orders by type</p>
+        <div class="chart-columns">
+          <div v-for="(row, index) in deletedGraph" :key="row.label" class="chart-column"><strong>{{ row.value }}</strong><div class="chart-column__track"><span class="chart-column__fill" :class="`chart-fill--${index % 4}`" :style="{ height: `${row.percent}%` }"></span></div><span>{{ row.label }}</span></div>
+        </div>
       </div>
       <div class="data-table-wrap">
         <table class="data-table">
@@ -422,6 +511,7 @@ defineOptions({ layout: AdminLayout });
 const props = defineProps({
   counts: { type: Object, default: () => ({}) },
   recentOrders: { type: Array, default: () => [] },
+  upcomingReservations: { type: Array, default: () => [] },
   topCategories: { type: Array, default: () => [] },
   feedback: { type: Array, default: () => [] },
   feedbackStats: { type: Object, default: () => ({ avg_rating: null, total: 0 }) },
@@ -449,7 +539,16 @@ const statusClass = (s) => {
   return "ui-badge--muted";
 };
 
-const dateTime = (v) => (v ? new Date(v).toLocaleString() : "—");
+const dateTime = (v) => (v ? new Date(v).toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }) : "—");
+const reservationDate = value => {
+  if (!value) return { day: '—', month: '' };
+  const date = new Date(value);
+  return {
+    day: new Intl.DateTimeFormat('en-PK', { day: '2-digit', timeZone: 'Asia/Karachi' }).format(date),
+    month: new Intl.DateTimeFormat('en-PK', { month: 'short', timeZone: 'Asia/Karachi' }).format(date),
+  };
+};
+const reservationTime = value => value ? new Date(value).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Karachi' }) : '—';
 
 // ── Counts / lists (straight from props) ─────────────────────────────────────
 const counts = computed(() => ({
@@ -459,6 +558,7 @@ const counts = computed(() => ({
   orders: props.counts.orders ?? "—",
 }));
 const recentOrders = computed(() => props.recentOrders ?? []);
+const upcomingReservations = computed(() => props.upcomingReservations ?? []);
 const topCategories = computed(() => props.topCategories ?? []);
 const feedback = computed(() => props.feedback ?? []);
 const feedbackStats = computed(() => props.feedbackStats ?? { avg_rating: null, total: 0 });
@@ -482,6 +582,28 @@ const onway = computed(() => ({
   rows: props.reports?.onway?.rows ?? [],
 }));
 const categorySales = computed(() => props.reports?.categorySales ?? []);
+const salesMix = computed(() => {
+  const rows = summary.value.ordersByType.map(row => ({ label: typeLabel(row.type), value: Number(row.grand_total) || 0 }));
+  const max = Math.max(...rows.map(row => row.value), 1);
+  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
+});
+const categoryGraph = computed(() => {
+  const rows = categorySales.value.map(row => ({ label: row.category_name || 'Uncategorized', value: Number(row.grand_total) || 0 }))
+    .sort((a, b) => b.value - a.value).slice(0, 6);
+  const max = Math.max(...rows.map(row => row.value), 1);
+  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
+});
+const barsFor = rows => {
+  const max = Math.max(...rows.map(row => row.value), 1);
+  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
+};
+const topItemsGraph = computed(() => {
+  const rows = itemQty.value.categories.flatMap(category => (category.items || []).map(item => ({
+    label: item.item_name || 'Menu item', value: Number(item.total_quantity) || 0,
+  }))).sort((a, b) => b.value - a.value).slice(0, 8);
+  const max = Math.max(...rows.map(row => row.value), 1);
+  return rows.map(row => ({ ...row, percent: Math.max(3, Math.round(row.value / max * 100)) }));
+});
 const itemQty = computed(() => ({
   service_charge_total: Number(props.reports?.itemQty?.service_charge_total ?? 0),
   categories: props.reports?.itemQty?.categories ?? [],
@@ -491,9 +613,35 @@ const itemQtyCurrent = computed(() => ({
   categories: props.reports?.itemQtyCurrent?.categories ?? [],
   totalGrandTotal: Number(props.reports?.itemQtyCurrent?.totalGrandTotal ?? 0),
 }));
+const itemQtyGraph = computed(() => barsFor(itemQty.value.categories.flatMap(category => (category.items || []).map(item => ({
+  label: item.item_name || 'Menu item', value: Number(item.total_quantity) || 0,
+}))).sort((a, b) => b.value - a.value).slice(0, 8)));
+const currentQtyGraph = computed(() => barsFor(itemQtyCurrent.value.categories.flatMap(category => (category.items || []).map(item => ({
+  label: item.item_name || 'Menu item', value: Number(item.total_quantity) || 0,
+}))).sort((a, b) => b.value - a.value).slice(0, 8)));
 const quickReport = computed(() => props.reports?.quickReport ?? []);
 const topTen = computed(() => props.reports?.topTen ?? []);
 const deletedOrders = computed(() => props.reports?.deletedOrders ?? []);
+const quickOrderGraph = computed(() => barsFor(quickReport.value.map(order => ({
+  label: `#${order.id}`, value: Number(order.grand_total) || 0,
+})).sort((a, b) => b.value - a.value).slice(0, 8)));
+const topTenGraph = computed(() => barsFor(topTen.value.map(order => ({
+  label: `#${order.id}`, value: Number(order.grand_total) || 0,
+})).sort((a, b) => b.value - a.value).slice(0, 10)));
+const deletedGraph = computed(() => {
+  const counts = deletedOrders.value.reduce((result, order) => {
+    const label = typeLabel(order.type || 'Other');
+    result[label] = (result[label] || 0) + 1;
+    return result;
+  }, {});
+  return barsFor(Object.entries(counts).map(([label, value]) => ({ label, value })));
+});
+const compactMoney = value => {
+  const amount = Number(value) || 0;
+  return amount >= 1000000 ? `Rs ${(amount / 1000000).toFixed(1)}m`
+    : amount >= 1000 ? `Rs ${(amount / 1000).toFixed(1)}k`
+      : `Rs ${Math.round(amount)}`;
+};
 // Recent-orders / categories are server-rendered, so there is no client load state.
 const ordersLoading = false;
 const catsLoading = false;
@@ -796,6 +944,44 @@ const exportData = () => {
 .fb__top     { display: flex; justify-content: space-between; gap: 10px; }
 .fb__name    { font-weight: 600; font-size: 0.875rem; }
 .fb__comment { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+.reservations-widget { margin:18px 0 26px; }
+.reservation-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 22px; padding:0 16px 8px; }
+.reservation-row { display:flex; align-items:center; gap:12px; min-width:0; padding:13px 0; border-bottom:1px solid var(--border); }
+.reservation-row__date { display:grid; place-content:center; flex:0 0 42px; height:46px; border-radius:10px; background:var(--brand-soft); color:var(--brand); text-align:center; }
+.reservation-row__date strong { font-size:.9rem; line-height:1.1; }.reservation-row__date span { font-size:.62rem; text-transform:uppercase; }
+.reservation-row__details { display:grid; min-width:0; gap:4px; flex:1; }
+.reservation-row__details strong { overflow:hidden; color:var(--text); font-size:.8rem; text-overflow:ellipsis; white-space:nowrap; }
+.reservation-row__details span { overflow:hidden; color:var(--text-muted); font-size:.69rem; text-overflow:ellipsis; white-space:nowrap; }
+.reservation-empty { padding:18px 16px; color:var(--text-muted); font-size:.82rem; }
+.report-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin:18px 0 22px; }
+.report-chart-card { min-width:0; padding:18px; }
+.report-chart-card--wide { grid-column:1 / -1; }
+.chart-bars { display:grid; gap:17px; padding:8px 2px 2px; }
+.chart-bars--items { grid-template-columns:repeat(2,minmax(0,1fr)); column-gap:28px; }
+.chart-bar-row { min-width:0; }
+.chart-bar-label { display:flex; align-items:center; gap:8px; margin-bottom:8px; color:var(--text-muted); font-size:.76rem; }
+.chart-bar-label>span:nth-child(2) { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.chart-bar-label strong { margin-left:auto; color:var(--text); font-size:.74rem; white-space:nowrap; }
+.chart-dot { flex:0 0 8px; width:8px; height:8px; border-radius:50%; background:#6366f1; }
+.chart-dot--1 { background:#10b981; }.chart-dot--2 { background:#f59e0b; }.chart-dot--3 { background:#ec4899; }
+.chart-track { height:8px; overflow:hidden; border-radius:99px; background:var(--surface-muted,#f1f2f5); }
+.chart-fill { display:block; height:100%; min-width:3px; border-radius:inherit; background:#6366f1; transition:width .35s ease; }
+.chart-fill--1 { background:#10b981; }.chart-fill--2 { background:#f59e0b; }.chart-fill--3 { background:#ec4899; }
+.chart-empty { display:grid; min-height:120px; place-items:center; color:var(--text-muted); font-size:.82rem; }
+.chart-columns { display:grid; grid-template-columns:repeat(auto-fit,minmax(72px,1fr)); align-items:end; gap:12px; min-height:190px; padding:14px 4px 0; }
+.chart-column { display:grid; grid-template-rows:18px 1fr 34px; justify-items:center; align-items:end; gap:8px; min-width:0; height:176px; }
+.chart-column>strong { align-self:end; color:var(--text-muted); font-size:.65rem; font-weight:600; white-space:nowrap; }
+.chart-column>span { display:-webkit-box; width:100%; overflow:hidden; color:var(--text-muted); font-size:.65rem; line-height:1.25; text-align:center; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.chart-column__track { display:flex; align-items:flex-end; width:min(34px,70%); height:100%; overflow:hidden; border-radius:7px 7px 3px 3px; background:var(--surface-muted,#f1f2f5); }
+.chart-column__fill { display:block; width:100%; min-height:4px; border-radius:6px 6px 2px 2px; background:#6366f1; transition:height .35s ease; }
+.chart-columns--items { grid-template-columns:repeat(auto-fit,minmax(68px,1fr)); gap:8px; }
+.report-inline-chart { padding:8px 18px 18px; }
+.chart-caption { margin:0 0 4px; color:var(--text-muted); font-size:.76rem; font-weight:600; }
+.report-inline-chart .chart-columns { padding-top:8px; }
+.report-inline-chart .chart-bars { grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px 24px; }
+.report-inline-chart .chart-bar-label>span:nth-child(2) { max-width:220px; }
+@media(max-width:760px){.report-charts{grid-template-columns:1fr}.report-chart-card--wide{grid-column:auto}.chart-bars--items{grid-template-columns:1fr}}
+@media(max-width:600px){.report-inline-chart{padding:6px 12px 14px}.report-inline-chart .chart-bars{grid-template-columns:1fr}.chart-columns{gap:6px;grid-template-columns:repeat(auto-fit,minmax(58px,1fr))}.chart-column__track{width:26px}}
 
 @media (max-width: 1100px) {
   .stat-grid {
@@ -810,5 +996,6 @@ const exportData = () => {
   .stat-grid {
     grid-template-columns: 1fr;
   }
+  .reservation-list { grid-template-columns:1fr; }
 }
 </style>

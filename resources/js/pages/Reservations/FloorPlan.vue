@@ -256,7 +256,7 @@ const deleteTable = async id => {
 const reloadBranch = () => router.get('/reservations/floor-plan',
   { branch_id: selectedBranch.value || undefined }, { preserveState: true });
 
-const fmtTime   = iso => iso ? new Date(iso).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' }) : '';
+const fmtTime   = iso => iso ? new Date(iso).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Karachi' }) : '';
 const typeEmoji = t => ({ dining: '🍽', 'on-way': '🥡', delivery: '🚚' }[t] ?? '');
 const typeLabel = t => ({ dining: 'Dine-in', 'on-way': 'Takeaway', delivery: 'Delivery' }[t] ?? t);
 </script>

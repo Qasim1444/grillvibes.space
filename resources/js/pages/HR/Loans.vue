@@ -258,7 +258,7 @@ const percent = (row) => {
 
 const openModal = () => {
   Object.assign(form, blank);
-  form.disbursed_on = new Date().toISOString().slice(0, 10);
+  form.disbursed_on = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
   form.clearErrors();
   showModal.value = true;
 };
@@ -287,7 +287,7 @@ const openRepay = (row) => {
   active.value = row;
   repayForm.reset();
   repayForm.amount = Math.min(Number(row.installment_amount) || 0, Number(row.outstanding) || 0) || "";
-  repayForm.paid_on = new Date().toISOString().slice(0, 10);
+  repayForm.paid_on = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
   repayForm.clearErrors();
   showRepay.value = true;
 };

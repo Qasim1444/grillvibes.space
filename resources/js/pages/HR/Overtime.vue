@@ -200,7 +200,7 @@ const suggestedRate = computed(
 
 const openModal = () => {
   Object.assign(form, blank);
-  form.date = new Date().toISOString().slice(0, 10);
+  form.date = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date());
   form.clearErrors();
   showModal.value = true;
 };

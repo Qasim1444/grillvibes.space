@@ -176,7 +176,7 @@ const props = defineProps({
   filters:      { type: Object, default: () => ({}) },
 });
 
-const dateFilter   = ref(props.filters?.date ?? new Date().toISOString().slice(0, 10));
+const dateFilter   = ref(props.filters?.date ?? new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Karachi' }).format(new Date()));
 const branchFilter = ref(props.filters?.branch_id ?? '');
 const statusFilter = ref(props.filters?.status ?? '');
 
@@ -295,7 +295,7 @@ const notifyWaitlist = entry => {
 };
 const removeWaitlist = (id, status) => router.put(`/reservations/waitlist/${id}`, { status }, { preserveScroll: true });
 
-const fmtTime = iso => iso ? new Date(iso).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit' }) : '';
+const fmtTime = iso => iso ? new Date(iso).toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Karachi' }) : '';
 const statusBadge = s => ({
   pending: 'ui-badge--muted', confirmed: 'ui-badge--info', seated: 'ui-badge--success',
   completed: 'ui-badge--success', cancelled: 'ui-badge--danger', no_show: 'ui-badge--warning',
