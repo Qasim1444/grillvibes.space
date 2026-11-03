@@ -252,7 +252,7 @@
 
               <div class="form-row">
                 <label>Party size<select v-model="reservation.guests"><option v-for="number in 8" :key="number" :value="number">{{ number }} {{ number === 1 ? 'guest' : 'guests' }}</option></select></label>
-                <label>Duration<select v-model="reservation.duration_minutes"><option :value="60">60 min</option><option :value="90">90 min</option><option :value="120">120 min</option><option :value="180">180 min</option></select></label>
+                <label>Duration<select v-model="reservation.duration_minutes" required><option disabled value="">Select duration</option><option :value="60">60 min</option><option :value="90">90 min</option><option :value="120">120 min</option><option :value="180">180 min</option></select></label>
               </div>
 
               <div class="form-row">
@@ -346,7 +346,7 @@ const reservation = useForm({
 	date: '',
 	time: '19:00',
 	guests: 2,
-	duration_minutes: 90,
+	duration_minutes: '',
 	dining_table_id: null,
 	guest_name: '',
 	guest_phone: '',
