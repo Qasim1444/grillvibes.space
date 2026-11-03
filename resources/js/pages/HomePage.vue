@@ -247,7 +247,7 @@
 
               <div class="form-row">
                 <label>Date<input v-model="reservation.date" type="date" required /></label>
-                <label>Time<select v-model="reservation.time" required><option v-for="time in times" :key="time">{{ time }}</option></select></label>
+                <label>Time<input v-model="reservation.time" type="time" required /></label>
               </div>
 
               <div class="form-row">
@@ -341,7 +341,6 @@ const activeCategory = ref('all');
 const filteredItems = computed(() => activeCategory.value === 'all'
 	? props.foodItems
 	: props.foodItems.filter(item => item.foodcategory_id === activeCategory.value));
-const times = ['12:30', '13:00', '18:00', '18:30', '19:00', '19:30', '20:00', '20:30'];
 const tables = computed(() => props.tables);
 const reservation = useForm({
 	date: '',
