@@ -26,7 +26,11 @@ class ReservationController extends Controller
 
         $reservations = Reservation::with(['diningTable:id,table_number', 'branch:id,name'])
             ->whereDate('reserved_at', $date)
-            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($branchId, fn ($q) => $q->where(fn ($branch) => $branch
+                ->where('branch_id', $branchId)
+                // Keep older public bookings (created before branch_id was
+                // assigned) visible until they are edited or migrated.
+                ->orWhereNull('branch_id')))
             ->when($status,  fn ($q) => $q->where('status', $status))
             ->orderBy('reserved_at')
             ->get()
@@ -210,7 +214,9 @@ class ReservationController extends Controller
         // Today's upcoming reservations to overlay on the floor plan
         $todayReservations = Reservation::whereDate('reserved_at', now())
             ->whereIn('status', ['confirmed', 'pending'])
-            ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
+            ->when($branchId, fn ($q) => $q->where(fn ($branch) => $branch
+                ->where('branch_id', $branchId)
+                ->orWhereNull('branch_id')))
             ->get(['id', 'dining_table_id', 'guest_name', 'party_size', 'reserved_at', 'status']);
 
         return Inertia::render('Reservations/FloorPlan', [

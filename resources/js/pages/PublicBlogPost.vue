@@ -54,6 +54,33 @@
           <div class="article-footer">
             <p v-if="post.author" class="article-author">{{ post.author.name }} shares practical ideas for better restaurant operations.</p>
           </div>
+
+          <section class="comments" aria-label="Comments">
+            <h2>Comments <span>({{ post.comments?.length || 0 }})</span></h2>
+            <form class="comment-form" @submit.prevent="submitComment()">
+              <input v-model="form.author_name" placeholder="Your name" required maxlength="100" />
+              <input v-model="form.author_email" type="email" placeholder="Email (optional)" maxlength="255" />
+              <textarea v-model="form.body" placeholder="Share your thoughts…" required maxlength="2000" rows="4"></textarea>
+              <button type="submit" :disabled="form.processing">{{ form.processing ? 'Posting…' : 'Post comment' }}</button>
+            </form>
+            <div v-if="post.comments?.length" class="comment-list">
+              <article v-for="comment in post.comments" :key="comment.id" class="comment">
+                <div class="comment-heading"><strong>{{ comment.author_name }}</strong><time>{{ formatDate(comment.created_at) }}</time></div>
+                <p>{{ comment.body }}</p>
+                <button class="reply-link" type="button" @click="replyTo = replyTo === comment.id ? null : comment.id">Reply</button>
+                <form v-if="replyTo === comment.id" class="reply-form" @submit.prevent="submitComment(comment.id)">
+                  <input v-model="replyForm.author_name" placeholder="Your name" required maxlength="100" />
+                  <textarea v-model="replyForm.body" placeholder="Write a reply…" required maxlength="2000" rows="3"></textarea>
+                  <button type="submit" :disabled="replyForm.processing">Post reply</button>
+                </form>
+                <div v-for="reply in (comment.replies || [])" :key="reply.id" class="comment comment--reply">
+                  <div class="comment-heading"><strong>{{ reply.author_name }}</strong><time>{{ formatDate(reply.created_at) }}</time></div>
+                  <p>{{ reply.body }}</p>
+                </div>
+              </article>
+            </div>
+            <p v-else class="comments-empty">Be the first to share a thought.</p>
+          </section>
         </article>
       </div>
 
@@ -85,19 +112,52 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import { useForm } from '@inertiajs/vue3';
 defineOptions({ layout: null });
-
-defineProps({
-  post: { type: Object, required: true },
-  recentPosts: { type: Array, default: () => [] },
-});
 
 const formatDate = value => value
   ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date(value))
   : '';
 
 const readingMinutes = value => Math.max(1, Math.ceil((value || '').replace(/<[^>]*>/g, '').trim().split(/\s+/).filter(Boolean).length / 200));
+
+const props = defineProps({
+  post: { type: Object, required: true },
+  recentPosts: { type: Array, default: () => [] },
+});
+const replyTo = ref(null);
+const form = useForm({ author_name: '', author_email: '', body: '', parent_id: null });
+const replyForm = useForm({ author_name: '', author_email: '', body: '', parent_id: null });
+const submitComment = (parentId = null) => {
+  const active = parentId ? replyForm : form;
+  active.transform(data => ({ ...data, parent_id: parentId })).post(`/blog/${props.post.slug}/comments`, {
+    preserveScroll: true,
+    onSuccess: () => { active.reset(); replyTo.value = null; },
+  });
+};
 </script>
+
+<style scoped>
+.comments { margin-top: 42px; padding-top: 30px; border-top: 1px solid #e7ded2; }
+.comments h2 { margin: 0 0 18px; font: 600 1.8rem/1.1 'Fraunces', serif; }
+.comments h2 span { color: #899087; font-size: 1rem; }
+.comment-form, .reply-form { display: grid; gap: 10px; }
+.comment-form { grid-template-columns: 1fr 1fr; margin-bottom: 30px; }
+.comment-form textarea, .comment-form button { grid-column: 1 / -1; }
+.comment-form input, .comment-form textarea, .reply-form input, .reply-form textarea { width: 100%; border: 1px solid #d7d0c7; background: #fffdf8; padding: 11px 12px; font: inherit; }
+.comment-form button, .reply-form button { justify-self: start; border: 0; padding: 11px 16px; background: #ef4858; color: #fff; font-weight: 700; cursor: pointer; }
+.comment-list { display: grid; gap: 18px; }
+.comment { padding: 17px; background: #fffdf8; border: 1px solid #e7ded2; }
+.comment--reply { margin: 14px 0 0 24px; background: #faf5ec; }
+.comment-heading { display: flex; justify-content: space-between; gap: 14px; font-size: .8rem; }
+.comment-heading time { color: #899087; font-size: .7rem; }
+.comment p { margin: 10px 0; color: #59635b; line-height: 1.65; white-space: pre-wrap; }
+.reply-link { padding: 0; border: 0; background: transparent; color: #ef4858; font-size: .75rem; font-weight: 700; cursor: pointer; }
+.reply-form { max-width: 520px; margin-top: 14px; }
+.comments-empty { color: #899087; }
+@media (max-width: 600px) { .comment-form { grid-template-columns: 1fr; } .comment-form textarea, .comment-form button { grid-column: auto; } .comment--reply { margin-left: 10px; } }
+</style>
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');

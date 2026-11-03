@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -59,6 +60,11 @@ class BlogPost extends Model
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(BlogTag::class, 'blog_post_tag', 'post_id', 'tag_id')->orderBy('name');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(BlogComment::class)->whereNull('parent_id')->where('is_approved', true)->oldest();
     }
 
     /**

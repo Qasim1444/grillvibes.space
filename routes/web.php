@@ -68,6 +68,7 @@ Route::post('/reservations/request', [HomeController::class, 'storeReservation']
     ->name('reservations.request');
 Route::get('/blog', [PublicBlogController::class, 'index'])->name('blog.public');
 Route::get('/blog/{slug}', [PublicBlogController::class, 'show'])->name('blog.public.show');
+Route::post('/blog/{slug}/comments', [PublicBlogController::class, 'comment'])->name('blog.public.comment');
 
 // ── Authenticated (session/cookie auth) ──────────────────────────────────────
 Route::middleware('auth')->group(function () {

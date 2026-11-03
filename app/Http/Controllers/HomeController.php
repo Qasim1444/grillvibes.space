@@ -59,6 +59,10 @@ class HomeController extends Controller
 
         Reservation::create([
             ...$data,
+            // Public bookings select a concrete table, so inherit its branch.
+            // Without this, branch-filtered reservation screens cannot find
+            // bookings created from the home page.
+            'branch_id' => $table->branch_id,
             'status' => 'pending',
             'source' => 'online',
         ]);

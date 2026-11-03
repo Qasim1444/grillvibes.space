@@ -102,7 +102,7 @@
 </template>
 
 <script setup>
-import { confirmDialog } from "../../composables/useNotifications";
+import { confirmDialog, notify } from "../../composables/useNotifications";
 import { ref, computed, watch } from 'vue';
 import { router, useForm } from '@inertiajs/vue3';
 import AdminLayout from '../../layouts/AdminLayout.vue';
@@ -205,12 +205,16 @@ const updateStatus = async t => {
 const saveLayout = async () => {
   saving.value = true;
   try {
-    await fetch('/reservations/floor-plan/save', {
+    const response = await fetch('/reservations/floor-plan/save', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '', 'X-Requested-With': 'XMLHttpRequest' },
       body: JSON.stringify({ tables: tables.value.map(t => ({ id: t.id, pos_x: Math.round(t.pos_x), pos_y: Math.round(t.pos_y) })) }),
       credentials: 'same-origin',
     });
+    if (!response.ok) throw new Error('Unable to save the floor plan.');
+    notify({ type: 'success', title: 'Floor plan saved', message: 'Table positions have been updated.' });
+  } catch (error) {
+    notify({ type: 'error', title: 'Save failed', message: error.message });
   } finally { saving.value = false; }
 };
 

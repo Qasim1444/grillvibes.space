@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BlogPost;
+use App\Models\BlogComment;
 use App\Models\BlogTag;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -45,7 +46,7 @@ class PublicBlogController extends Controller
     {
         $post = BlogPost::query()
             ->published()
-            ->with(['categories:id,name', 'tags:id,name,slug', 'author:id,name'])
+            ->with(['categories:id,name', 'tags:id,name,slug', 'author:id,name', 'comments.replies'])
             ->where('slug', $slug)
             ->firstOrFail();
 
@@ -60,5 +61,21 @@ class PublicBlogController extends Controller
             'post' => $post,
             'recentPosts' => $recentPosts,
         ]);
+    }
+
+    public function comment(Request $request, string $slug): \Illuminate\Http\RedirectResponse
+    {
+        $post = BlogPost::published()->where('slug', $slug)->firstOrFail();
+        $data = $request->validate([
+            'author_name' => ['required', 'string', 'max:100'],
+            'author_email' => ['nullable', 'email', 'max:255'],
+            'body' => ['required', 'string', 'max:2000'],
+            'parent_id' => ['nullable', 'integer', 'exists:blog_comments,id'],
+        ]);
+        if (!empty($data['parent_id']) && !BlogComment::whereKey($data['parent_id'])->where('blog_post_id', $post->id)->exists()) {
+            abort(422, 'That comment does not belong to this post.');
+        }
+        BlogComment::create([...$data, 'blog_post_id' => $post->id, 'user_id' => auth()->id()]);
+        return back()->with('success', $data['parent_id'] ? 'Reply posted.' : 'Comment posted.');
     }
 }
