@@ -261,7 +261,7 @@
               </div>
 
               <div class="form-row">
-                <label>Phone<input v-model="reservation.guest_phone" type="tel" placeholder="+44 7000 000000" required /></label>
+                <label>Phone<input v-model="reservation.guest_phone" type="tel" placeholder="+92 0000 0000000" required /></label>
                 <label>Occasion<input v-model="reservation.occasion" type="text" placeholder="Birthday, anniversary..." required /></label>
               </div>
 
