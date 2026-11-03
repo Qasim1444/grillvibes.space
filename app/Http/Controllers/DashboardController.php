@@ -8,6 +8,8 @@ use App\Models\Customer;
 use App\Models\Feedback;
 use App\Models\FoodCategory;
 use App\Models\FoodItem;
+use App\Models\BlogComment;
+use App\Models\BlogPost;
 use App\Models\Order;
 use App\Models\User;
 use App\Support\CurrentBranch;
@@ -18,6 +20,21 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
+    public function replyBlogComment(Request $request, int $id): \Illuminate\Http\RedirectResponse
+    {
+        $data = $request->validate(['body' => ['required', 'string', 'max:2000']]);
+        $comment = BlogComment::with('post')->findOrFail($id);
+        BlogComment::create([
+            'blog_post_id' => $comment->blog_post_id,
+            'parent_id' => $comment->parent_id ?: $comment->id,
+            'user_id' => $request->user()->id,
+            'author_name' => $request->user()->name,
+            'body' => $data['body'],
+            'is_approved' => true,
+        ]);
+        return back()->with('success', 'Blog comment reply posted.');
+    }
+
     public function index(Request $request): Response
     {
         // Date range for the report blocks. Default to today. The report SQL
@@ -80,6 +97,12 @@ class DashboardController extends Controller
             'total'      => Feedback::whereHas('customer.orders', fn ($q) => $q->when($branchId, fn ($sq) => $sq->where('branch_id', $branchId)))->count(),
         ];
 
+        $blogComments = BlogComment::with(['post:id,title,slug', 'replies'])
+            ->whereNull('parent_id')
+            ->latest()
+            ->take(8)
+            ->get(['id', 'blog_post_id', 'author_name', 'author_email', 'body', 'is_approved', 'created_at']);
+
         // ── Report blocks (reuse the existing JSON report logic) ──────────
         $summaryData = $reports->dailySummaryReport($rangeRequest)->getData(true);
         $diningData = $reports->dailySummaryReportdining($rangeRequest)->getData(true);
@@ -98,6 +121,7 @@ class DashboardController extends Controller
             'topCategories' => $topCategories,
             'feedback' => $feedback,
             'feedbackStats' => $feedbackStats,
+            'blogComments' => $blogComments,
             'range' => ['start_date' => $startDate, 'end_date' => $endDate],
             'reports' => [
                 'summary' => [

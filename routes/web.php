@@ -77,6 +77,8 @@ Route::middleware('auth')->group(function () {
     // Dashboard (moved off `/` — the site root is now the public marketing page)
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->middleware('can.access:dashboard.view')->name('dashboard');
+    Route::post('/dashboard/blog-comments/{id}/reply', [DashboardController::class, 'replyBlogComment'])
+        ->middleware('can.access:blog.update')->whereNumber('id')->name('dashboard.blog-comments.reply');
 
     // Customers (Inertia CRUD — replaces the old /api customers endpoints)
     Route::get('/customers', [CustomerController::class, 'index'])

@@ -247,7 +247,7 @@
 
               <div class="form-row">
                 <label>Date<input v-model="reservation.date" type="date" required /></label>
-                <label>Time<select v-model="reservation.time"><option v-for="time in times" :key="time">{{ time }}</option></select></label>
+                <label>Time<select v-model="reservation.time" required><option v-for="time in times" :key="time">{{ time }}</option></select></label>
               </div>
 
               <div class="form-row">
@@ -261,11 +261,11 @@
               </div>
 
               <div class="form-row">
-                <label>Phone<input v-model="reservation.guest_phone" type="tel" placeholder="+44 7000 000000" /></label>
-                <label>Occasion<input v-model="reservation.occasion" type="text" placeholder="Birthday, anniversary..." /></label>
+                <label>Phone<input v-model="reservation.guest_phone" type="tel" placeholder="+44 7000 000000" required /></label>
+                <label>Occasion<input v-model="reservation.occasion" type="text" placeholder="Birthday, anniversary..." required /></label>
               </div>
 
-              <label class="notes-field">Notes<textarea v-model="reservation.notes" rows="3" placeholder="Allergies, accessibility, or other requests"></textarea></label>
+              <label class="notes-field">Notes<textarea v-model="reservation.notes" rows="3" placeholder="Allergies, accessibility, or other requests" required></textarea></label>
 
               <button class="button button--coral submit-button" type="submit" :disabled="reservation.processing || !reservation.dining_table_id">
                 {{ reservation.processing ? 'Sending request…' : 'Request a table' }} <span>→</span>
@@ -362,16 +362,16 @@ watch(() => reservation.guests, () => {
 });
 const reservationSent = ref(false);
 const submitReservation = () => {
-	reservation.transform(data => ({
+    reservation.transform(data => ({
 		guest_name: data.guest_name,
-		guest_phone: data.guest_phone || null,
+        guest_phone: data.guest_phone,
 		guest_email: data.guest_email,
 		dining_table_id: data.dining_table_id,
 		party_size: data.guests,
 		reserved_at: `${data.date} ${data.time}`,
 		duration_minutes: data.duration_minutes,
-		occasion: data.occasion || null,
-		notes: data.notes || null,
+        occasion: data.occasion,
+        notes: data.notes,
 	})).post('/reservations/request', {
 		preserveScroll: true,
 		onSuccess: () => {

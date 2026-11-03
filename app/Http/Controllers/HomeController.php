@@ -41,13 +41,13 @@ class HomeController extends Controller
         $data = $request->validate([
             'dining_table_id' => 'required|integer|exists:dining_tables,id',
               'guest_name' => 'required|string|max:255',
-              'guest_phone' => 'nullable|string|max:50',
+              'guest_phone' => 'required|string|max:50',
               'guest_email' => 'required|email|max:255',
               'party_size' => 'required|integer|min:1|max:20',
               'reserved_at' => 'required|date|after_or_equal:now',
-              'duration_minutes' => 'nullable|integer|min:15|max:480',
-              'occasion' => 'nullable|string|max:255',
-              'notes' => 'nullable|string',
+              'duration_minutes' => 'required|integer|min:15|max:480',
+              'occasion' => 'required|string|max:255',
+              'notes' => 'required|string|max:2000',
         ]);
 
         $table = DiningTable::findOrFail($data['dining_table_id']);
