@@ -375,7 +375,7 @@ const moreFeatures = [
   --line: #262626;
   --muted: #a3a3a3;
   background: var(--bg);
-  overflow-x: hidden;
+  overflow-x: clip; /* contain horizontal overflow without disabling the sticky header */
   color: #f5f5f5;
 }
 
