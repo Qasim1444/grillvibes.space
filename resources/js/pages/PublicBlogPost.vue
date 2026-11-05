@@ -2,7 +2,7 @@
   <div class="public-blog-post">
     <header class="blog-header">
       <a class="brand" href="/" aria-label="GrillVibes home">
-        <span class="brand-mark">G</span>
+        <img class="brand-logo" :src="restaurantLogo" alt="GrillVibes" />
         <span>Grill<span class="brand-accent">Vibes</span></span>
       </a>
       <nav aria-label="Primary navigation">
@@ -114,6 +114,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import restaurantLogo from '../assets/grillvibes-logo.png';
 defineOptions({ layout: null });
 
 const formatDate = value => value
@@ -559,5 +560,31 @@ const submitComment = (parentId = null) => {
     display: block;
     margin-top: 8px;
   }
+}
+
+.blog-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: min(1200px, calc(100% - 40px));
+  height: 72px;
+  min-height: 72px;
+  margin: 0 auto;
+  padding: 0;
+  background: rgba(10, 10, 10, .85);
+  backdrop-filter: blur(16px);
+}
+.brand { color: #fff; }
+.brand-logo { display: block; width: 68px; height: 68px; object-fit: contain; border-radius: 8px; }
+.brand-accent { color: #f97316; }
+.blog-header nav { gap: 22px; }
+.blog-header nav a { color: #a3a3a3; font-size: .85rem; font-weight: 500; }
+.blog-header nav a:hover,
+.blog-header nav a.active { color: #f97316; }
+
+@media (max-width: 700px) {
+  .blog-header { width: calc(100% - 32px); height: 68px; min-height: 68px; }
+  .brand-logo { width: 60px; height: 60px; }
+  .blog-header nav { gap: 14px; }
 }
 </style>
