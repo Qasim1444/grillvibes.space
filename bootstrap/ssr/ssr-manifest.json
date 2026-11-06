@@ -315,12 +315,12 @@
     "/build/assets/Payroll-D7aiFON8.css"
   ],
   "resources/js/pages/HomePage.vue": [
-    "/build/assets/HomePage-BVVLhNpK.js",
-    "/build/assets/HomePage-DTdJ8I4G.css"
+    "/build/assets/HomePage-CvW5dcl_.js",
+    "/build/assets/HomePage-qlMN7E77.css"
   ],
-  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=00ef4258&lang.css": [
-    "/build/assets/HomePage-BVVLhNpK.js",
-    "/build/assets/HomePage-DTdJ8I4G.css"
+  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=c1f92302&lang.css": [
+    "/build/assets/HomePage-CvW5dcl_.js",
+    "/build/assets/HomePage-qlMN7E77.css"
   ],
   "resources/js/pages/Inventory/Ingredients.vue": [
     "/build/assets/Ingredients-mT2Nqoln.js",
@@ -438,12 +438,12 @@
     "/build/assets/Vendors-BySm8l9p.css"
   ],
   "resources/js/pages/ProductPage.vue": [
-    "/build/assets/ProductPage-Dc8U_yen.js",
-    "/build/assets/ProductPage-D-fD-7Fj.css"
+    "/build/assets/ProductPage-CL491UOH.js",
+    "/build/assets/ProductPage-BOLFcxKY.css"
   ],
-  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=3be8af48&lang.css": [
-    "/build/assets/ProductPage-Dc8U_yen.js",
-    "/build/assets/ProductPage-D-fD-7Fj.css"
+  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=9177364b&lang.css": [
+    "/build/assets/ProductPage-CL491UOH.js",
+    "/build/assets/ProductPage-BOLFcxKY.css"
   ],
   "resources/js/pages/Profile.vue": [
     "/build/assets/Profile-DSYNpOWw.js",
@@ -454,24 +454,24 @@
     "/build/assets/Profile-CK_J7412.css"
   ],
   "resources/js/pages/PublicBlog.vue": [
-    "/build/assets/PublicBlog-BfEFwqiG.js",
-    "/build/assets/PublicBlog-CmV769os.css"
+    "/build/assets/PublicBlog-BlGh04AZ.js",
+    "/build/assets/PublicBlog-BK4wuU7U.css"
   ],
-  "resources/js/pages/PublicBlog.vue?vue&type=style&index=0&scoped=7e8ba534&lang.css": [
-    "/build/assets/PublicBlog-BfEFwqiG.js",
-    "/build/assets/PublicBlog-CmV769os.css"
+  "resources/js/pages/PublicBlog.vue?vue&type=style&index=0&scoped=234fb864&lang.css": [
+    "/build/assets/PublicBlog-BlGh04AZ.js",
+    "/build/assets/PublicBlog-BK4wuU7U.css"
   ],
   "resources/js/pages/PublicBlogPost.vue": [
-    "/build/assets/PublicBlogPost-n44yo39B.js",
-    "/build/assets/PublicBlogPost-Bc3UGHkj.css"
+    "/build/assets/PublicBlogPost-BxWdjcW1.js",
+    "/build/assets/PublicBlogPost-CYbqknAo.css"
   ],
-  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=0&scoped=5afa242e&lang.css": [
-    "/build/assets/PublicBlogPost-n44yo39B.js",
-    "/build/assets/PublicBlogPost-Bc3UGHkj.css"
+  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=0&scoped=656189dc&lang.css": [
+    "/build/assets/PublicBlogPost-BxWdjcW1.js",
+    "/build/assets/PublicBlogPost-CYbqknAo.css"
   ],
-  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=1&scoped=5afa242e&lang.css": [
-    "/build/assets/PublicBlogPost-n44yo39B.js",
-    "/build/assets/PublicBlogPost-Bc3UGHkj.css"
+  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=1&scoped=656189dc&lang.css": [
+    "/build/assets/PublicBlogPost-BxWdjcW1.js",
+    "/build/assets/PublicBlogPost-CYbqknAo.css"
   ],
   "resources/js/pages/QRCodes.vue": [
     "/build/assets/QRCodes-BT-46a5d.js",

@@ -374,8 +374,7 @@ const submitReservation = () => {
 
 :global(*){box-sizing:border-box}
 :global(html){scroll-behavior:smooth}
-:global(body){margin:0;background:#faf5ec;color:#1b211e}
-.restaurant-home{--ink:#17201c;--muted:#6f766f;--line:#dfd8cc;--cream:#faf5ec;--paper:#fffdf8;--coral:#ef4858;--coral-dark:#d93648;--peach:#fde5df;font-family:'DM Sans',sans-serif;overflow-x:clip}
+.restaurant-home{--ink:#17201c;--muted:#6f766f;--line:#dfd8cc;--cream:#faf5ec;--paper:#fffdf8;--coral:#ef4858;--coral-dark:#d93648;--peach:#fde5df;font-family:'DM Sans',sans-serif;overflow-x:clip;background:#faf5ec;color:#1b211e}
 .section-shell{width:min(1180px,calc(100% - 48px));margin:0 auto}
 .site-header{position:sticky;top:0;z-index:50;width:min(1180px,calc(100% - 48px));min-height:78px;margin:0 auto;display:flex;align-items:center;gap:26px;background:rgba(250,245,236,.88);backdrop-filter:blur(16px)}
 .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font:700 1.12rem 'DM Sans',sans-serif;letter-spacing:-.04em;text-decoration:none;white-space:nowrap}
@@ -1186,7 +1185,15 @@ const submitReservation = () => {
   font-family:'Space Grotesk',Inter,sans-serif!important;
   color:#f5f5f5;
 }
-:global(body) { background:#0a0a0a; color:#f5f5f5; }
+.restaurant-home .hero-text,
+.restaurant-home .scribble,
+.restaurant-home .hero-stats span,
+.restaurant-home .ribbon-item,
+.restaurant-home .check-list div,
+.restaurant-home .category-row button,
+.restaurant-home .blog-meta time,
+.restaurant-home .review-meta small,
+.restaurant-home .form-footnote { color:#b8b8b8; }
 .restaurant-home .experience,
 .restaurant-home .menu-section,
 .restaurant-home .reviews-section,

@@ -344,9 +344,8 @@ const moreFeatures = [
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
-:global(*) { box-sizing: border-box; margin: 0; padding: 0; }
+:global(*) { box-sizing: border-box; }
 :global(html) { scroll-behavior: smooth; }
-:global(body) { background: #0a0a0a; color: #f5f5f5; font-family: 'Inter', system-ui, sans-serif; }
 
 .gv-page {
   --orange: #f97316;
@@ -358,7 +357,9 @@ const moreFeatures = [
   background: var(--bg);
   overflow-x: clip; /* contain horizontal overflow without disabling the sticky header */
   color: #f5f5f5;
+  font-family: 'Inter', system-ui, sans-serif;
 }
+:where(.gv-page, .gv-page *) { box-sizing: border-box; margin: 0; padding: 0; }
 
 .gv-page h1,
 .gv-page h2,

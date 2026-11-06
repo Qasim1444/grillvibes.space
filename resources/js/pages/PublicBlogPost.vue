@@ -163,16 +163,11 @@ const submitComment = (parentId = null) => {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :global(*) { box-sizing: border-box; }
-:global(body) {
-  margin: 0;
-  background: #faf5ec;
-  color: #17201c;
-}
-
 .public-blog-post {
   min-height: 100vh;
   font-family: 'DM Sans', sans-serif;
   background: radial-gradient(circle at top left, rgba(239, 72, 88, 0.08), transparent 28%), linear-gradient(180deg, #fffdf9 0%, #faf5ec 100%);
+  color: #17201c;
 }
 
 .blog-header {
@@ -587,7 +582,6 @@ const submitComment = (parentId = null) => {
   .blog-header nav { gap: 14px; }
 }
 
-:global(body) { background:#0a0a0a!important; color:#f5f5f5; font-family:Inter,system-ui,sans-serif; }
 .public-blog-post { background:radial-gradient(circle at top left,rgba(249,115,22,.08),transparent 28%),#0a0a0a; color:#f5f5f5; font-family:Inter,system-ui,sans-serif; }
 .article h1,.article-body :deep(h2),.article-body :deep(h3) { color:#f5f5f5; font-family:'Space Grotesk',Inter,sans-serif; }
 .article-lede,.article-body,.article-author,.comment p { color:#c4c4c4; }
