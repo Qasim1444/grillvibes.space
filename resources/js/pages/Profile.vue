@@ -106,11 +106,14 @@ const changePassword = () => {
 .profile-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  align-items: start;
+  gap: 18px;
 }
+.profile-grid > .ui-card { border-radius: 16px; box-shadow: var(--shadow-sm); }
 .profile__section-title {
   margin: 0 0 16px;
   font-size: 1rem;
+  letter-spacing: -.02em;
 }
 @media (max-width: 768px) {
   .profile-grid {

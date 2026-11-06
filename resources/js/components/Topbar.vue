@@ -50,6 +50,17 @@
 
         <Transition name="menu-fade">
           <div v-if="menuOpen" class="topbar__menu">
+            <button
+              class="topbar__menu-item topbar__menu-item--theme"
+              type="button"
+              :aria-pressed="theme === 'dark'"
+              @click="$emit('toggle-theme')"
+            >
+              <svg v-if="theme === 'dark'" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+              <svg v-else viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+              <span>Switch to {{ theme === 'dark' ? 'light' : 'dark' }} mode</span>
+            </button>
+            <div class="topbar__menu-divider" />
             <Link href="/profile" class="topbar__menu-item" @click="menuOpen = false">Profile</Link>
             <Link href="/change-password" class="topbar__menu-item" @click="menuOpen = false">Change Password</Link>
             <div class="topbar__menu-divider" />
@@ -65,6 +76,11 @@
 import { ref, computed, onMounted, onBeforeUnmount } from "vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { useSidebar } from "../composables/useSidebar";
+
+defineProps({
+  theme: { type: String, default: "light" },
+});
+defineEmits(["toggle-theme"]);
 
 const page = usePage();
 const { toggleCollapse, toggleMobile } = useSidebar();
@@ -304,6 +320,8 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   cursor: pointer;
   font-family: inherit;
 }
+.topbar__menu-item--theme { display:flex; align-items:center; gap:10px; min-height:44px; }
+.topbar__menu-item--theme svg { flex:0 0 auto; color:var(--brand); }
 .topbar__menu-item:hover {
   background: var(--surface-2);
 }
