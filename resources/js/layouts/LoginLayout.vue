@@ -57,21 +57,38 @@ watch(logoUrl, () => { logoFailed.value = false; });
 
 <style scoped>
 .auth {
+  --brand: #f97316;
+  --brand-600: #ea580c;
+  --brand-soft: #35221b;
+  --surface: #171917;
+  --surface-2: #222522;
+  --border: #303430;
+  --border-strong: #414641;
+  --text: #f3f4f1;
+  --text-muted: #aeb4ad;
+  --text-soft: #858c85;
   min-height: 100vh;
+  min-height: 100svh;
   display: grid;
-  grid-template-columns: minmax(520px, 1.08fr) minmax(420px, 0.92fr);
-  background: #0b1020;
+  grid-template-columns: minmax(0, 1.08fr) minmax(440px, .92fr);
+  background: #101210;
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
 }
 
 .auth__brand-panel {
   position: relative;
-  background:
-    linear-gradient(150deg, rgba(7, 12, 27, 0.92), rgba(31, 24, 64, 0.9) 58%, rgba(79, 70, 229, 0.82)),
-    url("https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=1600&q=82");
+  isolation: isolate;
+  background-image:
+    linear-gradient(90deg, rgba(7, 8, 7, .9) 0%, rgba(7, 8, 7, .72) 52%, rgba(7, 8, 7, .32) 100%),
+    linear-gradient(0deg, rgba(7, 8, 7, .88) 0%, transparent 72%),
+    url("/images/product/grillvibes-dashboard-collage.png");
   background-size: cover;
   background-position: center;
+  border-right: 1px solid rgba(255, 255, 255, .08);
   color: #fff;
-  padding: 48px;
+  padding: clamp(28px, 4vw, 64px);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -83,9 +100,9 @@ watch(logoUrl, () => { logoFailed.value = false; });
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(11, 16, 32, 0) 0%, rgba(11, 16, 32, 0.72) 100%),
-    radial-gradient(circle at 20% 20%, rgba(239, 72, 88, 0.32), transparent 28%);
+    radial-gradient(circle at 20% 20%, rgba(249, 115, 22, .17), transparent 34%);
   pointer-events: none;
+  z-index: 0;
 }
 
 .auth__brand {
@@ -138,7 +155,7 @@ watch(logoUrl, () => { logoFailed.value = false; });
   align-items: center;
   gap: 8px;
   margin: 0 0 16px;
-  color: rgba(255, 255, 255, 0.78);
+  color: #ffad8d;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -150,44 +167,46 @@ watch(logoUrl, () => { logoFailed.value = false; });
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.16);
+  background: #f97316;
+  box-shadow: 0 0 0 6px rgba(249, 115, 22, .16);
 }
 
 .auth__pitch h2 {
   color: #fff;
-  font-size: clamp(2.5rem, 5vw, 4.6rem);
-  line-height: 0.96;
-  letter-spacing: -0.07em;
+  max-width: 660px;
+  font-size: clamp(2.45rem, 4.2vw, 4.15rem);
+  line-height: 1.02;
+  letter-spacing: -0.055em;
   margin: 0 0 18px;
 }
 
 .auth__pitch p {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 1rem;
-  line-height: 1.6;
+  max-width: 520px;
+  color: rgba(245, 245, 242, .78);
+  font-size: .96rem;
+  line-height: 1.7;
   margin: 0;
 }
 
 .auth__module-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 32px;
-  max-width: 520px;
+  gap: 9px;
+  margin-top: 26px;
+  max-width: 560px;
 }
 
 .auth__module-grid div {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 42px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
-  color: rgba(255, 255, 255, 0.9);
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, .14);
+  border-radius: 9px;
+  background: rgba(20, 22, 20, .56);
+  backdrop-filter: blur(12px);
+  color: rgba(245, 245, 242, .9);
   font-size: 0.76rem;
   font-weight: 700;
 }
@@ -196,7 +215,7 @@ watch(logoUrl, () => { logoFailed.value = false; });
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #ef4858;
+  background: #f97316;
   flex: 0 0 auto;
 }
 
@@ -209,14 +228,14 @@ watch(logoUrl, () => { logoFailed.value = false; });
 .auth__glow--1 {
   width: 320px;
   height: 320px;
-  background: #a78bfa;
+  background: #f97316;
   top: -80px;
   right: -80px;
 }
 .auth__glow--2 {
   width: 260px;
   height: 260px;
-  background: #38bdf8;
+  background: #ff9b56;
   bottom: -60px;
   left: -60px;
 }
@@ -226,9 +245,7 @@ watch(logoUrl, () => { logoFailed.value = false; });
   align-items: center;
   justify-content: center;
   padding: 32px;
-  background:
-    radial-gradient(circle at 88% 12%, rgba(79, 70, 229, 0.08), transparent 34%),
-    linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+  background: #101210;
 }
 
 @media (max-width: 980px) {
@@ -236,14 +253,19 @@ watch(logoUrl, () => { logoFailed.value = false; });
     grid-template-columns: 1fr;
   }
   .auth__brand-panel {
-    min-height: 470px;
-    padding: 34px 24px;
+    min-height: 390px;
+    padding: 30px clamp(22px, 6vw, 56px);
   }
-  .auth__form-panel { padding: 28px 18px 38px; }
+  .auth__form-panel { padding: 36px 18px 48px; }
 }
 
 @media (max-width: 640px) {
   .auth__brand-panel { display: none; }
+  .auth__form-panel { min-height: 100svh; padding: 20px 14px; }
   .auth__module-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth *, .auth *::before, .auth *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; }
 }
 </style>
