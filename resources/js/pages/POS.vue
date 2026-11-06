@@ -1,7 +1,18 @@
 <template>
-  <div class="page pos">
+  <div class="page pos" :data-theme="theme">
     <PageHeader title="Point of Sale" subtitle="Build an order and send it to the kitchen.">
       <template #actions>
+        <button
+          class="ui-btn ui-btn--ghost pos-theme-toggle"
+          type="button"
+          :aria-pressed="theme === 'dark'"
+          :aria-label="`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`"
+          @click="toggleTheme"
+        >
+          <svg v-if="theme === 'dark'" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+          <svg v-else viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+          {{ theme === 'dark' ? 'Light mode' : 'Dark mode' }}
+        </button>
         <button class="ui-btn ui-btn--ghost" @click="goAdmin">
           <span class="btn-icon">⚙</span> Admin
         </button>
@@ -496,7 +507,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { router, usePage } from "@inertiajs/vue3";
 import PageHeader from "../components/ui/PageHeader.vue";
 import FormField from "../components/ui/FormField.vue";
@@ -522,6 +533,32 @@ const props = defineProps({
 });
 
 const page = usePage();
+const theme = ref("light");
+const themeReady = ref(false);
+const themeKey = computed(() => `grillvibes_admin_theme_${page.props.auth?.user?.id ?? "guest"}`);
+
+onMounted(() => {
+  theme.value = localStorage.getItem(themeKey.value) === "dark" ? "dark" : "light";
+  document.documentElement.dataset.adminTheme = theme.value;
+  themeReady.value = true;
+});
+
+watch(theme, (value) => {
+  if (!themeReady.value) return;
+  localStorage.setItem(themeKey.value, value);
+  document.documentElement.dataset.adminTheme = value;
+});
+
+onBeforeUnmount(() => {
+  if (document.documentElement.dataset.adminTheme === theme.value) {
+    delete document.documentElement.dataset.adminTheme;
+  }
+});
+
+const toggleTheme = () => {
+  theme.value = theme.value === "dark" ? "light" : "dark";
+};
+
 const goAdmin = () => router.visit("/");
 
 const money = (v) => `Rs ${Number(v || 0).toFixed(2)}`;
@@ -976,10 +1013,79 @@ const placeOrder = () => {
 
 <style scoped>
 /* ── Layout ─────────────────────────────────────────────────────────────── */
+.page.pos {
+  --brand: #e94e2f;
+  --brand-600: #d94124;
+  --brand-700: #b9361e;
+  --brand-soft: #fff0eb;
+  --bg: #f4f4f1;
+  --surface: #fff;
+  --surface-2: #f7f7f4;
+  --surface-muted: #eff0ec;
+  --muted-bg: #eff0ec;
+  --border: #e2e4de;
+  --border-strong: #cfd3cb;
+  --text: #202320;
+  --text-muted: #656d66;
+  --text-soft: #858d85;
+  --muted: #656d66;
+  --success: #16834b;
+  --success-soft: #dcfce7;
+  --danger: #c4313d;
+  --danger-soft: #fee2e2;
+  --warning: #b66a08;
+  --info: #2875ae;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(20, 24, 20, .05), 0 6px 18px rgba(20, 24, 20, .035);
+  --shadow: 0 12px 28px rgba(20, 24, 20, .09);
+  min-height: 100vh;
+  padding: 24px clamp(16px, 2.4vw, 36px) 44px;
+  background: var(--bg);
+  color: var(--text);
+  color-scheme: light;
+  transition: background-color .2s ease, color .2s ease;
+}
+
+.page.pos[data-theme="dark"] {
+  --brand: #ff704c;
+  --brand-600: #fa5e38;
+  --brand-700: #e94e2f;
+  --brand-soft: #39231e;
+  --bg: #101110;
+  --surface: #191b19;
+  --surface-2: #222522;
+  --surface-muted: #292c29;
+  --muted-bg: #292c29;
+  --border: #303430;
+  --border-strong: #414641;
+  --text: #f1f2ef;
+  --text-muted: #b3b8b2;
+  --text-soft: #929891;
+  --muted: #b3b8b2;
+  --success: #4ade80;
+  --success-soft: #173423;
+  --danger: #fb7185;
+  --danger-soft: #3c2026;
+  --warning: #fbbf24;
+  --info: #60a5fa;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, .2), 0 8px 22px rgba(0, 0, 0, .12);
+  --shadow: 0 14px 34px rgba(0, 0, 0, .28);
+  background: var(--bg);
+  color-scheme: dark;
+}
+
+.pos :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+.pos .ui-card { border-color: var(--border); border-radius: 16px; box-shadow: var(--shadow-sm); }
+.pos .page-header { align-items: center; margin-bottom: 22px; }
+.pos .page-header__actions { flex-wrap: wrap; justify-content: flex-end; }
+.pos-theme-toggle { min-height: 40px; }
+.pos-theme-toggle svg { flex: 0 0 auto; color: var(--brand); }
+
 .pos-layout {
   display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 24px;
+  grid-template-columns: minmax(0, 1.7fr) minmax(350px, .9fr);
+  gap: 18px;
   align-items: start;
   max-width: 1600px;
 }
@@ -1114,8 +1220,8 @@ const placeOrder = () => {
 }
 
 .pos-search:focus {
-  border-color: var(--brand, #3b82f6);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 17%, transparent);
   outline: none;
 }
 
@@ -1158,16 +1264,16 @@ const placeOrder = () => {
 }
 
 .pos-cat:hover {
-  border-color: var(--brand, #3b82f6);
-  color: var(--brand, #3b82f6);
-  background: rgba(59, 130, 246, 0.04);
+  border-color: var(--brand);
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
 }
 
 .pos-cat--active {
-  background: var(--brand, #3b82f6);
-  border-color: var(--brand, #3b82f6);
+  background: var(--brand);
+  border-color: var(--brand);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 3px 10px color-mix(in srgb, var(--brand) 24%, transparent);
 }
 
 /* ── Loading Skeleton ───────────────────────────────────────────────────── */
@@ -1186,7 +1292,7 @@ const placeOrder = () => {
 .skeleton-img {
   width: 100%;
   height: 120px;
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 12px;
@@ -1194,7 +1300,7 @@ const placeOrder = () => {
 
 .skeleton-text {
   height: 14px;
-  background: #f1f5f9;
+  background: var(--surface-2);
   border-radius: 6px;
   width: 80%;
 }
@@ -1265,9 +1371,9 @@ const placeOrder = () => {
 }
 
 .pos-tile:hover {
-  border-color: var(--brand, #3b82f6);
+  border-color: var(--brand);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow);
 }
 
 .pos-tile:active {
@@ -1554,10 +1660,10 @@ const placeOrder = () => {
 }
 
 .pos-line__note:focus {
-  border-color: var(--brand, #3b82f6);
+  border-color: var(--brand);
   background: var(--surface, #fff);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
 }
 
 .pos-extras {
@@ -1574,7 +1680,7 @@ const placeOrder = () => {
 .pos-extras__add { border: 0; background: transparent; color: var(--brand, #2563eb); font: inherit; font-weight: 700; cursor: pointer; }
 .pos-extra { display: grid; grid-template-columns: minmax(100px, 1fr) 72px 92px 26px; gap: 6px; align-items: center; }
 .pos-extra .ui-select, .pos-extra .ui-input { min-width: 0; width: 100%; padding: 6px 7px; font-size: 11px; }
-.pos-extras__remove { border: 0; border-radius: 5px; background: #fee2e2; color: #b91c1c; font-size: 18px; line-height: 1; cursor: pointer; height: 28px; }
+.pos-extras__remove { border: 0; border-radius: 7px; background: var(--danger-soft, #fee2e2); color: var(--danger, #b91c1c); font-size: 18px; line-height: 1; cursor: pointer; height: 32px; }
 .pos-print-link { margin-left: 10px; color: inherit; font-weight: 700; text-decoration: underline; }
 
 .pos-line__station {
@@ -1854,7 +1960,12 @@ const placeOrder = () => {
   }
 }
 
+@media (max-width: 760px) {
+  .pos .page-header { align-items: flex-start; }
+}
+
 @media (max-width: 640px) {
+  .page.pos { padding: 16px 12px 28px; }
   .pos-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 12px;

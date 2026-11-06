@@ -108,6 +108,32 @@
     color-scheme: dark;
 }
 
+/* Teleported dialogs inherit from <html>, not the admin or standalone POS root. */
+html[data-admin-theme="dark"] {
+    --bg: #101110;
+    --surface: #191b19;
+    --surface-2: #222522;
+    --surface-muted: #292c29;
+    --border: #303430;
+    --border-strong: #414641;
+    --text: #f1f2ef;
+    --text-muted: #b3b8b2;
+    --text-soft: #929891;
+    --brand: #ff704c;
+    --brand-600: #fa5e38;
+    --brand-700: #e94e2f;
+    --brand-soft: #39231e;
+    --success: #4ade80;
+    --success-soft: #173423;
+    --danger: #fb7185;
+    --danger-soft: #3c2026;
+    --warning: #fbbf24;
+    --warning-soft: #392f17;
+    --info: #60a5fa;
+    --info-soft: #1c2d40;
+    color-scheme: dark;
+}
+
 .admin :focus-visible {
     outline: 2px solid var(--brand);
     outline-offset: 2px;
@@ -139,6 +165,12 @@ html[data-admin-theme="dark"] .toast-card__body strong { color: #f1f2ef; }
 html[data-admin-theme="dark"] .toast-card__body p { color: #b3b8b2; }
 html[data-admin-theme="dark"] .toast-card button:hover { background: #292c29; color: #f1f2ef; }
 html[data-admin-theme="dark"] .swal-backdrop { background: rgba(0, 0, 0, .68); }
+html[data-admin-theme="dark"] .ui-modal { background: rgba(0, 0, 0, .68); }
+html[data-admin-theme="dark"] .ui-modal__dialog { background: var(--surface); color: var(--text); }
+html[data-admin-theme="dark"] .ui-modal__header,
+html[data-admin-theme="dark"] .ui-modal__footer { border-color: var(--border); }
+html[data-admin-theme="dark"] .ui-modal__footer { background: var(--surface-2); }
+html[data-admin-theme="dark"] .ui-modal__title { color: var(--text); }
 html[data-admin-theme="dark"] .swal-card { background: #191b19; }
 html[data-admin-theme="dark"] .swal-card h2 { color: #f1f2ef; }
 html[data-admin-theme="dark"] .swal-card p { color: #b3b8b2; }
