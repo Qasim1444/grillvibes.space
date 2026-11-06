@@ -1,9 +1,14 @@
 <template>
   <header class="topbar">
     <div class="topbar__left">
-      <button class="topbar__toggle" type="button" aria-label="Toggle menu" @click="onToggle">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <path d="M3 6h18M3 12h18M3 18h18" />
+      <div class="topbar__brand" :title="brandName">
+        <img v-if="brandLogo && !brandLogoFailed" :src="brandLogo" :alt="`${brandName} logo`" @error="brandLogoFailed = true" />
+        <span v-else class="topbar__brand-fallback">{{ brandName.slice(0, 1).toUpperCase() }}</span>
+        <span class="topbar__brand-name">{{ brandName }}</span>
+      </div>
+      <button class="topbar__toggle" type="button" :aria-label="state.mobileOpen ? 'Close navigation menu' : 'Open navigation menu'" :aria-expanded="state.mobileOpen" @click="toggleMobile">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
         </svg>
       </button>
       <h1 class="topbar__title">{{ pageTitle }}</h1>
@@ -73,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from "vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from "vue";
 import { Link, router, usePage } from "@inertiajs/vue3";
 import { useSidebar } from "../composables/useSidebar";
 
@@ -83,7 +88,11 @@ defineProps({
 defineEmits(["toggle-theme"]);
 
 const page = usePage();
-const { toggleCollapse, toggleMobile } = useSidebar();
+const { state, toggleMobile } = useSidebar();
+const brandLogo = computed(() => page.props.branding?.logo ?? null);
+const brandName = computed(() => page.props.branding?.name ?? "GrillVibes");
+const brandLogoFailed = ref(false);
+watch(brandLogo, () => { brandLogoFailed.value = false; });
 
 // User comes from Inertia shared props (HandleInertiaRequests::share).
 const user = computed(() => page.props.auth?.user ?? { name: "User" });
@@ -135,11 +144,6 @@ const titles = {
 };
 const pageTitle = computed(() => titles[page.url.split("?")[0]] || "Admin");
 
-const onToggle = () => {
-  if (window.innerWidth <= 900) toggleMobile();
-  else toggleCollapse();
-};
-
 const logout = () => {
   router.post("/logout");
 };
@@ -174,6 +178,11 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   align-items: center;
   gap: 14px;
 }
+
+.topbar__brand { display: flex; align-items: center; gap: 9px; margin-right: 6px; min-width: 0; }
+.topbar__brand img, .topbar__brand-fallback { width: 38px; height: 38px; border-radius: 11px; object-fit: cover; flex: 0 0 38px; }
+.topbar__brand-fallback { display: grid; place-items: center; color: #fff; background: var(--brand); font-weight: 800; }
+.topbar__brand-name { max-width: 170px; overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; font-size: .98rem; font-weight: 760; }
 
 .topbar__toggle {
   border: 1px solid var(--border);
@@ -357,6 +366,7 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
 @media (max-width: 640px) {
   .topbar { height: auto; min-height: var(--topbar-h); padding: 10px 12px; gap: 8px; flex-wrap: wrap; }
   .topbar__left { flex: 1 1 150px; min-width: 0; gap: 8px; }
+  .topbar__brand-name { display: none; }
   .topbar__title { font-size: 1rem; overflow-wrap: anywhere; }
   .topbar__toggle { flex-shrink: 0; width: 44px; height: 44px; }
   .topbar__right { gap: 6px; margin-left: auto; }

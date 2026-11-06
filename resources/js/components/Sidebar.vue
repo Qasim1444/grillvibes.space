@@ -1,44 +1,38 @@
 <template>
-  <aside class="sidebar" :class="{ 'sidebar--collapsed': state.collapsed, 'sidebar--mobile-open': state.mobileOpen }">
-    <div class="sidebar__brand">
-      <div class="sidebar__logo" :class="{ 'sidebar__logo--image': logoUrl && !logoFailed }">
-        <img v-if="logoUrl && !logoFailed" :src="logoUrl" alt="GrillVibes logo" @error="logoFailed = true" />
-        <span v-else>G</span>
+  <Teleport to="body">
+    <Transition name="menu-grid">
+      <div v-if="state.mobileOpen" class="admin-menu-backdrop" @click.self="closeMobile">
+        <nav class="admin-menu" aria-label="Admin navigation">
+          <section v-for="group in visibleGroups" :key="group.title" class="admin-menu__group">
+            <h2 class="admin-menu__group-title">{{ group.title }}</h2>
+            <div class="admin-menu__items">
+              <Link
+                v-for="item in group.items"
+                :key="item.to"
+                :href="item.to"
+                class="admin-menu__item"
+                :class="{ 'admin-menu__item--active': isActive(item.to, item.exact) }"
+                @click="closeMobile"
+              >
+                <span class="admin-menu__icon" v-html="item.icon" />
+                <span class="admin-menu__label">{{ item.label }}</span>
+                <svg class="admin-menu__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg>
+              </Link>
+            </div>
+          </section>
+        </nav>
       </div>
-      <span class="sidebar__brand-name">{{ page.props.branding?.name ?? 'GrillVibes' }}</span>
-    </div>
-
-    <nav class="sidebar__nav">
-      <template v-for="group in visibleGroups" :key="group.title">
-        <div class="sidebar__group-title">{{ group.title }}</div>
-        <Link
-          v-for="item in group.items"
-          :key="item.to"
-          :href="item.to"
-          class="sidebar__link"
-          :class="{ 'sidebar__link--active': isActive(item.to, item.exact) }"
-          @click="closeMobile"
-        >
-          <span class="sidebar__icon" v-html="item.icon" />
-          <span class="sidebar__label">{{ item.label }}</span>
-        </Link>
-      </template>
-    </nav>
-  </aside>
-
-  <div v-if="state.mobileOpen" class="sidebar__backdrop" @click="closeMobile" />
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted } from "vue";
 import { Link, usePage } from "@inertiajs/vue3";
 import { useSidebar } from "../composables/useSidebar";
 import { usePermissions } from "../composables/usePermissions";
 
 const page = usePage();
-const logoUrl = computed(() => page.props.branding?.logo ?? null);
-const logoFailed = ref(false);
-watch(logoUrl, () => { logoFailed.value = false; });
 const { state, closeMobile } = useSidebar();
 const { can } = usePermissions();
 
@@ -49,6 +43,12 @@ const isActive = (to, exact = false) =>
   exact
     ? currentPath.value === to
     : currentPath.value === to || currentPath.value.startsWith(to + "/");
+
+const onKeydown = (event) => {
+  if (event.key === "Escape") closeMobile();
+};
+onMounted(() => document.addEventListener("keydown", onKeydown));
+onBeforeUnmount(() => document.removeEventListener("keydown", onKeydown));
 
 // Inline SVG icons keep the bundle dependency-free.
 const icon = {
@@ -219,182 +219,74 @@ const visibleGroups = computed(() =>
 </script>
 
 <style scoped>
-.sidebar {
-  width: var(--sidebar-w);
-  background: var(--sidebar-bg);
-  color: var(--sidebar-text);
-  height: 100vh;
+.admin-menu-backdrop {
   position: fixed;
-  top: 0;
-  left: 0;
-  display: flex;
-  flex-direction: column;
-  z-index: 40;
-  transition: width 0.2s ease, transform 0.25s ease;
-  overflow: hidden;
+  inset: var(--topbar-h) 0 0;
+  z-index: 1000;
+  padding: 20px clamp(16px, 3vw, 44px) 28px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  backdrop-filter: blur(10px);
+  overflow: auto;
 }
-
-.sidebar--collapsed {
-  width: var(--sidebar-w-collapsed);
+.admin-menu {
+  width: min(100%, 1500px);
+  margin: 0 auto;
+  padding: clamp(20px, 3vw, 38px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px 34px;
+  border: 1px solid var(--border-strong);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
 }
-
-.sidebar__brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 20px;
-  height: var(--topbar-h);
-  flex-shrink: 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.sidebar__logo {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: transparent;
-  color: #fff;
-  font-weight: 800;
-  font-size: 1.2rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* Fallback "G" tile only shows when there's no logo image — keep the
-   brand color background so the letter stays visible against the sidebar. */
-.sidebar__logo:not(.sidebar__logo--image) {
-  background: var(--brand);
-}
-
-.sidebar__brand-name {
-  font-weight: 700;
-  font-size: 1.05rem;
-  color: #fff;
-  white-space: nowrap;
-}
-
-.sidebar__logo--image {
-  background: transparent;
-  padding: 0;
-  overflow: hidden;
-}
-
-.sidebar__logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.sidebar__nav {
-  flex: 1;
-  overflow-y: auto;
-  padding: 14px 12px 24px;
-}
-
-.sidebar__nav::-webkit-scrollbar {
-  width: 6px;
-}
-.sidebar__nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 3px;
-}
-
-.sidebar__group-title {
-  font-size: 0.68rem;
+.admin-menu__group { min-width: 0; }
+.admin-menu__group-title {
+  margin: 0 0 12px;
+  color: var(--text-soft);
+  font-size: .72rem;
+  font-weight: 750;
+  letter-spacing: .11em;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--sidebar-text-muted);
-  font-weight: 700;
-  padding: 16px 12px 6px;
-  white-space: nowrap;
 }
-
-.sidebar__link {
+.admin-menu__items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.admin-menu__item {
+  min-height: 72px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  color: var(--sidebar-text);
-  font-weight: 500;
-  font-size: 0.9rem;
-  margin-bottom: 2px;
-  transition: background 0.15s ease, color 0.15s ease;
-  white-space: nowrap;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: .88rem;
+  font-weight: 620;
+  text-decoration: none;
+  transition: border-color .16s ease, background .16s ease, transform .16s ease, box-shadow .16s ease;
 }
-
-.sidebar__link:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #fff;
+.admin-menu__item:hover { border-color: var(--brand); background: var(--brand-soft); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+.admin-menu__item--active { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-700); }
+.admin-menu__icon {
+  width: 38px; height: 38px; flex: 0 0 38px;
+  display: inline-grid; place-items: center;
+  border-radius: 11px; background: var(--surface); color: var(--brand);
 }
-
-.sidebar__link--active {
-  background: var(--sidebar-active);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+.admin-menu__icon :deep(svg) { width: 20px; height: 20px; }
+.admin-menu__label { flex: 1; min-width: 0; }
+.admin-menu__arrow { width: 16px; height: 16px; color: var(--text-soft); flex: 0 0 auto; }
+.menu-grid-enter-active, .menu-grid-leave-active { transition: opacity .16s ease; }
+.menu-grid-enter-active .admin-menu, .menu-grid-leave-active .admin-menu { transition: transform .18s ease; }
+.menu-grid-enter-from, .menu-grid-leave-to { opacity: 0; }
+.menu-grid-enter-from .admin-menu, .menu-grid-leave-to .admin-menu { transform: translateY(-8px); }
+@media (max-width: 1050px) { .admin-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .admin-menu-backdrop { inset: 64px 0 0; padding: 10px; }
+  .admin-menu { grid-template-columns: 1fr; gap: 22px; padding: 18px; border-radius: 18px; }
+  .admin-menu__items { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-menu__item { min-height: 64px; gap: 9px; padding: 10px; font-size: .8rem; }
+  .admin-menu__icon { width: 34px; height: 34px; flex-basis: 34px; }
+  .admin-menu__arrow { display: none; }
 }
-
-.sidebar__icon {
-  width: 20px;
-  height: 20px;
-  flex-shrink: 0;
-  display: inline-flex;
-}
-.sidebar__icon :deep(svg) {
-  width: 20px;
-  height: 20px;
-}
-
-/* Collapsed (desktop, icons only) */
-.sidebar--collapsed .sidebar__brand-name,
-.sidebar--collapsed .sidebar__label,
-.sidebar--collapsed .sidebar__group-title {
-  display: none;
-}
-.sidebar--collapsed .sidebar__link {
-  justify-content: center;
-}
-.sidebar--collapsed .sidebar__brand {
-  justify-content: center;
-  padding: 0;
-}
-
-.sidebar__backdrop {
-  display: none;
-}
-
-/* Mobile: off-canvas drawer */
-@media (max-width: 900px) {
-  .sidebar {
-    transform: translateX(-100%);
-    width: var(--sidebar-w);
-  }
-  .sidebar--mobile-open {
-    transform: translateX(0);
-  }
-  .sidebar--collapsed {
-    width: var(--sidebar-w);
-  }
-  .sidebar--collapsed .sidebar__brand-name,
-  .sidebar--collapsed .sidebar__label,
-  .sidebar--collapsed .sidebar__group-title {
-    display: block;
-  }
-  .sidebar--collapsed .sidebar__link {
-    justify-content: flex-start;
-  }
-  .sidebar__backdrop {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.45);
-    z-index: 39;
-  }
-}
-
-@media (max-width: 900px) { .sidebar { height: 100dvh; max-width: calc(100vw - 44px); visibility: hidden; } .sidebar--mobile-open { visibility: visible; } .sidebar__link { min-height: 44px; } }
 
 </style>
