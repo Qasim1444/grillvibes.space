@@ -1,34 +1,7 @@
 <template>
   <div class="gv-page">
     <!-- Header -->
-    <header class="gv-header">
-      <Link class="brand" href="/">
-        <img class="brand-logo" :src="logoUrl" alt="GrillVibes — Good Food, Better Vibes" />
-      </Link>
-
-      <nav class="nav" :class="{ open: mobileOpen }">
-        <a href="#modules" @click="mobileOpen = false">Modules</a>
-        <a href="#gps" @click="mobileOpen = false">GPS Attendance</a>
-        <a href="#inventory" @click="mobileOpen = false">Recipe Costing</a>
-        <a href="#pos" @click="mobileOpen = false">POS + WhatsApp</a>
-        <a href="#pricing" @click="mobileOpen = false">Pricing</a>
-        <a href="#contact" @click="mobileOpen = false">Contact</a>
-      </nav>
-
-      <div class="header-right">
-        <Link class="btn-ghost" href="/login">Sign In</Link>
-        <a class="btn-orange" href="#contact">Request Demo</a>
-        <button
-          class="burger"
-          type="button"
-          :aria-expanded="mobileOpen"
-          aria-label="Toggle menu"
-          @click="mobileOpen = !mobileOpen"
-        >
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </header>
+    <PublicSiteHeader :items="projectNavItems" action-label="Request Demo" action-href="#contact" />
 
     <main>
       <!-- HERO -->
@@ -272,8 +245,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
+import PublicSiteHeader from '../components/PublicSiteHeader.vue';
 import logoUrl from '../assets/grillvibes-logo.png';
 
 const props = defineProps({
@@ -284,7 +258,14 @@ const props = defineProps({
   },
 });
 
-const mobileOpen = ref(false);
+const projectNavItems = [
+  { label: 'Modules', href: '#modules' },
+  { label: 'GPS Attendance', href: '#gps' },
+  { label: 'Recipe Costing', href: '#inventory' },
+  { label: 'POS + WhatsApp', href: '#pos' },
+  { label: 'Pricing', href: '#pricing' },
+  { label: 'Contact', href: '#contact' },
+];
 
 const whatsappLink = computed(
   () => `https://wa.me/${props.whatsappNumber}?text=${encodeURIComponent('السلام علیکم! مجھے GrillVibes کا فری ڈیمو چاہیے۔')}`

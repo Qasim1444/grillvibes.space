@@ -4,7 +4,18 @@
   ],
   "node_modules/laravel-vite-plugin/inertia-helpers/index.js": [],
   "resources/js/assets/grillvibes-logo.png": [
-    "/build/assets/grillvibes-logo-lmKkVPW5.js",
+    "/build/assets/PublicSiteHeader-D4-XNzjP.js",
+    "/build/assets/PublicSiteHeader-B9-wLNa_.css",
+    "/build/assets/grillvibes-logo-DW_m9BSw.png"
+  ],
+  "resources/js/components/PublicSiteHeader.vue": [
+    "/build/assets/PublicSiteHeader-D4-XNzjP.js",
+    "/build/assets/PublicSiteHeader-B9-wLNa_.css",
+    "/build/assets/grillvibes-logo-DW_m9BSw.png"
+  ],
+  "resources/js/components/PublicSiteHeader.vue?vue&type=style&index=0&scoped=3c9f2457&lang.css": [
+    "/build/assets/PublicSiteHeader-D4-XNzjP.js",
+    "/build/assets/PublicSiteHeader-B9-wLNa_.css",
     "/build/assets/grillvibes-logo-DW_m9BSw.png"
   ],
   "resources/js/components/Sidebar.vue": [
@@ -304,12 +315,12 @@
     "/build/assets/Payroll-D7aiFON8.css"
   ],
   "resources/js/pages/HomePage.vue": [
-    "/build/assets/HomePage-BlHZ_jEZ.js",
-    "/build/assets/HomePage-D5oHFnc-.css"
+    "/build/assets/HomePage-BVVLhNpK.js",
+    "/build/assets/HomePage-DTdJ8I4G.css"
   ],
-  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=24e89747&lang.css": [
-    "/build/assets/HomePage-BlHZ_jEZ.js",
-    "/build/assets/HomePage-D5oHFnc-.css"
+  "resources/js/pages/HomePage.vue?vue&type=style&index=0&scoped=00ef4258&lang.css": [
+    "/build/assets/HomePage-BVVLhNpK.js",
+    "/build/assets/HomePage-DTdJ8I4G.css"
   ],
   "resources/js/pages/Inventory/Ingredients.vue": [
     "/build/assets/Ingredients-JnJLtxNi.js",
@@ -427,12 +438,12 @@
     "/build/assets/Vendors-BySm8l9p.css"
   ],
   "resources/js/pages/ProductPage.vue": [
-    "/build/assets/ProductPage-CbuSfbFb.js",
-    "/build/assets/ProductPage-DYQp8qbb.css"
+    "/build/assets/ProductPage-Dc8U_yen.js",
+    "/build/assets/ProductPage-D-fD-7Fj.css"
   ],
-  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=a7fa68fd&lang.css": [
-    "/build/assets/ProductPage-CbuSfbFb.js",
-    "/build/assets/ProductPage-DYQp8qbb.css"
+  "resources/js/pages/ProductPage.vue?vue&type=style&index=0&scoped=3be8af48&lang.css": [
+    "/build/assets/ProductPage-Dc8U_yen.js",
+    "/build/assets/ProductPage-D-fD-7Fj.css"
   ],
   "resources/js/pages/Profile.vue": [
     "/build/assets/Profile-3JDTtp2w.js",
@@ -443,24 +454,24 @@
     "/build/assets/Profile-Ckslprdo.css"
   ],
   "resources/js/pages/PublicBlog.vue": [
-    "/build/assets/PublicBlog-BwhDgfzb.js",
-    "/build/assets/PublicBlog-BO542l9l.css"
+    "/build/assets/PublicBlog-BfEFwqiG.js",
+    "/build/assets/PublicBlog-CmV769os.css"
   ],
-  "resources/js/pages/PublicBlog.vue?vue&type=style&index=0&scoped=9c211da9&lang.css": [
-    "/build/assets/PublicBlog-BwhDgfzb.js",
-    "/build/assets/PublicBlog-BO542l9l.css"
+  "resources/js/pages/PublicBlog.vue?vue&type=style&index=0&scoped=7e8ba534&lang.css": [
+    "/build/assets/PublicBlog-BfEFwqiG.js",
+    "/build/assets/PublicBlog-CmV769os.css"
   ],
   "resources/js/pages/PublicBlogPost.vue": [
-    "/build/assets/PublicBlogPost-D_jiPLwD.js",
-    "/build/assets/PublicBlogPost-Ct9mQgg3.css"
+    "/build/assets/PublicBlogPost-n44yo39B.js",
+    "/build/assets/PublicBlogPost-Bc3UGHkj.css"
   ],
-  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=0&scoped=93c3dcc2&lang.css": [
-    "/build/assets/PublicBlogPost-D_jiPLwD.js",
-    "/build/assets/PublicBlogPost-Ct9mQgg3.css"
+  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=0&scoped=5afa242e&lang.css": [
+    "/build/assets/PublicBlogPost-n44yo39B.js",
+    "/build/assets/PublicBlogPost-Bc3UGHkj.css"
   ],
-  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=1&scoped=93c3dcc2&lang.css": [
-    "/build/assets/PublicBlogPost-D_jiPLwD.js",
-    "/build/assets/PublicBlogPost-Ct9mQgg3.css"
+  "resources/js/pages/PublicBlogPost.vue?vue&type=style&index=1&scoped=5afa242e&lang.css": [
+    "/build/assets/PublicBlogPost-n44yo39B.js",
+    "/build/assets/PublicBlogPost-Bc3UGHkj.css"
   ],
   "resources/js/pages/QRCodes.vue": [
     "/build/assets/QRCodes-C_O4-uUd.js",

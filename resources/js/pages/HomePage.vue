@@ -1,28 +1,6 @@
 <template>
   <div class="restaurant-home">
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="GrillVibes home">
-        <img class="brand-logo" :src="logoUrl" alt="GrillVibes — Good Food, Better Vibes" />
-      </a>
-
-      <nav class="site-nav" :class="{ 'site-nav--open': mobileOpen }" aria-label="Primary navigation">
-        <a href="/" @click="mobileOpen = false">Home</a>
-        <a href="/project" @click="mobileOpen = false">Project</a>
-        <a href="#menu" @click="mobileOpen = false">Menu</a>
-        <a href="#reserve" @click="mobileOpen = false">Reservation</a>
-        <a href="#blog" @click="mobileOpen = false">Blog</a>
-        <a href="#story" @click="mobileOpen = false">About</a>
-        <a href="#footer" @click="mobileOpen = false">Contact</a>
-      </nav>
-
-      <div class="header-actions">
-        <a class="header-login" href="/login">Sign In</a>
-        <a class="button button--coral button--small" href="#reserve">Book a Table <span>↗</span></a>
-        <button class="menu-toggle" type="button" :aria-expanded="mobileOpen" aria-label="Toggle navigation" @click="mobileOpen = !mobileOpen">
-          <span></span><span></span><span></span>
-        </button>
-      </div>
-    </header>
+    <PublicSiteHeader :items="homeNavItems" active-item="Home" action-label="Book a Table" action-href="#reserve" />
 
     <main>
       <section class="hero section-shell">
@@ -300,6 +278,7 @@
 <script setup>
 import { computed, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import PublicSiteHeader from '../components/PublicSiteHeader.vue';
 import logoUrl from '../assets/grillvibes-logo.png';
 
 defineOptions({ layout: null });
@@ -315,7 +294,15 @@ const props = defineProps({
 
 const stars = r => '★'.repeat(Math.max(0, Math.min(5, Number(r) || 0))) + '☆'.repeat(5 - Math.max(0, Math.min(5, Number(r) || 0)));
 
-const mobileOpen = ref(false);
+const homeNavItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Project', href: '/project' },
+  { label: 'Menu', href: '#menu' },
+  { label: 'Reservation', href: '#reserve' },
+  { label: 'Blog', href: '#blog' },
+  { label: 'About', href: '#story' },
+  { label: 'Contact', href: '#footer' },
+];
 
 const ribbonFeatures = [
   { label: 'Flame Grill', icon: '▣', tone: 'pink' },
@@ -383,11 +370,12 @@ const submitReservation = () => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :global(*){box-sizing:border-box}
 :global(html){scroll-behavior:smooth}
 :global(body){margin:0;background:#faf5ec;color:#1b211e}
-.restaurant-home{--ink:#17201c;--muted:#6f766f;--line:#dfd8cc;--cream:#faf5ec;--paper:#fffdf8;--coral:#ef4858;--coral-dark:#d93648;--peach:#fde5df;font-family:'DM Sans',sans-serif;overflow:hidden}
+.restaurant-home{--ink:#17201c;--muted:#6f766f;--line:#dfd8cc;--cream:#faf5ec;--paper:#fffdf8;--coral:#ef4858;--coral-dark:#d93648;--peach:#fde5df;font-family:'DM Sans',sans-serif;overflow-x:clip}
 .section-shell{width:min(1180px,calc(100% - 48px));margin:0 auto}
 .site-header{position:sticky;top:0;z-index:50;width:min(1180px,calc(100% - 48px));min-height:78px;margin:0 auto;display:flex;align-items:center;gap:26px;background:rgba(250,245,236,.88);backdrop-filter:blur(16px)}
 .brand{display:inline-flex;align-items:center;gap:10px;color:var(--ink);font:700 1.12rem 'DM Sans',sans-serif;letter-spacing:-.04em;text-decoration:none;white-space:nowrap}
@@ -1179,5 +1167,60 @@ const submitReservation = () => {
   .feature-ribbon{margin-top:0}
 }
 @media(prefers-reduced-motion:reduce){.hero-visual:hover .hero-photo-wrap{transform:none}}
+
+/* Shared dark and ember design tokens used across public pages. */
+.restaurant-home {
+  --ink:#f5f5f5;
+  --muted:#a3a3a3;
+  --line:#292929;
+  --cream:#0a0a0a;
+  --paper:#141414;
+  --coral:#f97316;
+  --coral-dark:#ea580c;
+  --peach:#2a1a10;
+  background:#0a0a0a;
+  color:#f5f5f5;
+  font-family:Inter,system-ui,sans-serif;
+}
+.restaurant-home h1,.restaurant-home h2,.restaurant-home h3,.restaurant-home h4 {
+  font-family:'Space Grotesk',Inter,sans-serif!important;
+  color:#f5f5f5;
+}
+:global(body) { background:#0a0a0a; color:#f5f5f5; }
+.restaurant-home .experience,
+.restaurant-home .menu-section,
+.restaurant-home .reviews-section,
+.restaurant-home .blog-section,
+.restaurant-home .reserve-wrap { background:#0a0a0a!important; border-color:#262626!important; color:#f5f5f5; }
+.restaurant-home .food-card,
+.restaurant-home .review-card,
+.restaurant-home .blog-card,
+.restaurant-home .reserve-form,
+.restaurant-home .hero-note,
+.restaurant-home .feature-ribbon { background:#141414!important; border-color:#292929!important; color:#f5f5f5; box-shadow:0 16px 40px rgba(0,0,0,.24); }
+.restaurant-home .food-info p,
+.restaurant-home .review-comment,
+.restaurant-home .blog-card p,
+.restaurant-home .reservation-note span,
+.restaurant-home .reserve-copy>p:not(.eyebrow) { color:#a3a3a3; }
+.restaurant-home .category-row { border-color:#292929; }
+.restaurant-home .category-row button.active { color:#f5f5f5; }
+.restaurant-home .form-head { border-color:#292929; }
+.restaurant-home .form-head>div>span,
+.restaurant-home .reserve-form label { color:#d4d4d4; }
+.restaurant-home .reserve-form input,
+.restaurant-home .reserve-form select,
+.restaurant-home .reserve-form textarea,
+.restaurant-home .table-option { border-color:#383838; background:#101010; color:#f5f5f5; }
+.restaurant-home .table-option span,.restaurant-home .table-option small { color:#a3a3a3; }
+.restaurant-home .table-option.selected { border-color:#f97316; box-shadow:0 0 0 2px rgba(249,115,22,.2); }
+.restaurant-home .site-footer { border-color:#292929; background:#111; }
+.restaurant-home .site-footer nav a { color:#c5c5c5; }
+.restaurant-home .hero h1 em,
+.restaurant-home .hero-copy .eyebrow,
+.restaurant-home .menu-section .eyebrow,
+.restaurant-home .menu-section .category-row button span,
+.restaurant-home .menu-section .food-category,
+.restaurant-home .menu-section .food-info strong { color:#f97316; }
 
 </style>

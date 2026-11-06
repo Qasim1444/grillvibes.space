@@ -1,17 +1,6 @@
 ﻿<template>
   <div class="public-blog-post">
-    <header class="blog-header">
-      <a class="brand" href="/" aria-label="GrillVibes home">
-        <img class="brand-logo" :src="restaurantLogo" alt="GrillVibes" />
-        <span>Grill<span class="brand-accent">Vibes</span></span>
-      </a>
-      <nav aria-label="Primary navigation">
-        <a href="/">Home</a>
-        <a href="/project">Project</a>
-        <a class="active" href="/blog">Blog</a>
-        <a href="/login">Sign In</a>
-      </nav>
-    </header>
+    <PublicSiteHeader :items="blogNavItems" active-item="Blog" action-label="Book a Table" action-href="/#reserve" />
 
     <main class="blog-layout">
       <div class="content-column">
@@ -114,7 +103,7 @@
 <script setup>
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import restaurantLogo from '../assets/grillvibes-logo.png';
+import PublicSiteHeader from '../components/PublicSiteHeader.vue';
 defineOptions({ layout: null });
 
 const formatDate = value => value
@@ -127,6 +116,15 @@ const props = defineProps({
   post: { type: Object, required: true },
   recentPosts: { type: Array, default: () => [] },
 });
+const blogNavItems = [
+  { label: 'Home', href: '/' },
+  { label: 'Project', href: '/project' },
+  { label: 'Menu', href: '/#menu' },
+  { label: 'Reservation', href: '/#reserve' },
+  { label: 'Blog', href: '/blog' },
+  { label: 'About', href: '/#story' },
+  { label: 'Contact', href: '/#footer' },
+];
 const replyTo = ref(null);
 const form = useForm({ author_name: '', author_email: '', body: '', parent_id: null });
 const replyForm = useForm({ author_name: '', author_email: '', body: '', parent_id: null });
@@ -162,6 +160,7 @@ const submitComment = (parentId = null) => {
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap');
 
 :global(*) { box-sizing: border-box; }
 :global(body) {
@@ -587,4 +586,24 @@ const submitComment = (parentId = null) => {
   .brand-logo { width: 60px; height: 60px; }
   .blog-header nav { gap: 14px; }
 }
+
+:global(body) { background:#0a0a0a!important; color:#f5f5f5; font-family:Inter,system-ui,sans-serif; }
+.public-blog-post { background:radial-gradient(circle at top left,rgba(249,115,22,.08),transparent 28%),#0a0a0a; color:#f5f5f5; font-family:Inter,system-ui,sans-serif; }
+.article h1,.article-body :deep(h2),.article-body :deep(h3) { color:#f5f5f5; font-family:'Space Grotesk',Inter,sans-serif; }
+.article-lede,.article-body,.article-author,.comment p { color:#c4c4c4; }
+.article-meta,.comment-heading time,.author-chip small,.comments-empty { color:#8d8d8d; }
+.comments,.article-footer { border-color:#292929; }
+.article-toolbar,.comment,.sidebar-card { background:#141414; border-color:#292929; box-shadow:none; }
+.comment--reply { background:#1a1a1a; }
+.author-chip strong,.comment-heading strong,.sidebar-card strong { color:#f5f5f5; }
+.meta-badges span,.category-pill,.article-tags span,.topic-list a { background:#2a1a10; color:#fb923c; }
+.author-avatar { background:linear-gradient(135deg,#f97316,#ea580c); }
+.back-link,.reply-link,.article-body :deep(a),.comments h2 span { color:#f97316; }
+.article-body :deep(blockquote) { border-color:#f97316; background:rgba(249,115,22,.08); color:#dedede; }
+.article-body :deep(p),.article-body :deep(li) { color:#c4c4c4; }
+.article-image { box-shadow:0 24px 42px rgba(0,0,0,.35); }
+.comment-form input,.comment-form textarea,.reply-form input,.reply-form textarea { border-color:#383838; background:#101010; color:#f5f5f5; }
+.comment-form input::placeholder,.comment-form textarea::placeholder,.reply-form input::placeholder,.reply-form textarea::placeholder { color:#858585; }
+.comment-form button,.reply-form button { background:#f97316; }
+.public-blog-post footer { background:#111; color:#bdbdbd; }
 </style>
