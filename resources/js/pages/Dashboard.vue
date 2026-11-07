@@ -1026,6 +1026,11 @@ const exportData = () => {
   margin-top: 18px;
 }
 
+/* Keep the report table above the two daily summary cards visually separated. */
+.report-block + .dash-grid {
+  margin-top: 18px;
+}
+
 .report-chip {
   font-size: 0.78rem;
   font-weight: 600;

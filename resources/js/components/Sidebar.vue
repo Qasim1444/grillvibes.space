@@ -231,10 +231,12 @@ const visibleGroups = computed(() =>
 .admin-menu {
   width: min(100%, 1500px);
   margin: 0 auto;
-  padding: clamp(20px, 3vw, 38px);
+  padding: clamp(24px, 3vw, 36px);
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px 34px;
+  align-items: start;
+  grid-auto-rows: max-content;
+  gap: 24px 28px;
   border: 1px solid var(--border-strong);
   border-radius: 24px;
   background: var(--surface);
@@ -249,9 +251,9 @@ const visibleGroups = computed(() =>
   letter-spacing: .11em;
   text-transform: uppercase;
 }
-.admin-menu__items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.admin-menu__items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
 .admin-menu__item {
-  min-height: 72px;
+  min-height: 68px;
   display: flex;
   align-items: center;
   gap: 12px;
