@@ -24,7 +24,7 @@ class FoodCategoryController extends Controller
         // requests one slice at a time instead of loading every category.
         $categories = FoodCategory::query()
             ->when($search !== '', fn ($q) => $q->where('name', 'like', "%{$search}%"))
-            ->orderBy('name')
+            ->orderByDesc('id')
             ->paginate(10)
             ->withQueryString();
 
