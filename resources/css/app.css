@@ -17,10 +17,10 @@
    Design tokens
    ============================================================ */
 :root {
-    --brand: #4f46e5;
-    --brand-600: #4338ca;
-    --brand-700: #3730a3;
-    --brand-soft: #eef2ff;
+    --brand: rgb(233, 78, 47);
+    --brand-600: rgb(217, 65, 36);
+    --brand-700: rgb(185, 54, 30);
+    --brand-soft: rgb(255, 240, 235);
 
     --bg: #f4f6fb;
     --surface: #ffffff;
@@ -45,7 +45,7 @@
     --sidebar-bg-2: #0b1220;
     --sidebar-text: #cbd5e1;
     --sidebar-text-muted: #64748b;
-    --sidebar-active: #4f46e5;
+    --sidebar-active: rgb(233, 78, 47);
 
     --radius: 14px;
     --radius-sm: 10px;
