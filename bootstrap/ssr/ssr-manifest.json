@@ -100,12 +100,12 @@
     "/build/assets/AdminLayout-8DcMDo1E.css"
   ],
   "resources/js/layouts/LoginLayout.vue": [
-    "/build/assets/Login-DTbeR1XI.js",
-    "/build/assets/Login-DuMDIRYo.css"
+    "/build/assets/LoginLayout-BkzPHLqf.js",
+    "/build/assets/LoginLayout-CoVmNo8w.css"
   ],
   "resources/js/layouts/LoginLayout.vue?vue&type=style&index=0&scoped=ae5da6a0&lang.css": [
-    "/build/assets/Login-DTbeR1XI.js",
-    "/build/assets/Login-DuMDIRYo.css"
+    "/build/assets/LoginLayout-BkzPHLqf.js",
+    "/build/assets/LoginLayout-CoVmNo8w.css"
   ],
   "resources/js/pages/AboutPage.vue": [
     "/build/assets/AboutPage-DEUHZyse.js",
@@ -245,7 +245,7 @@
     "/build/assets/FoodItems-wcKTTIDB.css"
   ],
   "resources/js/pages/ForgotPassword.vue": [
-    "/build/assets/ForgotPassword-CbGU5rZU.js"
+    "/build/assets/ForgotPassword-DLwtyYYp.js"
   ],
   "resources/js/pages/Guest/QRMenu.vue": [
     "/build/assets/QRMenu-DIvJKtme.js",
@@ -363,12 +363,12 @@
     "/build/assets/Stations-iVTc7aKZ.css"
   ],
   "resources/js/pages/Login.vue": [
-    "/build/assets/Login-DTbeR1XI.js",
-    "/build/assets/Login-DuMDIRYo.css"
+    "/build/assets/Login-DXAy29hC.js",
+    "/build/assets/Login-DdGeGp9y.css"
   ],
-  "resources/js/pages/Login.vue?vue&type=style&index=0&scoped=a7d1d4b4&lang.css": [
-    "/build/assets/Login-DTbeR1XI.js",
-    "/build/assets/Login-DuMDIRYo.css"
+  "resources/js/pages/Login.vue?vue&type=style&index=0&scoped=b41c107e&lang.css": [
+    "/build/assets/Login-DXAy29hC.js",
+    "/build/assets/Login-DdGeGp9y.css"
   ],
   "resources/js/pages/Maintenance/Assets.vue": [
     "/build/assets/Assets-BTZNR6qA.js",
@@ -482,7 +482,7 @@
     "/build/assets/QRCodes-BU41lNOc.css"
   ],
   "resources/js/pages/Register.vue": [
-    "/build/assets/Register-B0uYGzjT.js"
+    "/build/assets/Register-Dbolgf4Q.js"
   ],
   "resources/js/pages/Reports/FoodCost.vue": [
     "/build/assets/FoodCost-BkjjxbJl.js",
@@ -533,10 +533,10 @@
     "/build/assets/Users-B0I83Eaj.css"
   ],
   "resources/js/services/api.js": [
-    "/build/assets/api-DWk_W29k.js"
+    "/build/assets/api-ZOQGIi9c.js"
   ],
   "resources/js/services/http.js": [
-    "/build/assets/api-DWk_W29k.js"
+    "/build/assets/api-ZOQGIi9c.js"
   ],
   "resources/js/services/whatsapp.js": [
     "/build/assets/Customers-IkHNRJQI.js",

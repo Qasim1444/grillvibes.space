@@ -36,6 +36,10 @@
         <span>Keep me signed in</span>
       </label>
 
+      <div class="login-card__actions">
+        <Link href="/forgot-password">Forgot password?</Link>
+      </div>
+
       <button type="submit" class="ui-btn ui-btn--primary ui-btn--block" :disabled="form.processing">
         {{ form.processing ? "Signing in…" : "Enter GrillVibes" }}
       </button>
@@ -45,7 +49,7 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import { useForm, usePage } from "@inertiajs/vue3";
+import { Link, useForm, usePage } from "@inertiajs/vue3";
 import LoginLayout from "../layouts/LoginLayout.vue";
 import FormField from "../components/ui/FormField.vue";
 
@@ -179,6 +183,26 @@ const submit = () => {
   accent-color: #f97316;
   width: 18px;
   height: 18px;
+}
+
+.login-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin: -8px 0 18px;
+}
+
+.login-card__actions a {
+  color: #ff9b76;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.login-card__actions a:hover,
+.login-card__actions a:focus-visible {
+  color: #ffc0a5;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .login-card :deep(.ui-btn--primary) {

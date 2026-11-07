@@ -28,18 +28,19 @@
     </form>
 
     <div class="auth-card__footer">
-      Remember your password? <router-link to="/login">Sign in</router-link>
+      Remember your password? <Link href="/login">Sign in</Link>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from "vue";
-import { useRouter } from "vue-router";
+import { Link } from "@inertiajs/vue3";
+import LoginLayout from "../layouts/LoginLayout.vue";
 import { auth } from "../services/api";
 import FormField from "../components/ui/FormField.vue";
 
-const router = useRouter();
+defineOptions({ layout: LoginLayout });
 const form = ref({ email: "", otp: "", password: "", password_confirmation: "" });
 const requestSent = ref(false);
 const loading = ref(false);
@@ -68,7 +69,7 @@ const resetPassword = async () => {
   try {
     const data = await auth.resetPassword(form.value);
     message.value = data.message || "Password reset.";
-    if (data.status === "success") router.push("/login");
+    if (data.status === "success") window.location.href = "/login";
   } catch (e) {
     error.value = e.response?.data?.message || "Failed to reset password.";
   } finally {

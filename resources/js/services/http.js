@@ -2,7 +2,8 @@ import axios from "axios";
 
 // Base URL is configurable via Vite env; falls back to the live API server.
 const baseURL =
-    import.meta.env.VITE_API_BASE_URL || "https://grillvibes.space/api";
+    import.meta.env.VITE_API_BASE_URL ||
+    (import.meta.env.DEV ? "/api" : `${window.location.origin}/api`);
 
 const http = axios.create({
     baseURL,

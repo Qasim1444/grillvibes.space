@@ -50,6 +50,9 @@ use Inertia\Inertia;
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
     Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+    Route::get('/forgot-password', function () {
+        return Inertia::render('ForgotPassword');
+    })->name('password.request');
 });
 
 // ── Public QR menu (no auth required) ────────────────────────────────────────
