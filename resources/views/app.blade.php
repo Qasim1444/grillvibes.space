@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/png" href="{{ asset('images/grillvibes-logo.png') }}" />
     {{-- Read by pages that POST via raw fetch() instead of Inertia (floor plan, KDS board). --}}
     <meta name="csrf-token" content="{{ csrf_token() }}" />
     <title inertia>GrillVibes Admin</title>
