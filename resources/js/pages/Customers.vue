@@ -233,16 +233,11 @@
         <div class="call-name">{{ incomingCall?.name || 'Unknown' }}</div>
         <div class="call-number">{{ incomingCall?.number }}</div>
         <div class="call-status">Incoming voice call…</div>
-        <div class="call-actions">
-          <button class="call-reject" title="Reject call" @click="rejectIncomingCall">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-              <path d="M21 15.46l-5.27-.61-2.52 2.52a15.045 15.045 0 01-6.59-6.59l2.53-2.53L8.54 3H3.03C2.45 13.18 10.82 21.55 21 20.97v-5.51z"/>
-            </svg>
-          </button>
-          <button class="call-clear" title="Clear call history" @click="clearIncomingCall">
-            Clear call
-          </button>
-        </div>
+        <button class="call-reject" title="Reject call" @click="rejectIncomingCall">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M21 15.46l-5.27-.61-2.52 2.52a15.045 15.045 0 01-6.59-6.59l2.53-2.53L8.54 3H3.03C2.45 13.18 10.82 21.55 21 20.97v-5.51z"/>
+          </svg>
+        </button>
       </div>
     </Modal>
 
@@ -530,7 +525,9 @@ const refreshCalls = async () => {
     const call = calls.find((c) => {
       const id = c.id || c.callId;
       const status = String(c.status || "").toLowerCase();
-      return id && !handledCallIds.has(id) && ["ringing", "offer"].includes(status);
+      const timestamp = c.timestamp || c.time || c.createdAt || c.date;
+      const age = timestamp ? Date.now() - new Date(timestamp).getTime() : Infinity;
+      return id && !handledCallIds.has(id) && ["ringing", "offer"].includes(status) && age >= 0 && age <= 60_000;
     });
     if (call) {
       const number = normalizeNumber(call.from || call.number || call.callerJid);
@@ -564,26 +561,6 @@ const rejectIncomingCall = async () => {
   if (!call) return;
   await rejectCall(call);
   incomingCall.value = null;
-};
-
-const clearIncomingCall = async () => {
-  const call = incomingCall.value;
-  if (!call) return;
-  const id = call.id;
-  if (id) handledCallIds.add(id);
-  showCall.value = false;
-  incomingCall.value = null;
-  if (!id) return;
-
-  try {
-    // Stop a stale ringing entry at the WhatsApp API as well as removing it
-    // from Laravel's local call history.
-    await rejectCall(call);
-    await whatsapp.clearCall(id);
-    allCalls.value = allCalls.value.filter((item) => (item.id || item.callId) !== id);
-  } catch (err) {
-    alertDialog(err.data?.message || err.message || "Could not clear this call.");
-  }
 };
 
 /** Digits-only phone number (country code, no + or spaces). */
@@ -1585,25 +1562,5 @@ onBeforeUnmount(() => {
 }
 .call-reject:hover {
   background: #b93636;
-}
-.call-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.call-clear {
-  min-height: 44px;
-  padding: 0 14px;
-  border: 1px solid var(--border, #eee3de);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--text, #241d1b);
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.call-clear:hover {
-  border-color: var(--primary, #ff6b35);
-  color: var(--primary, #ff6b35);
 }
 </style>
