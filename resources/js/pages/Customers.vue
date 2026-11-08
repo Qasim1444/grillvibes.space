@@ -106,7 +106,6 @@
         <div class="chat-header__avatar">{{ (chatCustomer?.name || '?').charAt(0).toUpperCase() }}</div>
         <div class="chat-header__info">
           <div class="chat-header__name">{{ chatCustomer?.name || 'Unknown' }}</div>
-          <div class="chat-header__number">{{ chatCustomer?.contact }}</div>
         </div>
         <button class="chat-header__close" @click="showChat = false">&times;</button>
       </div>
@@ -1230,10 +1229,6 @@ onBeforeUnmount(() => {
   font-size: 16px;
   font-weight: 700;
   line-height: 1.2;
-}
-.chat-header__number {
-  font-size: 13px;
-  opacity: 0.9;
 }
 .chat-header__close {
   border: none;
