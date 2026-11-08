@@ -628,4 +628,16 @@ class WhatsAppChatController extends Controller
             return response()->json(['success' => false, 'message' => $e->getMessage()], 200);
         }
     }
+
+    /** Remove one stored call after it has been dismissed from the UI. */
+    public function clearCall(string $callId): JsonResponse
+    {
+        $deleted = WhatsAppCall::where('wa_call_id', $callId)->delete();
+
+        return response()->json([
+            'success' => true,
+            'deleted' => $deleted,
+            'message' => $deleted ? 'Call removed from the database.' : 'Call was already cleared.',
+        ]);
+    }
 }

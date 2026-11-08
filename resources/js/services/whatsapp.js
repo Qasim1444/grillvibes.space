@@ -69,6 +69,8 @@ export const whatsapp = {
   calls: (params) => request("GET", "/whatsapp/calls", { params }),
   rejectCall: (callId, payload) =>
     request("POST", `/whatsapp/calls/${encodeURIComponent(callId)}/reject`, { body: payload }),
+  clearCall: (callId) =>
+    request("DELETE", `/whatsapp/calls/${encodeURIComponent(callId)}`),
 };
 
 export default whatsapp;
