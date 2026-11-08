@@ -234,7 +234,7 @@
               </div>
 
               <div class="form-row">
-                <label>Your name<input v-model="reservation.guest_name" type="text" placeholder="Alex Morgan" required /></label>
+                <label>Full name<input v-model="reservation.guest_name" type="text" placeholder="Alex Morgan" autocomplete="name" required /></label>
                 <label>Email<input v-model="reservation.guest_email" type="email" placeholder="alex@example.com" required /></label>
               </div>
 
