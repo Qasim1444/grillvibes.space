@@ -110,6 +110,7 @@ Route::middleware(['auth:sanctum', 'can.access:customers.view'])->group(function
     Route::post('/whatsapp/send-message', [WhatsAppChatController::class, 'sendMessage']);
     Route::post('/whatsapp/send-image', [WhatsAppChatController::class, 'sendImage']);
     Route::post('/whatsapp/send-media', [WhatsAppChatController::class, 'sendMedia']);
+    Route::post('/whatsapp/history/clear', [WhatsAppChatController::class, 'clearHistory']);
     Route::get('/whatsapp/calls', [WhatsAppChatController::class, 'calls']);
     Route::post('/whatsapp/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);
     Route::post('/calls/{callId}/reject', [WhatsAppChatController::class, 'rejectCall']);

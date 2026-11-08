@@ -65,6 +65,7 @@ export const whatsapp = {
   sendMessage: (payload) => request("POST", "/whatsapp/send-message", { body: payload }),
   sendImage: (formData) => request("POST", "/whatsapp/send-image", { formData }),
   sendMedia: (formData) => request("POST", "/whatsapp/send-media", { formData }),
+  clearHistory: (number) => request("POST", "/whatsapp/history/clear", { body: { number } }),
   calls: (params) => request("GET", "/whatsapp/calls", { params }),
   rejectCall: (callId, payload) =>
     request("POST", `/whatsapp/calls/${encodeURIComponent(callId)}/reject`, { body: payload }),

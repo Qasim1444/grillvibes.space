@@ -3,7 +3,6 @@
     <PageHeader title="Customers" subtitle="Manage customer records.">
       <template #actions>
         <button class="ui-btn ui-btn--ghost" @click="openWhatsappQr">WhatsApp QR</button>
-        <button class="ui-btn ui-btn--ghost" @click="openCompose">Message a Number</button>
         <button v-if="can('customers.create')" class="ui-btn ui-btn--primary" @click="openModal">+ Add Customer</button>
       </template>
     </PageHeader>
@@ -107,6 +106,9 @@
         <div class="chat-header__info">
           <div class="chat-header__name">{{ chatCustomer?.name || 'Unknown' }}</div>
         </div>
+        <button class="chat-header__clear" title="Clear saved messages and calls" @click="clearChatHistory">
+          Clear
+        </button>
         <button class="chat-header__close" @click="showChat = false">&times;</button>
       </div>
 
@@ -237,28 +239,6 @@
           </svg>
         </button>
       </div>
-    </Modal>
-
-    <!-- Compose to any number -->
-    <Modal v-model="showCompose" title="Message a Number" width="480px">
-      <FormField
-        v-model="composeNumber"
-        label="Phone Number"
-        placeholder="e.g. 923001234567 (country code, digits only)"
-      />
-      <p v-if="matchedCustomer" class="compose-match">
-        Matches customer: <strong>{{ matchedCustomer.name }}</strong>
-      </p>
-      <template #footer>
-        <button class="ui-btn ui-btn--ghost" @click="showCompose = false">Cancel</button>
-        <button
-          class="ui-btn ui-btn--primary"
-          :disabled="normalizeNumber(composeNumber).length < 7"
-          @click="startComposeChat"
-        >
-          Start Chat
-        </button>
-      </template>
     </Modal>
 
     <!-- Customer order details -->
@@ -579,43 +559,6 @@ const rejectIncomingCall = async () => {
   incomingCall.value = null;
 };
 
-// ---- Compose to any number ----
-const showCompose = ref(false);
-const composeNumber = ref("");
-
-const openCompose = () => {
-  composeNumber.value = "";
-  showCompose.value = true;
-};
-
-// If the typed number matches a known customer, show their name. The full
-// customer list isn't held client-side, so resolve it on demand (debounced)
-// via /customers/lookup.
-const matchedCustomer = ref(null);
-let composeLookupTimer = null;
-watch(composeNumber, (value) => {
-  clearTimeout(composeLookupTimer);
-  matchedCustomer.value = null;
-  const num = normalizeNumber(value);
-  if (num.length < 7) return;
-  composeLookupTimer = setTimeout(async () => {
-    const c = await lookupCustomer(num);
-    // Ignore a stale result if the input changed while the request was in flight.
-    if (c && normalizeNumber(composeNumber.value) === num) {
-      matchedCustomer.value = c;
-    }
-  }, 300);
-});
-
-const startComposeChat = () => {
-  const num = normalizeNumber(composeNumber.value);
-  if (num.length < 7) return;
-  showCompose.value = false;
-  openChat(
-    matchedCustomer.value || { name: num, contact: num }
-  );
-};
-
 /** Digits-only phone number (country code, no + or spaces). */
 const normalizeNumber = (n) => (n || "").replace(/\D+/g, "");
 
@@ -901,6 +844,22 @@ const sendMessage = async () => {
     alertDialog(err.data?.message || err.message || "Failed to send message.");
   } finally {
     sendingMessage.value = false;
+  }
+};
+
+const clearChatHistory = async () => {
+  const number = normalizeNumber(chatCustomer.value?.contact);
+  if (!number) return;
+  if (!(await confirmDialog("Clear all saved messages and calls for this customer? This cannot be undone."))) return;
+
+  try {
+    await whatsapp.clearHistory(number);
+    messages.value = [];
+    allCalls.value = allCalls.value.filter((call) => !callsForNumber(number).includes(call));
+    await loadConnectionAndConversations();
+    alertDialog("Saved WhatsApp messages and calls were cleared.");
+  } catch (err) {
+    alertDialog(err.data?.message || err.message || "Could not clear WhatsApp history.");
   }
 };
 
@@ -1239,6 +1198,18 @@ onBeforeUnmount(() => {
   cursor: pointer;
   padding: 0 4px;
   opacity: 0.9;
+}
+.chat-header__clear {
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 8px;
+  padding: 7px 9px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.chat-header__clear:hover {
+  background: rgba(255, 255, 255, 0.24);
 }
 .chat-header__close:hover {
   opacity: 1;

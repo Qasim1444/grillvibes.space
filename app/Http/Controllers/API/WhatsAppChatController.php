@@ -335,6 +335,28 @@ class WhatsAppChatController extends Controller
         }
     }
 
+    /** Delete the locally persisted WhatsApp messages and calls for one number. */
+    public function clearHistory(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'number' => 'required|string',
+        ]);
+
+        $number = $this->normalizeNumber($data['number']);
+        if ($number === '') {
+            return response()->json(['success' => false, 'message' => 'Invalid phone number.'], 422);
+        }
+
+        $messages = WhatsAppMessage::where('number', $number)->delete();
+        $calls = WhatsAppCall::where('number', $number)->delete();
+
+        return response()->json([
+            'success' => true,
+            'deleted' => ['messages' => $messages, 'calls' => $calls],
+            'message' => 'WhatsApp messages and calls cleared from the database.',
+        ]);
+    }
+
     /**
      * POST /whatsapp/send-image — send an image.
      * Accepts an uploaded file (multipart, field "file") or a public "url".
