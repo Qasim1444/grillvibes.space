@@ -19,6 +19,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 
 class OrderController extends Controller
 {
@@ -117,6 +118,7 @@ class OrderController extends Controller
         ];
 
         $this->sendReceiptWhatsApp($order, $receipt['path'], $receipt['filename'], $response);
+        $this->sendReceiptEmail($order, $receipt['path'], $receipt['filename'], $response);
 
         return response()->json($response, 201);
     }
@@ -152,6 +154,28 @@ class OrderController extends Controller
         }
     }
 
+    /** Send the same receipt image by email when the customer has an address. */
+    private function sendReceiptEmail(Order $order, string $imagePath, string $fileName, array &$response): void
+    {
+        $email = trim((string) $order->customer?->email);
+        if ($email === '') {
+            $response['email_notification'] = 'No notification sent - missing customer email.';
+            return;
+        }
+
+        try {
+            Mail::send([], [], function ($message) use ($email, $imagePath, $fileName, $order) {
+                $message->to($email, $order->customer?->name)
+                    ->subject('Your Grill Vibes order receipt #'.$order->id)
+                    ->html('<p>Thank you for your order. Your receipt is attached.</p>')
+                    ->attach($imagePath, ['as' => $fileName, 'mime' => 'image/png']);
+            });
+            $response['email_notification'] = 'Receipt emailed to '.$email.'.';
+        } catch (Exception $e) {
+            $response['email_error'] = $e->getMessage();
+        }
+    }
+
     /**
      * Regenerate the receipt PNG for an existing order and return its URL.
      * Pass ?send=1 (or send=true) to also resend it over WhatsApp.
@@ -179,6 +203,7 @@ class OrderController extends Controller
 
         if ($request->boolean('send')) {
             $this->sendReceiptWhatsApp($order, $receipt['path'], $receipt['filename'], $response);
+            $this->sendReceiptEmail($order, $receipt['path'], $receipt['filename'], $response);
         }
 
         return response()->json($response, 201);

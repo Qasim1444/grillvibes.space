@@ -1544,13 +1544,17 @@ onBeforeUnmount(() => {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 16px 8px 8px;
+  padding: 22px 16px 18px;
+  background: #fffaf7;
+  border: 1px solid var(--border, #eee3de);
+  border-radius: 18px;
 }
 .call-avatar {
   width: 84px;
   height: 84px;
   border-radius: 50%;
-  background: #25d366;
+  background: linear-gradient(135deg, #ff6b35, #e85a2a);
+  box-shadow: 0 10px 24px rgba(232, 90, 42, 0.24);
   color: #fff;
   font-size: 36px;
   font-weight: 600;
@@ -1561,15 +1565,15 @@ onBeforeUnmount(() => {
 .call-name {
   font-size: 18px;
   font-weight: 600;
-  color: #111b21;
+  color: var(--text, #241d1b);
 }
 .call-number {
   font-size: 13px;
-  color: #667781;
+  color: var(--text-soft, #8a7f7b);
 }
 .call-status {
   font-size: 13px;
-  color: #25d366;
+  color: var(--primary, #ff6b35);
   margin-bottom: 12px;
 }
 .call-reject {
@@ -1580,13 +1584,13 @@ onBeforeUnmount(() => {
   height: 56px;
   border: none;
   border-radius: 50%;
-  background: #ef4444;
+  background: #d64545;
   color: #fff;
   cursor: pointer;
   transform: rotate(135deg);
   transition: background 0.15s;
 }
 .call-reject:hover {
-  background: #dc2626;
+  background: #b93636;
 }
 </style>

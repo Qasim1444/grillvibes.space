@@ -20,6 +20,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -451,6 +452,22 @@ class OrderController extends Controller
                     'caption' => 'Thank you for your order! Here is your receipt.',
                 ]);
         } catch (\Exception $e) {
+            // Best-effort notification; ignore delivery failures.
+        }
+
+        $email = trim((string) $order->customer?->email);
+        if ($email === '') {
+            return;
+        }
+
+        try {
+            Mail::send([], [], function ($message) use ($email, $receipt, $order) {
+                $message->to($email, $order->customer?->name)
+                    ->subject('Your Grill Vibes order receipt #'.$order->id)
+                    ->html('<p>Thank you for your order. Your receipt is attached.</p>')
+                    ->attach($receipt['path'], ['as' => $receipt['filename'], 'mime' => 'image/png']);
+            });
+        } catch (\Throwable $e) {
             // Best-effort notification; ignore delivery failures.
         }
     }

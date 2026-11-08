@@ -186,12 +186,12 @@
     "/build/assets/ContactPage-Df5Uuaiw.css"
   ],
   "resources/js/pages/Customers.vue": [
-    "/build/assets/Customers-C67Nibvs.js",
-    "/build/assets/Customers-C20oAfAI.css"
+    "/build/assets/Customers-Bym_Qp99.js",
+    "/build/assets/Customers-Dh2dUqPv.css"
   ],
-  "resources/js/pages/Customers.vue?vue&type=style&index=0&scoped=d1320a79&lang.css": [
-    "/build/assets/Customers-C67Nibvs.js",
-    "/build/assets/Customers-C20oAfAI.css"
+  "resources/js/pages/Customers.vue?vue&type=style&index=0&scoped=1ec982eb&lang.css": [
+    "/build/assets/Customers-Bym_Qp99.js",
+    "/build/assets/Customers-Dh2dUqPv.css"
   ],
   "resources/js/pages/Dashboard.vue": [
     "/build/assets/Dashboard-CRyULKHT.js",
@@ -539,8 +539,8 @@
     "/build/assets/api-ZOQGIi9c.js"
   ],
   "resources/js/services/whatsapp.js": [
-    "/build/assets/Customers-C67Nibvs.js",
-    "/build/assets/Customers-C20oAfAI.css"
+    "/build/assets/Customers-Bym_Qp99.js",
+    "/build/assets/Customers-Dh2dUqPv.css"
   ],
   "resources/js/ssr.js": []
 }
