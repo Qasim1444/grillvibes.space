@@ -106,7 +106,15 @@
     <!-- Reservation Modal -->
     <Modal v-model="showModal" :title="form.id ? 'Edit Reservation' : 'New Reservation'" width="640px">
       <div class="form-grid-2">
-        <FormField v-model="form.guest_name" label="Guest Name *" placeholder="Full name" :error="form.errors.guest_name" />
+        <CustomerPicker
+          v-model="form.customer_id"
+          label="Guest Name *"
+          placeholder="Type a name or select a customer"
+          :initial-name="form.guest_name"
+          :error="form.errors.guest_name"
+          @typed="form.guest_name = $event"
+          @picked="onCustomerPicked"
+        />
         <FormField v-model="form.guest_phone" label="Phone" placeholder="+92 300 0000000" :error="form.errors.guest_phone" />
         <FormField v-model="form.guest_email" label="Email" type="email" placeholder="Optional" :error="form.errors.guest_email" />
         <FormField v-model.number="form.party_size" label="Party Size *" type="number" min="1" :error="form.errors.party_size" />
@@ -136,7 +144,15 @@
 
     <!-- Waitlist Modal -->
     <Modal v-model="showWaitlistModal" title="Add to Waitlist" width="480px">
-      <FormField v-model="wlForm.guest_name" label="Guest Name *" placeholder="Full name" :error="wlForm.errors.guest_name" />
+      <CustomerPicker
+        v-model="wlForm.customer_id"
+        label="Guest Name *"
+        placeholder="Type a name or select a customer"
+        :initial-name="wlForm.guest_name"
+        :error="wlForm.errors.guest_name"
+        @typed="wlForm.guest_name = $event"
+        @picked="onWaitlistCustomerPicked"
+      />
       <FormField v-model="wlForm.guest_phone" label="Phone" placeholder="+92 300 0000000" :error="wlForm.errors.guest_phone" />
       <FormField v-model.number="wlForm.party_size" label="Party Size *" type="number" min="1" :error="wlForm.errors.party_size" />
       <FormField v-model="wlForm.branch_id" label="Branch" type="select" :error="wlForm.errors.branch_id">
@@ -161,6 +177,7 @@ import AdminLayout from '../../layouts/AdminLayout.vue';
 import PageHeader from '../../components/ui/PageHeader.vue';
 import Modal from '../../components/ui/Modal.vue';
 import FormField from '../../components/ui/FormField.vue';
+import CustomerPicker from '../../components/ui/CustomerPicker.vue';
 import { usePermissions } from '../../composables/usePermissions';
 
 defineOptions({ layout: AdminLayout });
@@ -187,10 +204,19 @@ const reload = () => router.get('/reservations', {
 // Reservation form
 const showModal = ref(false);
 const form = useForm({
-  id: null, dining_table_id: '', branch_id: '', guest_name: '', guest_phone: '',
+  id: null, dining_table_id: '', branch_id: '', customer_id: null, guest_name: '', guest_phone: '',
   guest_email: '', party_size: 2, reserved_at: '', duration_minutes: 90,
   status: 'confirmed', occasion: '', notes: '', source: 'walk_in',
 });
+const onCustomerPicked = customer => {
+  if (!customer) {
+    form.guest_name = '';
+    return;
+  }
+  form.guest_name = customer.name || form.guest_name;
+  form.guest_phone = customer.contact || form.guest_phone;
+  form.guest_email = customer.email || form.guest_email;
+};
 
 // Default new records to the branch in the filter, or the only branch when there is one.
 const defaultBranchId = () =>
@@ -201,6 +227,7 @@ const openModal = (row = null) => {
   // Explicit defaults so a previous edit can never leak into the Add form.
   Object.assign(form, {
     id: null, dining_table_id: '', guest_name: '', guest_phone: '', guest_email: '',
+    customer_id: null,
     party_size: 2, duration_minutes: 90, status: 'confirmed', occasion: '', notes: '', source: 'walk_in',
   });
   if (row) {
@@ -260,8 +287,17 @@ const del = async id => {
 
 // Waitlist
 const showWaitlistModal = ref(false);
-const wlForm = useForm({ guest_name: '', guest_phone: '', party_size: 2,
+const wlForm = useForm({ guest_name: '', guest_phone: '', customer_id: null, party_size: 2,
   branch_id: '', estimated_wait_minutes: null, notes: '' });
+
+const onWaitlistCustomerPicked = customer => {
+  if (!customer) {
+    wlForm.guest_name = '';
+    return;
+  }
+  wlForm.guest_name = customer.name || wlForm.guest_name;
+  wlForm.guest_phone = customer.contact || wlForm.guest_phone;
+};
 
 const openWaitlistModal = () => {
   wlForm.reset(); wlForm.clearErrors();

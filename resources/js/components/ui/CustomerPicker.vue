@@ -76,7 +76,7 @@ const props = defineProps({
   endpoint: { type: String, default: "/customers/search" },
 });
 
-const emit = defineEmits(["update:modelValue", "picked"]);
+const emit = defineEmits(["update:modelValue", "picked", "typed"]);
 
 const fieldId = computed(
   () => `cp-${(props.label || "customer").toLowerCase().replace(/\s+/g, "-")}`
@@ -116,6 +116,7 @@ const runSearch = async (q) => {
 const onInput = (e) => {
   const q = e.target.value;
   text.value = q;
+  emit("typed", q);
   clearTimeout(debounceTimer);
   if (!q.trim()) {
     results.value = [];
@@ -183,8 +184,8 @@ watch(
   () => props.modelValue,
   (id) => {
     if (id === null || id === undefined || id === "") {
-      text.value = "";
-      selectedName.value = "";
+      text.value = props.initialName || "";
+      selectedName.value = props.initialName || "";
     } else if (!selectedName.value && props.initialName) {
       selectedName.value = props.initialName;
       text.value = props.initialName;

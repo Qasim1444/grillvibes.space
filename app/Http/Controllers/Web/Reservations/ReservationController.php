@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web\Reservations;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Customer;
 use App\Models\DiningTable;
 use App\Models\Reservation;
 use App\Models\WaitlistEntry;
@@ -24,7 +25,7 @@ class ReservationController extends Controller
         $branchId = $request->query('branch_id', CurrentBranch::id());
         $status   = $request->query('status', '');
 
-        $reservations = Reservation::with(['diningTable:id,table_number', 'branch:id,name'])
+        $reservations = Reservation::with(['diningTable:id,table_number', 'branch:id,name', 'customer:id,name'])
             ->whereDate('reserved_at', $date)
             ->when($branchId, fn ($q) => $q->where(fn ($branch) => $branch
                 ->where('branch_id', $branchId)
@@ -35,11 +36,12 @@ class ReservationController extends Controller
             ->orderBy('reserved_at')
             ->get()
             ->map(fn ($r) => [
-                ...$r->only('id', 'guest_name', 'guest_phone', 'party_size',
+                ...$r->only('id', 'customer_id', 'guest_name', 'guest_phone', 'guest_email', 'party_size',
                              'reserved_at', 'duration_minutes', 'status', 'occasion', 'notes', 'source',
                              'dining_table_id', 'branch_id'),
                 'table_number' => $r->diningTable?->table_number,
                 'branch_name'  => $r->branch?->name,
+                'customer'     => $r->customer ? ['id' => $r->customer->id, 'name' => $r->customer->name] : null,
                 'ends_at'      => $r->endsAt()->toIso8601String(),
             ]);
 
@@ -64,6 +66,7 @@ class ReservationController extends Controller
                 ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
                 ->orderBy('table_number')
                 ->get(['id', 'table_number', 'capacity', 'status', 'branch_id']),
+            'customers'     => Customer::query()->select('id', 'name', 'contact', 'email')->orderBy('name')->limit(200)->get(),
             'statuses'      => Reservation::STATUSES,
             'sources'       => Reservation::SOURCES,
             'filters'       => ['date' => $date, 'branch_id' => $branchId, 'status' => $status],
@@ -110,6 +113,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'dining_table_id'  => 'nullable|exists:dining_tables,id',
             'branch_id'        => 'nullable|exists:branches,id',
+            'customer_id'      => 'nullable|exists:customers,id',
             'place_id'         => 'nullable|exists:places,id',
             'guest_name'       => 'required|string|max:255',
             'guest_phone'      => 'nullable|string|max:50',
@@ -152,6 +156,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'dining_table_id'  => 'nullable|exists:dining_tables,id',
             'branch_id'        => 'nullable|exists:branches,id',
+            'customer_id'      => 'nullable|exists:customers,id',
             'place_id'         => 'nullable|exists:places,id',
             'guest_name'       => 'required|string|max:255',
             'guest_phone'      => 'nullable|string|max:50',
@@ -309,6 +314,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'branch_id'              => 'nullable|exists:branches,id',
             'place_id'               => 'nullable|exists:places,id',
+            'customer_id'            => 'nullable|exists:customers,id',
             'guest_name'             => 'required|string|max:255',
             'guest_phone'            => 'nullable|string|max:50',
             'party_size'             => 'required|integer|min:1',
