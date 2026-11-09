@@ -94,8 +94,6 @@
               <button class="ui-btn ui-btn--ghost ui-btn--sm" :disabled="!!entry.notified_at" @click="notifyWaitlist(entry)">
                 {{ entry.notified_at ? 'Notified ✓' : 'Notify' }}
               </button>
-              <a v-if="entry.guest_phone" class="ui-btn ui-btn--ghost ui-btn--sm" :href="waLink(entry)" target="_blank"
-                 rel="noopener" title="Open WhatsApp chat">💬</a>
               <button class="ui-btn ui-btn--danger ui-btn--sm" @click="removeWaitlist(entry.id, 'left')">✕</button>
             </div>
           </div>
@@ -308,18 +306,6 @@ const saveWaitlist = () => wlForm.post('/reservations/waitlist',
   { preserveScroll: true, onSuccess: () => (showWaitlistModal.value = false) });
 
 const seatWaitlist = id => router.put(`/reservations/waitlist/${id}`, { status: 'seated' }, { preserveScroll: true });
-
-/** WhatsApp click-to-chat link with a prefilled "table ready" message. */
-const waLink = entry => {
-  const digits = (entry.guest_phone || '').replace(/\D/g, '');
-  if (!digits) return '';
-  // Local PK numbers: 03001234567 → 923001234567
-  const intl = digits.startsWith('0') ? '92' + digits.slice(1) : digits;
-  const msg = encodeURIComponent(
-    `Assalam-o-Alaikum ${entry.guest_name}! 🍽 Your table at ${entry.branch_name || 'GrillVibes'} is ready. Please see the host desk. Thank you!`
-  );
-  return `https://wa.me/${intl}?text=${msg}`;
-};
 
 const notifyWaitlist = entry => {
   if (!entry.guest_phone) {
