@@ -245,7 +245,7 @@
     "/build/assets/FoodItems-wcKTTIDB.css"
   ],
   "resources/js/pages/ForgotPassword.vue": [
-    "/build/assets/ForgotPassword-DLwtyYYp.js"
+    "/build/assets/ForgotPassword-Ccw3WgzB.js"
   ],
   "resources/js/pages/Guest/QRMenu.vue": [
     "/build/assets/QRMenu-DIvJKtme.js",
@@ -482,7 +482,7 @@
     "/build/assets/QRCodes-BU41lNOc.css"
   ],
   "resources/js/pages/Register.vue": [
-    "/build/assets/Register-Dbolgf4Q.js"
+    "/build/assets/Register-B0uYGzjT.js"
   ],
   "resources/js/pages/Reports/FoodCost.vue": [
     "/build/assets/FoodCost-CWJ0oktI.js",
@@ -533,10 +533,10 @@
     "/build/assets/Users-B0I83Eaj.css"
   ],
   "resources/js/services/api.js": [
-    "/build/assets/api-ZOQGIi9c.js"
+    "/build/assets/api-DWk_W29k.js"
   ],
   "resources/js/services/http.js": [
-    "/build/assets/api-ZOQGIi9c.js"
+    "/build/assets/api-DWk_W29k.js"
   ],
   "resources/js/services/whatsapp.js": [
     "/build/assets/Customers-Lvo7YKJB.js",
