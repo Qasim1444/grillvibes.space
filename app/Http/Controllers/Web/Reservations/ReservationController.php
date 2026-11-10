@@ -339,6 +339,11 @@ class ReservationController extends Controller
 
         $data = $request->validate([
             'status'                 => 'required|in:' . implode(',', WaitlistEntry::STATUSES),
+            'guest_name'             => 'sometimes|required|string|max:255',
+            'guest_phone'            => 'sometimes|nullable|string|max:50',
+            'customer_id'             => 'sometimes|nullable|exists:customers,id',
+            'party_size'              => 'sometimes|required|integer|min:1|max:50',
+            'branch_id'               => 'sometimes|nullable|exists:branches,id',
             'estimated_wait_minutes' => 'nullable|integer|min:1',
             'notes'                  => 'nullable|string|max:500',
             'notify'                 => 'nullable|boolean',

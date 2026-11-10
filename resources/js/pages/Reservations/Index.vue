@@ -61,6 +61,7 @@
             <div class="res__card-actions">
               <span class="ui-badge" :class="statusBadge(r.status)">{{ r.status }}</span>
               <button v-if="can('reservations.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="openModal(r)">Edit</button>
+              <a v-if="r.guest_phone" class="ui-btn ui-btn--ghost ui-btn--sm" :href="reservationNotifyUrl(r)" target="_blank" rel="noopener">Notify</a>
               <button v-if="can('reservations.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="del(r.id)">✕</button>
             </div>
           </div>
@@ -92,10 +93,13 @@
             </div>
             <div class="res__wait-actions">
               <button v-if="entry.status === 'waiting'" class="ui-btn ui-btn--success ui-btn--sm" @click="seatWaitlist(entry.id)">Seat</button>
-              <button class="ui-btn ui-btn--ghost ui-btn--sm" :disabled="!!entry.notified_at" @click="notifyWaitlist(entry)">
-                {{ entry.notified_at ? 'Notified ✓' : 'Notify' }}
-              </button>
-              <button class="ui-btn ui-btn--danger ui-btn--sm" @click="removeWaitlist(entry.id, 'left')">✕</button>
+              <template v-if="entry.status === 'waiting'">
+                <button class="ui-btn ui-btn--ghost ui-btn--sm" @click="openWaitlistModal(entry)">Edit</button>
+                <button class="ui-btn ui-btn--ghost ui-btn--sm" :disabled="!!entry.notified_at" @click="notifyWaitlist(entry)">
+                  {{ entry.notified_at ? 'Notified ✓' : 'Notify' }}
+                </button>
+                <button class="ui-btn ui-btn--danger ui-btn--sm" @click="removeWaitlist(entry.id, 'left')">✕</button>
+              </template>
             </div>
           </div>
         </div>
@@ -142,7 +146,7 @@
     </Modal>
 
     <!-- Waitlist Modal -->
-    <Modal v-model="showWaitlistModal" title="Add to Waitlist" width="480px">
+    <Modal v-model="showWaitlistModal" :title="wlForm.id ? 'Edit Waitlist Entry' : 'Add to Waitlist'" width="480px">
       <CustomerPicker
         v-model="wlForm.customer_id"
         label="Guest Name *"
@@ -162,7 +166,7 @@
       <FormField v-model="wlForm.notes" label="Notes" type="textarea" :error="wlForm.errors.notes" />
       <template #footer>
         <button class="ui-btn ui-btn--ghost" @click="showWaitlistModal = false">Cancel</button>
-        <button class="ui-btn ui-btn--primary" :disabled="wlForm.processing" @click="saveWaitlist">Add to Waitlist</button>
+        <button class="ui-btn ui-btn--primary" :disabled="wlForm.processing" @click="saveWaitlist">{{ wlForm.id ? 'Save Changes' : 'Add to Waitlist' }}</button>
       </template>
     </Modal>
   </div>
@@ -286,7 +290,7 @@ const del = async id => {
 
 // Waitlist
 const showWaitlistModal = ref(false);
-const wlForm = useForm({ guest_name: '', guest_phone: '', customer_id: null, party_size: 2,
+const wlForm = useForm({ id: null, guest_name: '', guest_phone: '', customer_id: null, party_size: 2,
   branch_id: '', estimated_wait_minutes: null, notes: '' });
 
 const onWaitlistCustomerPicked = customer => {
@@ -298,13 +302,29 @@ const onWaitlistCustomerPicked = customer => {
   wlForm.guest_phone = customer.contact || wlForm.guest_phone;
 };
 
-const openWaitlistModal = () => {
+const openWaitlistModal = (entry = null) => {
   wlForm.reset(); wlForm.clearErrors();
-  wlForm.branch_id = defaultBranchId();
+  if (entry) Object.assign(wlForm, {
+    id: entry.id, guest_name: entry.guest_name, guest_phone: entry.guest_phone ?? '',
+    customer_id: entry.customer_id ?? null, party_size: entry.party_size,
+    branch_id: entry.branch_id ?? '', estimated_wait_minutes: entry.estimated_wait_minutes ?? null,
+    notes: entry.notes ?? '',
+  });
+  else wlForm.branch_id = defaultBranchId();
   showWaitlistModal.value = true;
 };
-const saveWaitlist = () => wlForm.post('/reservations/waitlist',
-  { preserveScroll: true, onSuccess: () => (showWaitlistModal.value = false) });
+const saveWaitlist = () => {
+  const opts = { preserveScroll: true, onSuccess: () => (showWaitlistModal.value = false) };
+  if (wlForm.id) wlForm.put(`/reservations/waitlist/${wlForm.id}`, opts);
+  else wlForm.post('/reservations/waitlist', opts);
+};
+
+const reservationNotifyUrl = reservation => {
+  const phone = String(reservation.guest_phone).replace(/\D/g, '');
+  const normalizedPhone = phone.startsWith('0') ? `92${phone.slice(1)}` : phone.length === 10 ? `92${phone}` : phone;
+  const message = `Assalam-o-Alaikum ${reservation.guest_name}! This is a reminder for your reservation at ${reservation.reserved_at ? fmtTime(reservation.reserved_at) : 'our restaurant'}. We look forward to seeing you!`;
+  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
+};
 
 const seatWaitlist = id => router.put(`/reservations/waitlist/${id}`, { status: 'seated' }, { preserveScroll: true });
 
@@ -348,7 +368,7 @@ const statusBadge = s => ({
 .res__card-name   { font-weight: 600; margin-bottom: 4px; }
 .res__card-meta   { display: flex; gap: 10px; font-size: 0.8rem; color: var(--text-soft); flex-wrap: wrap; }
 .res__card-notes  { font-size: 0.78rem; color: var(--text-soft); margin-top: 4px; font-style: italic; }
-.res__card-actions{ display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.res__card-actions{ display: flex; flex-direction: row; align-items: center; gap: 6px; white-space: nowrap; }
 
 .res__waitlist    { display: flex; flex-direction: column; }
 .res__wait-card   { display: grid; grid-template-columns: 36px 1fr auto; gap: 10px;
@@ -359,7 +379,7 @@ const statusBadge = s => ({
 .res__wait-meta   { display: flex; gap: 8px; font-size: 0.78rem; color: var(--text-soft); flex-wrap: wrap; }
 .res__wait-time   { color: #f59e0b; font-weight: 600; }
 .res__wait-est    { color: var(--text-soft); }
-.res__wait-actions{ display: flex; gap: 4px; }
+.res__wait-actions{ display: flex; gap: 4px; flex-wrap: wrap; justify-content: flex-end; }
 .form-grid-2      { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
 
 @media (max-width: 900px) {
