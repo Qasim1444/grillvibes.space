@@ -86,11 +86,12 @@
                 <span v-if="entry.estimated_wait_minutes" class="res__wait-est">
                   Est: {{ entry.estimated_wait_minutes }}min
                 </span>
-                <span v-if="entry.notified_at" class="ui-badge ui-badge--success">🔔 Notified</span>
+                <span v-if="entry.status === 'seated'" class="ui-badge ui-badge--success">Seated</span>
+                <span v-else-if="entry.notified_at" class="ui-badge ui-badge--success">🔔 Notified</span>
               </div>
             </div>
             <div class="res__wait-actions">
-              <button class="ui-btn ui-btn--success ui-btn--sm" @click="seatWaitlist(entry.id)">Seat</button>
+              <button v-if="entry.status === 'waiting'" class="ui-btn ui-btn--success ui-btn--sm" @click="seatWaitlist(entry.id)">Seat</button>
               <button class="ui-btn ui-btn--ghost ui-btn--sm" :disabled="!!entry.notified_at" @click="notifyWaitlist(entry)">
                 {{ entry.notified_at ? 'Notified ✓' : 'Notify' }}
               </button>

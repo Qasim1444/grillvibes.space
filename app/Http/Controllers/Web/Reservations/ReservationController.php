@@ -48,7 +48,7 @@ class ReservationController extends Controller
         $waitlist = WaitlistEntry::with('branch:id,name')
             ->whereDate('checked_in_at', $date)
             ->when($branchId, fn ($q) => $q->where('branch_id', $branchId))
-            ->whereIn('status', ['waiting'])
+            ->whereIn('status', ['waiting', 'seated'])
             ->orderBy('checked_in_at')
             ->get()
             ->map(fn ($w) => [
