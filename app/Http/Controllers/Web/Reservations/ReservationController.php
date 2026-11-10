@@ -200,6 +200,22 @@ class ReservationController extends Controller
         return back()->with('success', 'Reservation deleted.');
     }
 
+    public function notifyReservation(int $id): RedirectResponse
+    {
+        $reservation = Reservation::findOrFail($id);
+        if (! $reservation->guest_phone) {
+            return back()->with('error', 'No phone number on file — reservation reminder was not sent.');
+        }
+
+        $when = $reservation->reserved_at?->timezone(config('app.timezone'))->format('M j, g:i A');
+        $venue = $reservation->branch?->name ?? config('app.name', 'GrillVibes');
+        $message = "Assalam-o-Alaikum {$reservation->guest_name}! This is a reminder for your reservation at {$venue}" . ($when ? " on {$when}" : '') . '. We look forward to seeing you!';
+
+        return $this->sendWhatsApp($reservation->guest_phone, $message)
+            ? back()->with('success', 'WhatsApp reminder sent to the guest.')
+            : back()->with('error', 'WhatsApp gateway did not confirm delivery. Please call the guest.');
+    }
+
     // ── Floor Plan ────────────────────────────────────────────────────────────
 
     public function floorPlan(Request $request): Response

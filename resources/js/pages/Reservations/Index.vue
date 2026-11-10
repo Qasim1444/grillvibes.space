@@ -61,7 +61,7 @@
             <div class="res__card-actions">
               <span class="ui-badge" :class="statusBadge(r.status)">{{ r.status }}</span>
               <button v-if="can('reservations.update')" class="ui-btn ui-btn--ghost ui-btn--sm" @click="openModal(r)">Edit</button>
-              <a v-if="r.guest_phone" class="ui-btn ui-btn--ghost ui-btn--sm" :href="reservationNotifyUrl(r)" target="_blank" rel="noopener">Notify</a>
+              <button class="ui-btn ui-btn--ghost ui-btn--sm" :disabled="!r.guest_phone" @click="notifyReservation(r.id)">Notify</button>
               <button v-if="can('reservations.delete')" class="ui-btn ui-btn--danger ui-btn--sm" @click="del(r.id)">✕</button>
             </div>
           </div>
@@ -83,7 +83,7 @@
               <div class="res__wait-meta">
                 <span>👥 {{ entry.party_size }}</span>
                 <span v-if="entry.guest_phone">📞 {{ entry.guest_phone }}</span>
-                <span class="res__wait-time">⏱ {{ entry.wait_minutes }}min waiting</span>
+                <span v-if="entry.status === 'waiting'" class="res__wait-time">⏱ {{ entry.wait_minutes }}min waiting</span>
                 <span v-if="entry.estimated_wait_minutes" class="res__wait-est">
                   Est: {{ entry.estimated_wait_minutes }}min
                 </span>
@@ -319,12 +319,7 @@ const saveWaitlist = () => {
   else wlForm.post('/reservations/waitlist', opts);
 };
 
-const reservationNotifyUrl = reservation => {
-  const phone = String(reservation.guest_phone).replace(/\D/g, '');
-  const normalizedPhone = phone.startsWith('0') ? `92${phone.slice(1)}` : phone.length === 10 ? `92${phone}` : phone;
-  const message = `Assalam-o-Alaikum ${reservation.guest_name}! This is a reminder for your reservation at ${reservation.reserved_at ? fmtTime(reservation.reserved_at) : 'our restaurant'}. We look forward to seeing you!`;
-  return `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(message)}`;
-};
+const notifyReservation = id => router.post(`/reservations/${id}/notify`, {}, { preserveScroll: true });
 
 const seatWaitlist = id => router.put(`/reservations/waitlist/${id}`, { status: 'seated' }, { preserveScroll: true });
 

@@ -426,6 +426,8 @@ Route::middleware('auth')->group(function () {
             ->middleware('can.access:reservations.update')->name('update');
         Route::delete('/{id}', [ReservationController::class, 'destroy'])
             ->middleware('can.access:reservations.delete')->name('destroy');
+        Route::post('/{id}/notify', [ReservationController::class, 'notifyReservation'])
+            ->middleware('can.access:reservations.update')->name('notify');
 
         // Waitlist
         Route::post('/waitlist', [ReservationController::class, 'storeWaitlist'])
