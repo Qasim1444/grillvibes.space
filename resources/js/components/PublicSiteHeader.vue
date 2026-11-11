@@ -17,6 +17,13 @@
     </nav>
 
     <div class="public-header__actions">
+      <button
+        class="public-header__theme"
+        type="button"
+        :aria-label="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        :title="theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'"
+        @click="$emit('toggle-theme')"
+      >{{ theme === 'dark' ? '☀' : '☾' }}</button>
       <a class="public-header__sign-in" href="/login">Sign In</a>
       <a class="public-header__cta" :href="actionHref">{{ actionLabel }}<span aria-hidden="true">↗</span></a>
       <button
@@ -41,7 +48,10 @@ defineProps({
   activeItem: { type: String, default: '' },
   actionLabel: { type: String, default: 'Book a Table' },
   actionHref: { type: String, default: '/#reserve' },
+  theme: { type: String, default: 'dark' },
 });
+
+defineEmits(['toggle-theme']);
 
 const menuOpen = ref(false);
 </script>
@@ -72,6 +82,8 @@ const menuOpen = ref(false);
 .public-header__nav a,.public-header__sign-in { color:#b5b5b5; font-size:.78rem; font-weight:500; text-decoration:none; white-space:nowrap; transition:color .18s ease; }
 .public-header__nav a:hover,.public-header__nav a.is-active,.public-header__sign-in:hover { color:#f97316; }
 .public-header__actions { display:flex; flex:0 0 auto; align-items:center; gap:16px; }
+.public-header__theme { display:grid; place-items:center; width:38px; height:38px; border:1px solid #383838; border-radius:50%; background:#1d1d1d; color:#f5f5f5; font:600 1rem Inter,sans-serif; cursor:pointer; transition:background .18s ease,border-color .18s ease,transform .18s ease; }
+.public-header__theme:hover { transform:translateY(-1px); border-color:#f97316; }
 .public-header__cta { display:inline-flex; align-items:center; gap:9px; min-height:40px; padding:0 15px; border-radius:7px; background:#f97316; color:#fff; font-size:.76rem; font-weight:700; text-decoration:none; white-space:nowrap; transition:background .18s ease,transform .18s ease; }
 .public-header__cta:hover { transform:translateY(-1px); background:#ea580c; }
 .public-header__toggle { display:none; width:40px; height:40px; padding:9px; border:1px solid #383838; border-radius:8px; background:#1d1d1d; cursor:pointer; }
@@ -95,6 +107,7 @@ const menuOpen = ref(false);
   .public-header { height:66px; padding:0 12px; gap:8px; }
   .public-header__brand img { width:50px; height:50px; }
   .public-header__actions { gap:8px; }
+  .public-header__theme { width:34px; height:34px; }
   .public-header__sign-in { display:none; }
   .public-header__cta { min-height:36px; padding:0 10px; font-size:.68rem; }
   .public-header__toggle { width:36px; height:36px; padding:7px; }

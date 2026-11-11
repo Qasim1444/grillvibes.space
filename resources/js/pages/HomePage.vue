@@ -1,6 +1,6 @@
 <template>
-  <div class="restaurant-home">
-    <PublicSiteHeader :items="homeNavItems" active-item="Home" action-label="Book a Table" action-href="#reserve" />
+  <div class="restaurant-home" :data-theme="theme">
+    <PublicSiteHeader :items="homeNavItems" active-item="Home" action-label="Book a Table" action-href="#reserve" :theme="theme" @toggle-theme="toggleTheme" />
 
     <main>
       <section class="hero section-shell">
@@ -276,7 +276,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import PublicSiteHeader from '../components/PublicSiteHeader.vue';
 import logoUrl from '../assets/grillvibes-logo.png';
@@ -291,6 +291,16 @@ const props = defineProps({
   blogPosts: { type: Array, default: () => [] },
   feedback: { type: Array, default: () => [] },
 });
+
+const theme = ref('dark');
+onMounted(() => {
+  const savedTheme = window.localStorage.getItem('grillvibes-home-theme');
+  if (savedTheme === 'light' || savedTheme === 'dark') theme.value = savedTheme;
+});
+const toggleTheme = () => {
+  theme.value = theme.value === 'dark' ? 'light' : 'dark';
+  window.localStorage.setItem('grillvibes-home-theme', theme.value);
+};
 
 const stars = r => '★'.repeat(Math.max(0, Math.min(5, Number(r) || 0))) + '☆'.repeat(5 - Math.max(0, Math.min(5, Number(r) || 0)));
 
@@ -1229,5 +1239,74 @@ const submitReservation = () => {
 .restaurant-home .menu-section .category-row button span,
 .restaurant-home .menu-section .food-category,
 .restaurant-home .menu-section .food-info strong { color:#f97316; }
+
+/* Light theme overrides the dark public-page palette while keeping the same ember accents. */
+.restaurant-home[data-theme="light"] {
+  --ink:#20231f; --muted:#696e68; --line:#e5dfd6; --cream:#faf7f1; --paper:#fff; --coral:#e94e2f; --coral-dark:#d94124; --peach:#fff0e7;
+  background:#faf7f1; color:#20231f; color-scheme:light;
+}
+.restaurant-home[data-theme="light"] h1,
+.restaurant-home[data-theme="light"] h2,
+.restaurant-home[data-theme="light"] h3,
+.restaurant-home[data-theme="light"] h4 { color:#20231f; }
+.restaurant-home[data-theme="light"] :deep(.public-header) { color:#20231f; background:rgba(255,253,249,.94); border-color:#e8e2d9; box-shadow:0 8px 24px rgba(60,45,30,.06); }
+.restaurant-home[data-theme="light"] :deep(.public-header__brand) { color:#20231f; }
+.restaurant-home[data-theme="light"] :deep(.public-header__nav a),
+.restaurant-home[data-theme="light"] :deep(.public-header__sign-in) { color:#646b64; }
+.restaurant-home[data-theme="light"] :deep(.public-header__nav a:hover),
+.restaurant-home[data-theme="light"] :deep(.public-header__nav a.is-active),
+.restaurant-home[data-theme="light"] :deep(.public-header__sign-in:hover) { color:#e94e2f; }
+.restaurant-home[data-theme="light"] :deep(.public-header__theme) { border-color:#ded8ce; background:#fff; color:#292d29; }
+.restaurant-home[data-theme="light"] :deep(.public-header__toggle) { border-color:#ded8ce; background:#fff; }
+.restaurant-home[data-theme="light"] :deep(.public-header__toggle span) { background:#292d29; }
+.restaurant-home[data-theme="light"] .hero-text,
+.restaurant-home[data-theme="light"] .scribble,
+.restaurant-home[data-theme="light"] .hero-stats span,
+.restaurant-home[data-theme="light"] .ribbon-item,
+.restaurant-home[data-theme="light"] .check-list div,
+.restaurant-home[data-theme="light"] .category-row button,
+.restaurant-home[data-theme="light"] .blog-meta time,
+.restaurant-home[data-theme="light"] .review-meta small,
+.restaurant-home[data-theme="light"] .form-footnote { color:#696e68; }
+.restaurant-home[data-theme="light"] .experience,
+.restaurant-home[data-theme="light"] .menu-section,
+.restaurant-home[data-theme="light"] .reviews-section,
+.restaurant-home[data-theme="light"] .blog-section,
+.restaurant-home[data-theme="light"] .reserve-wrap { background:#faf7f1!important; border-color:#e5dfd6!important; color:#20231f; }
+.restaurant-home[data-theme="light"] .food-card,
+.restaurant-home[data-theme="light"] .review-card,
+.restaurant-home[data-theme="light"] .blog-card,
+.restaurant-home[data-theme="light"] .reserve-form,
+.restaurant-home[data-theme="light"] .hero-note,
+.restaurant-home[data-theme="light"] .feature-ribbon { background:#fff!important; border-color:#e8e2d9!important; color:#20231f; box-shadow:0 14px 38px rgba(60,45,30,.08); }
+.restaurant-home[data-theme="light"] .food-info p,
+.restaurant-home[data-theme="light"] .review-comment,
+.restaurant-home[data-theme="light"] .blog-card p,
+.restaurant-home[data-theme="light"] .reservation-note span,
+.restaurant-home[data-theme="light"] .reserve-copy>p:not(.eyebrow) { color:#696e68; }
+.restaurant-home[data-theme="light"] .category-row,
+.restaurant-home[data-theme="light"] .form-head { border-color:#e5dfd6; }
+.restaurant-home[data-theme="light"] .category-row button.active { color:#20231f; }
+.restaurant-home[data-theme="light"] .form-head>div>span,
+.restaurant-home[data-theme="light"] .reserve-form label { color:#4f554f; }
+.restaurant-home[data-theme="light"] .reserve-form input,
+.restaurant-home[data-theme="light"] .reserve-form select,
+.restaurant-home[data-theme="light"] .reserve-form textarea,
+.restaurant-home[data-theme="light"] .table-option { border-color:#ddd7ce; background:#fff; color:#20231f; }
+.restaurant-home[data-theme="light"] .table-option span,
+.restaurant-home[data-theme="light"] .table-option small { color:#696e68; }
+.restaurant-home[data-theme="light"] .table-option.selected { border-color:#e94e2f; box-shadow:0 0 0 2px rgba(233,78,47,.16); }
+.restaurant-home[data-theme="light"] .site-footer { border-color:#e5dfd6; background:#f1ece4; color:#20231f; }
+.restaurant-home[data-theme="light"] .site-footer nav a { color:#555c55; }
+.restaurant-home[data-theme="light"] .hero h1 em,
+.restaurant-home[data-theme="light"] .hero-copy .eyebrow,
+.restaurant-home[data-theme="light"] .menu-section .eyebrow,
+.restaurant-home[data-theme="light"] .menu-section .category-row button span,
+.restaurant-home[data-theme="light"] .menu-section .food-category,
+.restaurant-home[data-theme="light"] .menu-section .food-info strong { color:#e94e2f; }
+@media (max-width:860px) {
+  .restaurant-home[data-theme="light"] :deep(.public-header__nav) { border-color:#e8e2d9; background:rgba(255,253,249,.98); box-shadow:0 18px 30px rgba(60,45,30,.12); }
+  .restaurant-home[data-theme="light"] :deep(.public-header__nav a) { color:#454b45; }
+}
 
 </style>
