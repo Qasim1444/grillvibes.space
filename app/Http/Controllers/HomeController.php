@@ -86,6 +86,11 @@ class HomeController extends Controller
                 ->where('is_active', true)
                 ->orderBy('table_number')
                 ->get(['id', 'table_number', 'capacity', 'shape', 'status']),
+            'bookedReservations' => Reservation::query()
+                ->whereIn('status', ['pending', 'confirmed', 'seated'])
+                ->whereNotNull('dining_table_id')
+                ->where('reserved_at', '>=', now()->startOfDay())
+                ->get(['dining_table_id', 'reserved_at', 'duration_minutes']),
             'blogPosts' => BlogPost::query()
                 ->published()
                 ->with(['categories:id,name'])

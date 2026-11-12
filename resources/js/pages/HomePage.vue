@@ -217,7 +217,7 @@
                   <button v-for="table in tables" :key="table.id" type="button" class="table-option" :class="{ selected: reservation.dining_table_id === table.id, unavailable: !isTableSuitable(table) }" :disabled="!isTableSuitable(table)" @click="reservation.dining_table_id = table.id">
                     <strong>{{ table.table_number }}</strong>
                     <span>{{ table.capacity }} seats</span>
-                    <small>{{ table.status === 'available' ? 'Available' : 'Unavailable' }}</small>
+                    <small>{{ isTableBooked(table.id) ? 'Already booked' : (table.status === 'available' ? 'Available' : 'Unavailable') }}</small>
                   </button>
                 </div>
                 <p v-if="!tables.length" class="table-note">No tables are currently configured.</p>
@@ -288,6 +288,7 @@ const props = defineProps({
 	categories: { type: Array, default: () => [] },
 	foodItems: { type: Array, default: () => [] },
 	tables: { type: Array, default: () => [] },
+  bookedReservations: { type: Array, default: () => [] },
   blogPosts: { type: Array, default: () => [] },
   feedback: { type: Array, default: () => [] },
 });
@@ -351,8 +352,21 @@ const reservation = useForm({
 	occasion: '',
 	notes: '',
 });
-const isTableSuitable = table => table.status === 'available' && table.capacity >= Number(reservation.guests);
-watch(() => reservation.guests, () => {
+const isTableBooked = tableId => {
+  if (!reservation.date || !reservation.time) return false;
+  const start = new Date(`${reservation.date}T${reservation.time}`);
+  const end = new Date(start.getTime() + Number(reservation.duration_minutes || 90) * 60000);
+  return props.bookedReservations.some(item => {
+    if (Number(item.dining_table_id) !== Number(tableId)) return false;
+    const bookedStart = new Date(item.reserved_at);
+    const bookedEnd = new Date(bookedStart.getTime() + Number(item.duration_minutes || 90) * 60000);
+    return start < bookedEnd && bookedStart < end;
+  });
+};
+const isTableSuitable = table => table.status === 'available'
+  && table.capacity >= Number(reservation.guests)
+  && !isTableBooked(table.id);
+watch([() => reservation.guests, () => reservation.date, () => reservation.time, () => reservation.duration_minutes], () => {
 	const selectedTable = tables.value.find(table => table.id === reservation.dining_table_id);
 	if (selectedTable && !isTableSuitable(selectedTable)) reservation.dining_table_id = null;
 });
