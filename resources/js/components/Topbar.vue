@@ -61,8 +61,8 @@
               :aria-pressed="theme === 'dark'"
               @click="$emit('toggle-theme')"
             >
-              <svg v-if="theme === 'dark'" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
-              <svg v-else viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/></svg>
+              <svg class="topbar__theme-icon" v-if="theme === 'dark'" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+              <svg class="topbar__theme-icon" v-else viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z"/><path d="M18 3v2m2-1h-2"/></svg>
               <span>Switch to {{ theme === 'dark' ? 'light' : 'dark' }} mode</span>
             </button>
             <div class="topbar__menu-divider" />
@@ -330,7 +330,9 @@ onBeforeUnmount(() => document.removeEventListener("click", onClickOutside));
   font-family: inherit;
 }
 .topbar__menu-item--theme { display:flex; align-items:center; gap:10px; min-height:44px; }
-.topbar__menu-item--theme svg { flex:0 0 auto; color:var(--brand); }
+.topbar__menu-item--theme svg { flex:0 0 auto; color:var(--text-muted); transition:color .18s ease, transform .18s ease; }
+.topbar__menu-item--theme:hover svg { color:var(--brand); transform:rotate(-8deg) scale(1.05); }
+.admin[data-theme="dark"] .topbar__menu-item--theme .topbar__theme-icon { color:#fff; }
 .topbar__menu-item:hover {
   background: var(--surface-2);
 }

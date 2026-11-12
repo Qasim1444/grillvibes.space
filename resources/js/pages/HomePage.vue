@@ -1189,6 +1189,7 @@ const submitReservation = () => {
   --peach:#2a1a10;
   background:#0a0a0a;
   color:#f5f5f5;
+  color-scheme:dark;
   font-family:Inter,system-ui,sans-serif;
 }
 .restaurant-home h1,.restaurant-home h2,.restaurant-home h3,.restaurant-home h4 {
@@ -1239,6 +1240,8 @@ const submitReservation = () => {
 .restaurant-home .menu-section .category-row button span,
 .restaurant-home .menu-section .food-category,
 .restaurant-home .menu-section .food-info strong { color:#f97316; }
+.restaurant-home[data-theme="dark"] :deep(.public-header__theme),
+.restaurant-home[data-theme="dark"] :deep(.public-header__theme-icon) { color:#fff; }
 
 /* Light theme overrides the dark public-page palette while keeping the same ember accents. */
 .restaurant-home[data-theme="light"] {
