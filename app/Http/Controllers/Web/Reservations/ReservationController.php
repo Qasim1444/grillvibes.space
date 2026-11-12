@@ -76,9 +76,8 @@ class ReservationController extends Controller
     /**
      * Conflict check against existing active (pending/confirmed/seated)
      * reservations:
-     *  1. Same date & time as another reservation → blocked, regardless of
-     *     table.
-     *  2. Overlapping window on the same table → blocked (double booking).
+     *  Overlapping windows for the same table are blocked. Reservations for
+     *  different tables may use the same start time.
      */
     private function hasConflict(?int $branchId, ?int $tableId, string $reservedAt, int $duration, ?int $ignoreId = null): bool
     {
@@ -97,13 +96,9 @@ class ReservationController extends Controller
                     return false; // windows don't overlap
                 }
 
-                // Same exact date & time → always a conflict
-                if ($rStart->equalTo($start)) {
-                    return true;
-                }
-
-                // Overlapping window on the same table → double booking
-                return $tableId && $r->dining_table_id === $tableId;
+                // Only a selected table can be double-booked. Unassigned
+                // reservations are allowed to share a time slot.
+                return $tableId && (int) $r->dining_table_id === $tableId;
             });
     }
 
@@ -116,7 +111,7 @@ class ReservationController extends Controller
             'customer_id'      => 'nullable|exists:customers,id',
             'place_id'         => 'nullable|exists:places,id',
             'guest_name'       => 'required|string|max:255',
-            'guest_phone'      => 'nullable|string|max:50',
+            'guest_phone'      => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'guest_email'      => 'nullable|email|max:255',
             'party_size'       => 'required|integer|min:1',
             'reserved_at'      => 'required|date',
@@ -135,7 +130,7 @@ class ReservationController extends Controller
         )) {
             return back()->withErrors(
                 'reserved_at',
-                'A reservation already exists at this date & time (or the selected table is double-booked).'
+                'The selected table is already booked during this time. Please choose another table or time.'
             )->withInput();
         }
 
@@ -159,7 +154,7 @@ class ReservationController extends Controller
             'customer_id'      => 'nullable|exists:customers,id',
             'place_id'         => 'nullable|exists:places,id',
             'guest_name'       => 'required|string|max:255',
-            'guest_phone'      => 'nullable|string|max:50',
+            'guest_phone'      => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'guest_email'      => 'nullable|email|max:255',
             'party_size'       => 'required|integer|min:1',
             'reserved_at'      => 'required|date',
@@ -178,7 +173,7 @@ class ReservationController extends Controller
         )) {
             return back()->withErrors(
                 'reserved_at',
-                'A reservation already exists at this date & time (or the selected table is double-booked).'
+                'The selected table is already booked during this time. Please choose another table or time.'
             )->withInput();
         }
 
@@ -332,7 +327,7 @@ class ReservationController extends Controller
             'place_id'               => 'nullable|exists:places,id',
             'customer_id'            => 'nullable|exists:customers,id',
             'guest_name'             => 'required|string|max:255',
-            'guest_phone'            => 'nullable|string|max:50',
+            'guest_phone'            => ['nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'party_size'             => 'required|integer|min:1',
             'estimated_wait_minutes' => 'nullable|integer|min:1',
             'notes'                  => 'nullable|string|max:500',
@@ -356,7 +351,7 @@ class ReservationController extends Controller
         $data = $request->validate([
             'status'                 => 'required|in:' . implode(',', WaitlistEntry::STATUSES),
             'guest_name'             => 'sometimes|required|string|max:255',
-            'guest_phone'            => 'sometimes|nullable|string|max:50',
+            'guest_phone'            => ['sometimes', 'nullable', 'string', 'max:50', 'regex:/^[0-9]+$/'],
             'customer_id'             => 'sometimes|nullable|exists:customers,id',
             'party_size'              => 'sometimes|required|integer|min:1|max:50',
             'branch_id'               => 'sometimes|nullable|exists:branches,id',

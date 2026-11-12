@@ -118,7 +118,7 @@
           @typed="form.guest_name = $event"
           @picked="onCustomerPicked"
         />
-        <FormField v-model="form.guest_phone" label="Phone" placeholder="+92 300 0000000" :error="form.errors.guest_phone" />
+        <FormField :model-value="form.guest_phone" @update:model-value="form.guest_phone = String($event).replace(/\D/g, '')" label="Phone" type="tel" inputmode="numeric" placeholder="923000000000" :error="form.errors.guest_phone" />
         <FormField v-model="form.guest_email" label="Email" type="email" placeholder="Optional" :error="form.errors.guest_email" />
         <FormField v-model.number="form.party_size" label="Party Size *" type="number" min="1" :error="form.errors.party_size" />
         <FormField v-model="form.reserved_at" label="Date & Time *" type="datetime-local" :error="form.errors.reserved_at" />
@@ -156,7 +156,7 @@
         @typed="wlForm.guest_name = $event"
         @picked="onWaitlistCustomerPicked"
       />
-      <FormField v-model="wlForm.guest_phone" label="Phone" placeholder="+92 300 0000000" :error="wlForm.errors.guest_phone" />
+      <FormField :model-value="wlForm.guest_phone" @update:model-value="wlForm.guest_phone = String($event).replace(/\D/g, '')" label="Phone" type="tel" inputmode="numeric" placeholder="923000000000" :error="wlForm.errors.guest_phone" />
       <FormField v-model.number="wlForm.party_size" label="Party Size *" type="number" min="1" :error="wlForm.errors.party_size" />
       <FormField v-model="wlForm.branch_id" label="Branch" type="select" :error="wlForm.errors.branch_id">
         <option value="">Select branch</option>
@@ -217,7 +217,7 @@ const onCustomerPicked = customer => {
     return;
   }
   form.guest_name = customer.name || form.guest_name;
-  form.guest_phone = customer.contact || form.guest_phone;
+  form.guest_phone = customer.contact ? String(customer.contact).replace(/\D/g, '') : form.guest_phone;
   form.guest_email = customer.email || form.guest_email;
 };
 
@@ -264,8 +264,6 @@ const conflictMessage = (reservedAt, duration, ignoreId = null, branchId = '') =
     const rStart = new Date(r.reserved_at);
     const rEnd   = new Date(rStart.getTime() + (r.duration_minutes || 90) * 60000);
     if (!(start < rEnd && rStart < end)) continue; // windows don't overlap
-    if (rStart.getTime() === start.getTime())
-      return 'A reservation already exists at this exact date & time. Pick a different time.';
     if (r.dining_table_id && String(r.dining_table_id) === String(form.dining_table_id))
       return 'This table already has a reservation overlapping that date & time.';
   }
@@ -299,7 +297,7 @@ const onWaitlistCustomerPicked = customer => {
     return;
   }
   wlForm.guest_name = customer.name || wlForm.guest_name;
-  wlForm.guest_phone = customer.contact || wlForm.guest_phone;
+  wlForm.guest_phone = customer.contact ? String(customer.contact).replace(/\D/g, '') : wlForm.guest_phone;
 };
 
 const openWaitlistModal = (entry = null) => {

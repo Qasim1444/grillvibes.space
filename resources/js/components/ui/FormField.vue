@@ -32,6 +32,7 @@
       :type="type"
       :placeholder="placeholder"
       :step="step"
+      :inputmode="inputmode"
       :readonly="readonly"
       :value="modelValue"
       @input="$emit('update:modelValue', $event.target.value)"
@@ -51,6 +52,7 @@ const props = defineProps({
   type: { type: String, default: "text" },
   placeholder: { type: String, default: "" },
   step: { type: String, default: null },
+  inputmode: { type: String, default: null },
   readonly: { type: Boolean, default: false },
   multiple: { type: Boolean, default: false },
   error: { type: String, default: "" },
