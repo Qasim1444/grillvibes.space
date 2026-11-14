@@ -247,7 +247,7 @@
 
               <label class="notes-field">Notes<textarea v-model="reservation.notes" rows="3" placeholder="Allergies, accessibility, or other requests" required></textarea></label>
 
-              <button class="button button--coral submit-button" type="submit" :disabled="reservation.processing || !reservation.dining_table_id">
+              <button class="button button--coral submit-button" type="submit" :disabled="reservation.processing">
                 {{ reservation.processing ? 'Sending request…' : 'Request a table' }} <span>→</span>
               </button>
 
