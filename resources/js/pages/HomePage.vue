@@ -212,7 +212,8 @@
 
             <template v-else>
               <div class="field-block">
-                <label class="form-label">Choose your table</label>
+                <label class="form-label" for="reservation-table">Choose your table <span aria-hidden="true">*</span></label>
+                <input id="reservation-table" type="hidden" :value="reservation.dining_table_id || ''" required />
                 <div class="table-grid">
                   <button v-for="table in tables" :key="table.id" type="button" class="table-option" :class="{ selected: reservation.dining_table_id === table.id, unavailable: !isTableSuitable(table) }" :disabled="!isTableSuitable(table)" @click="reservation.dining_table_id = table.id">
                     <strong>{{ table.table_number }}</strong>
@@ -220,6 +221,7 @@
                     <small>{{ isTableBooked(table.id) ? 'Already booked' : (table.status === 'available' ? 'Available' : 'Unavailable') }}</small>
                   </button>
                 </div>
+                <p v-if="reservation.errors.dining_table_id" class="field-error" role="alert">{{ reservation.errors.dining_table_id }}</p>
                 <p v-if="!tables.length" class="table-note">No tables are currently configured.</p>
               </div>
 
@@ -372,6 +374,17 @@ watch([() => reservation.guests, () => reservation.date, () => reservation.time,
 });
 const reservationSent = ref(false);
 const submitReservation = () => {
+  reservation.clearErrors('dining_table_id');
+  const selectedTable = tables.value.find(table => Number(table.id) === Number(reservation.dining_table_id));
+  if (!selectedTable) {
+    reservation.setError('dining_table_id', 'Please choose an available table.');
+    return;
+  }
+  if (!isTableSuitable(selectedTable)) {
+    reservation.setError('dining_table_id', 'This table is no longer available for your selected time or party size.');
+    reservation.dining_table_id = null;
+    return;
+  }
     reservation.transform(data => ({
 		guest_name: data.guest_name,
         guest_phone: data.guest_phone,
@@ -527,7 +540,7 @@ const submitReservation = () => {
 .reserve-form input,.reserve-form select,.reserve-form textarea{width:100%;border:1px solid #d7d0c7;border-radius:10px;background:#fff;color:#1d241f;padding:11px 12px;font:400 .83rem 'DM Sans',sans-serif;outline:none}
 .reserve-form textarea{resize:vertical}.reserve-form input:focus,.reserve-form select:focus,.reserve-form textarea:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(239,72,88,.12)}
 .submit-button{width:100%;margin-top:3px}.reservation-success{display:flex;gap:13px;align-items:flex-start;background:#e8f7ec;color:#217247;padding:18px;border-radius:12px}.success-icon{width:30px;height:30px;border-radius:50%;background:#35a066;color:#fff;display:grid;place-items:center}.reservation-success strong{font-size:.9rem}.reservation-success p{margin:5px 0 0;font-size:.73rem}
-.reservation-error{color:#b94150;font-size:.7rem;text-align:center;margin:10px 0}.form-footnote{display:block;color:#81877f;font-size:.68rem;line-height:1.5;text-align:center;margin-top:15px}.form-footnote a{color:var(--coral)}
+.reservation-error{color:#b94150;font-size:.7rem;text-align:center;margin:10px 0}.field-error{color:#b94150;font-size:.7rem;margin:7px 0 0}.form-footnote{display:block;color:#81877f;font-size:.68rem;line-height:1.5;text-align:center;margin-top:15px}.form-footnote a{color:var(--coral)}
 .site-footer{border-top:1px solid var(--line);background:#1c2822;color:#e9ede8;padding:34px 0}
 .footer-grid{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:30px}.site-footer .brand{color:#fff}.site-footer .brand-mark{background:var(--coral)}.site-footer p{color:#aeb8b0;margin:9px 0 0;font-size:.72rem}.site-footer nav{display:flex;gap:22px}.site-footer nav a{color:#cbd4cd;text-decoration:none;font-size:.7rem}.footer-cta{justify-self:end;text-align:right}.footer-cta span{display:block;color:#9aa89f;font-size:.67rem;margin-bottom:5px}.footer-cta a{color:#fff;text-decoration:none;font-size:.76rem;font-weight:700}
 @media(max-width:980px){

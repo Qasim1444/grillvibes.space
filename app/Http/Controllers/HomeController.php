@@ -7,6 +7,7 @@ use App\Models\FoodItem;
 use App\Models\DiningTable;
 use App\Models\BlogPost;
 use App\Models\Reservation;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -41,7 +42,7 @@ class HomeController extends Controller
         $data = $request->validate([
             'dining_table_id' => 'required|integer|exists:dining_tables,id',
               'guest_name' => 'required|string|max:255',
-              'guest_phone' => 'required|string|max:50',
+              'guest_phone' => ['required', 'string', 'max:50', 'regex:/^[0-9]+$/'],
               'guest_email' => 'required|email|max:255',
               'party_size' => 'required|integer|min:1|max:20',
               'reserved_at' => 'required|date|after_or_equal:now',
@@ -54,6 +55,24 @@ class HomeController extends Controller
         if (! $table->is_active || ! $table->isAvailable() || $table->capacity < $data['party_size']) {
             throw ValidationException::withMessages([
                 'dining_table_id' => 'Please choose an available table that fits your party.',
+            ]);
+        }
+
+        $start = Carbon::parse($data['reserved_at']);
+        $end = $start->copy()->addMinutes($data['duration_minutes']);
+        $hasConflict = Reservation::where('dining_table_id', $table->id)
+            ->whereIn('status', ['pending', 'confirmed', 'seated'])
+            ->get(['reserved_at', 'duration_minutes'])
+            ->contains(function (Reservation $existing) use ($start, $end) {
+                $existingStart = Carbon::parse($existing->reserved_at);
+                $existingEnd = $existingStart->copy()->addMinutes($existing->duration_minutes ?: 90);
+
+                return $start->lt($existingEnd) && $existingStart->lt($end);
+            });
+
+        if ($hasConflict) {
+            throw ValidationException::withMessages([
+                'dining_table_id' => 'This table is already booked during that time. Please choose another table or time.',
             ]);
         }
 
